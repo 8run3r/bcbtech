@@ -7,19 +7,19 @@ const marqueeItems = [
 
 const Marquee = () => {
   return (
-    <div className="overflow-hidden py-6 border-y border-border/50 bg-card/30">
+    <div className="overflow-hidden py-8 border-y border-border/30">
       <motion.div
         animate={{ x: [0, -1200] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="flex gap-8 whitespace-nowrap"
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="flex gap-12 whitespace-nowrap"
       >
-        {[...marqueeItems, ...marqueeItems].map((item, i) => (
+        {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (
           <span
             key={i}
-            className="text-sm font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-8"
+            className="text-[13px] font-mono text-foreground/30 uppercase tracking-[0.2em] flex items-center gap-12"
           >
             {item}
-            <span className="text-primary/40">◆</span>
+            <span className="text-primary/20 text-[8px]">●</span>
           </span>
         ))}
       </motion.div>
