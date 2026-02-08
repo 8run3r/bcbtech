@@ -1,78 +1,85 @@
 import { motion } from "framer-motion";
-import { ArrowDown } from "lucide-react";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg noise-bg">
-      {/* Gradient orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Animated gradient mesh background */}
+      <div className="absolute inset-0 grid-bg noise-bg" />
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-primary/8 rounded-full blur-[150px] animate-pulse-glow" />
+        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-accent/8 rounded-full blur-[150px] animate-pulse-glow" style={{ animationDelay: "2s" }} />
+        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/4 rounded-full blur-[200px]" />
+      </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-6"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="inline-block font-mono text-xs uppercase tracking-[0.3em] text-primary border border-primary/30 px-4 py-1.5 rounded-full glow-primary">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-sm text-muted-foreground mb-8 tracking-[0.2em] uppercase font-mono"
+          >
             Web Development Studio — 2026
-          </span>
-        </motion.div>
+          </motion.p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-5xl sm:text-7xl lg:text-8xl font-bold leading-[0.9] tracking-tight mb-8"
-        >
-          <span className="text-foreground">Staviame</span>
-          <br />
-          <span className="text-primary glow-text">digitálnu</span>
-          <br />
-          <span className="text-foreground">budúcnosť</span>
-        </motion.h1>
+          <h1 className="text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.85] tracking-tighter mb-10">
+            <motion.span
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="block text-foreground"
+            >
+              Kód, ktorý
+            </motion.span>
+            <motion.span
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              className="block text-primary glow-text"
+            >
+              posúva hranice
+            </motion.span>
+          </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
-        >
-          Vytvárame webové aplikácie, ktoré posúvajú hranice. 
-          Od kódu až po produkciu — rýchlo, čisto, na mieru.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <a
-            href="#contact"
-            className="bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold text-base hover:bg-primary/90 transition-all glow-primary"
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto mb-14 leading-relaxed"
           >
-            Začať projekt
-          </a>
-          <a
-            href="#projects"
-            className="border border-border text-foreground px-8 py-3.5 rounded-md font-semibold text-base hover:border-primary/50 hover:text-primary transition-all"
+            Od nápadu po produkciu. Vytvárame webové zážitky,
+            ktoré si ľudia pamätajú.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.9 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            Naše práce
-          </a>
+            <a
+              href="#contact"
+              className="group relative bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500"
+            >
+              Začať projekt
+            </a>
+            <a
+              href="#projects"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider font-medium flex items-center gap-2"
+            >
+              Pozrieť práce
+              <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-float"
-      >
-        <ArrowDown className="text-muted-foreground" size={20} />
-      </motion.div>
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
