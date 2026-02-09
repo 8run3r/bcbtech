@@ -42,8 +42,8 @@ const Projects = () => {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4 block">
-            // naše projekty
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block">
+            Naše projekty
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
             Vybrané práce
@@ -62,9 +62,9 @@ const Projects = () => {
             >
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <span className="font-mono text-xs text-muted-foreground">{p.year}</span>
+                  <span className="text-xs text-muted-foreground">{p.year}</span>
                   <h3 className="text-2xl font-bold mt-1">{p.title}</h3>
-                  <span className="text-xs text-primary font-mono uppercase tracking-wider">{p.category}</span>
+                  <span className="text-xs text-primary uppercase tracking-wider">{p.category}</span>
                 </div>
                 <ArrowUpRight
                   className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"
@@ -76,7 +76,7 @@ const Projects = () => {
                 {p.tech.map((t) => (
                   <span
                     key={t}
-                    className="text-xs font-mono px-3 py-1 rounded-full bg-secondary text-secondary-foreground"
+                    className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground"
                   >
                     {t}
                   </span>

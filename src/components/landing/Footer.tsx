@@ -1,24 +1,80 @@
+import { motion } from "framer-motion";
+
 const Footer = () => {
   return (
-    <footer className="border-t border-border/50 py-12 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-lg font-bold tracking-tight">
-          <span className="text-primary">nex</span>
-          <span className="text-foreground">sol</span>
+    <footer className="border-t border-border/30 py-20 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          {/* Logo & tagline */}
+          <div className="md:col-span-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <a href="#" className="text-2xl font-bold tracking-tight inline-block mb-4">
+                <span className="text-primary">NEX</span>
+                <span className="text-foreground">SOL</span>
+              </a>
+              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                Digitálne riešenia pre moderné značky. Od dizajnu po produkciu — všetko pod jednou strechou.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Links */}
+          <div>
+            <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-5">Navigácia</h4>
+            <ul className="space-y-3">
+              {[
+                { label: "Portfólio", href: "#projects" },
+                { label: "Služby", href: "#services" },
+                { label: "Technológie", href: "#tech" },
+                { label: "Kontakt", href: "#contact" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Social */}
+          <div>
+            <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-5">Sociálne siete</h4>
+            <ul className="space-y-3">
+              {["GitHub", "LinkedIn", "Instagram", "Twitter"].map((name) => (
+                <li key={name}>
+                  <a
+                    href="#"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground font-mono">
-          © 2026 nexsol. Všetky práva vyhradené.
-        </p>
-        <div className="flex gap-6">
-          <a href="#" className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono">
-            GitHub
-          </a>
-          <a href="#" className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono">
-            LinkedIn
-          </a>
-          <a href="#" className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono">
-            Twitter
-          </a>
+
+        {/* Bottom bar */}
+        <div className="pt-8 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            © 2026 nexsol. Všetky práva vyhradené.
+          </p>
+          <div className="flex gap-6">
+            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Ochrana súkromia
+            </a>
+            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Podmienky
+            </a>
+          </div>
         </div>
       </div>
     </footer>

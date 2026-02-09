@@ -16,7 +16,7 @@ const Marquee = () => {
         {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (
           <span
             key={i}
-            className="text-[13px] font-mono text-foreground/30 uppercase tracking-[0.2em] flex items-center gap-12"
+            className="text-[13px] text-foreground/30 uppercase tracking-[0.15em] flex items-center gap-12"
           >
             {item}
             <span className="text-primary/20 text-[8px]">●</span>
