@@ -36,8 +36,8 @@ const Showcase = () => {
         viewport={{ once: true }}
         className="px-8 mb-12"
       >
-        <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-3 block">
-          // vybrané práce
+        <span className="text-xs uppercase tracking-[0.2em] text-primary mb-3 block">
+          Vybrané práce
         </span>
         <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
           Portfólio
@@ -58,7 +58,7 @@ const Showcase = () => {
             <div className="absolute inset-0 grid-bg opacity-40" />
 
             <div className="relative z-10 flex flex-col justify-end h-full p-8">
-              <span className="text-xs font-mono text-primary uppercase tracking-widest mb-2">
+              <span className="text-xs text-primary uppercase tracking-widest mb-2">
                 {item.category}
               </span>
               <h3 className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">

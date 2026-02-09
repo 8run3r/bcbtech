@@ -25,8 +25,8 @@ const TechStack = () => {
           viewport={{ once: true }}
           className="mb-16 text-center"
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4 block">
-            // tech stack
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block">
+            Technológie
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
             Nástroje, ktoré ovládame
@@ -45,7 +45,7 @@ const TechStack = () => {
               className="flex flex-col items-center justify-center p-6 rounded-lg bg-card border border-border text-center transition-all"
             >
               <span className="text-base font-semibold mb-1">{t.name}</span>
-              <span className="text-xs font-mono text-muted-foreground">{t.category}</span>
+              <span className="text-xs text-muted-foreground">{t.category}</span>
             </motion.div>
           ))}
         </div>

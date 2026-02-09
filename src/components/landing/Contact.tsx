@@ -11,8 +11,8 @@ const Contact = () => {
           viewport={{ once: true }}
           className="mb-16 text-center"
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4 block">
-            // kontakt
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block">
+            Kontakt
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             Poďme tvoriť
@@ -31,15 +31,15 @@ const Contact = () => {
         >
           <div className="flex flex-col items-center p-6 rounded-lg bg-card border border-border">
             <Mail className="text-primary mb-3" size={24} strokeWidth={1.5} />
-            <span className="text-sm font-mono text-muted-foreground">hello@nexsol.dev</span>
+            <span className="text-sm text-muted-foreground">hello@nexsol.dev</span>
           </div>
           <div className="flex flex-col items-center p-6 rounded-lg bg-card border border-border">
             <Phone className="text-primary mb-3" size={24} strokeWidth={1.5} />
-            <span className="text-sm font-mono text-muted-foreground">+421 900 000 000</span>
+            <span className="text-sm text-muted-foreground">+421 900 000 000</span>
           </div>
           <div className="flex flex-col items-center p-6 rounded-lg bg-card border border-border">
             <MapPin className="text-primary mb-3" size={24} strokeWidth={1.5} />
-            <span className="text-sm font-mono text-muted-foreground">Bratislava, SK</span>
+            <span className="text-sm text-muted-foreground">Bratislava, SK</span>
           </div>
         </motion.div>
 

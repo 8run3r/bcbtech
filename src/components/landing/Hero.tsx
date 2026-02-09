@@ -21,9 +21,9 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-sm text-muted-foreground mb-8 tracking-[0.2em] uppercase font-mono"
+            className="text-sm text-muted-foreground mb-8 tracking-[0.15em] uppercase"
           >
-            Web Development Studio — 2026
+            Digitálne štúdio — 2026
           </motion.p>
 
           <h1 className="text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.85] tracking-tighter mb-10">
