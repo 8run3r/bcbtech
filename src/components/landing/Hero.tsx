@@ -1,15 +1,21 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { Suspense, lazy } from "react";
+
+const VertexNetwork3D = lazy(() => import("./VertexNetwork3D"));
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated gradient mesh background */}
-      <div className="absolute inset-0 grid-bg noise-bg" />
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-primary/8 rounded-full blur-[150px] animate-pulse-glow" />
-        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-accent/8 rounded-full blur-[150px] animate-pulse-glow" style={{ animationDelay: "2s" }} />
-        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/4 rounded-full blur-[200px]" />
+      {/* 3D Vertex Network Background */}
+      <Suspense fallback={null}>
+        <VertexNetwork3D />
+      </Suspense>
+
+      {/* Subtle gradient overlays for depth */}
+      <div className="absolute inset-0 z-[1] pointer-events-none">
+        <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-accent/5 rounded-full blur-[150px]" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
@@ -80,7 +86,7 @@ const Hero = () => {
       </div>
 
       {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[2]" />
     </section>
   );
 };
