@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -61,19 +62,19 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.9 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            <a
-              href="#contact"
+            <Link
+              to="/kontakt"
               className="group relative bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500"
             >
               Začať projekt
-            </a>
-            <a
-              href="#projects"
+            </Link>
+            <Link
+              to="/portfolio"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider font-medium flex items-center gap-2"
             >
               Pozrieť práce
               <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-            </a>
+            </Link>
           </motion.div>
         </motion.div>
       </div>

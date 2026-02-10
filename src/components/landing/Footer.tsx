@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -12,10 +13,10 @@ const Footer = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <a href="#" className="text-2xl font-bold tracking-tight inline-block mb-4">
+              <Link to="/" className="text-2xl font-bold tracking-tight inline-block mb-4">
                 <span className="text-primary">NEX</span>
                 <span className="text-foreground">SOL</span>
-              </a>
+              </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
                 Digitálne riešenia pre moderné značky. Od dizajnu po produkciu — všetko pod jednou strechou.
               </p>
@@ -27,18 +28,18 @@ const Footer = () => {
             <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-5">Navigácia</h4>
             <ul className="space-y-3">
               {[
-                { label: "Portfólio", href: "#projects" },
-                { label: "Služby", href: "#services" },
-                { label: "Technológie", href: "#tech" },
-                { label: "Kontakt", href: "#contact" },
+                { label: "Portfólio", href: "/portfolio" },
+                { label: "Balíčky", href: "/balicky" },
+                { label: "Tech", href: "/tech" },
+                { label: "Kontakt", href: "/kontakt" },
               ].map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
