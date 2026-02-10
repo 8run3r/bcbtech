@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 
@@ -95,8 +96,8 @@ const Packages = () => {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/kontakt"
+                <Link
+                  to="/kontakt"
                   className={`block text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 ${
                     pkg.popular
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -104,7 +105,7 @@ const Packages = () => {
                   }`}
                 >
                   Začať projekt
-                </a>
+                </Link>
               </motion.div>
             ))}
           </div>
