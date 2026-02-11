@@ -1,21 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { lazy, Suspense } from "react";
-
-const ParticleField = lazy(() => import("./ParticleField"));
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Particle background */}
-      <div className="absolute inset-0">
-        <Suspense fallback={null}>
-          <ParticleField />
-        </Suspense>
-      </div>
-
       {/* Radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.03] rounded-full blur-[200px]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.04] rounded-full blur-[200px]" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
         <motion.div
@@ -83,9 +73,6 @@ const Hero = () => {
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
