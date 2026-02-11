@@ -8,7 +8,7 @@ const marqueeItems = [
 
 const Marquee = () => {
   return (
-    <div className="overflow-hidden py-8 border-y border-border/30">
+    <div className="overflow-hidden py-8 border-y border-border/10">
       <motion.div
         animate={{ x: [0, -1200] }}
         transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
