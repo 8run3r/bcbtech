@@ -2,6 +2,7 @@ import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import Marquee from "@/components/landing/Marquee";
 import ScrollStory from "@/components/landing/ScrollStory";
+import CameraServices from "@/components/landing/CameraServices";
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -11,6 +12,7 @@ const Index = () => {
       <Hero />
       <Marquee />
       <ScrollStory />
+      <CameraServices />
       <Footer />
     </main>
   );

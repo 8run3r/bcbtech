@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 
 const marqueeItems = [
   "React", "TypeScript", "Next.js", "Tailwind", "Node.js", "PostgreSQL",
-  "Supabase", "Vercel", "Docker", "Figma", "AI/ML", "Web3",
+  "Hikvision", "Dahua", "IP Kamery", "CCTV", "NVR", "PoE",
+  "Supabase", "Vercel", "Docker", "Figma", "AI/ML", "Uniview",
 ];
 
 const Marquee = () => {
