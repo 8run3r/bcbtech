@@ -26,9 +26,9 @@ const slides: StorySlide[] = [
   },
   {
     label: "02",
-    heading: "Od vízie po realitu",
+    heading: "Vidíme, čo iní prehliadajú",
     description:
-      "Posúvame nápady od prvého nástinu až po nasadenie. Iterujeme rýchlo, staviame kvalitne a dodávame na čas.",
+      "Profesionálne kamerové systémy s AI detekciou, nočným videním a 24/7 monitoringom. Bezpečnosť bez kompromisov.",
     cameraPos: [3, 1.5, 3],
     cameraLookAt: [2, 0.5, -1],
   },
@@ -36,7 +36,7 @@ const slides: StorySlide[] = [
     label: "03",
     heading: "Technológia s účelom",
     description:
-      "Nepoužívame technológie len preto, že sú nové. Vyberáme tie, ktoré riešia váš konkrétny problém najefektívnejšie.",
+      "Od webových aplikácií po bezpečnostné systémy — vyberáme riešenia, ktoré fungujú spoľahlivo a dlhodobo.",
     cameraPos: [-2.5, -1, 4],
     cameraLookAt: [-1.5, -0.5, 0],
   },

@@ -18,7 +18,7 @@ const Footer = () => {
                 <span className="text-foreground">SOL</span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
-                Digitálne riešenia pre moderné značky. Od dizajnu po produkciu — všetko pod jednou strechou.
+                Webové aplikácie & kamerové systémy. Od dizajnu po montáž — všetko pod jednou strechou.
               </p>
             </motion.div>
           </div>
@@ -29,6 +29,7 @@ const Footer = () => {
             <ul className="space-y-3">
               {[
                 { label: "Portfólio", href: "/portfolio" },
+                { label: "Kamery", href: "/kamery" },
                 { label: "Balíčky", href: "/balicky" },
                 { label: "Tech", href: "/tech" },
                 { label: "Kontakt", href: "/kontakt" },
