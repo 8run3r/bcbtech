@@ -2,7 +2,11 @@ import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import Marquee from "@/components/landing/Marquee";
 import ScrollStory from "@/components/landing/ScrollStory";
+import ServicesOverview from "@/components/landing/ServicesOverview";
+import PortfolioPreview from "@/components/landing/PortfolioPreview";
 import CameraServices from "@/components/landing/CameraServices";
+import Stats from "@/components/landing/Stats";
+import ContactCTA from "@/components/landing/ContactCTA";
 import Footer from "@/components/landing/Footer";
 import ParticleField from "@/components/landing/ParticleField";
 
@@ -19,7 +23,11 @@ const Index = () => {
         <Hero />
         <Marquee />
         <ScrollStory />
+        <ServicesOverview />
+        <PortfolioPreview />
+        <Stats />
         <CameraServices />
+        <ContactCTA />
         <Footer />
       </div>
     </main>
