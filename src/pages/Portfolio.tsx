@@ -1,40 +1,42 @@
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Code2, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 
-const projects = [
-  {
-    title: "FinTrack",
-    category: "Fintech",
-    desc: "Dashboardová aplikácia pre správu financií s real-time analytikou.",
-    tech: ["React", "Node.js", "PostgreSQL"],
-    year: "2026",
-  },
-  {
-    title: "MedConnect",
-    category: "HealthTech",
-    desc: "Telemedicínska platforma s video konzultáciami a AI diagnostikou.",
-    tech: ["Next.js", "WebRTC", "AI/ML"],
-    year: "2025",
-  },
-  {
-    title: "ShopForge",
-    category: "E-commerce",
-    desc: "Headless e-commerce riešenie s bleskovou rýchlosťou a custom CMS.",
-    tech: ["Remix", "Stripe", "Sanity"],
-    year: "2025",
-  },
-  {
-    title: "DataPulse",
-    category: "SaaS",
-    desc: "Real-time analytická platforma pre B2B klientov s custom vizualizáciami.",
-    tech: ["TypeScript", "D3.js", "Supabase"],
-    year: "2026",
-  },
+interface PortfolioItem {
+  id: string;
+  title: string;
+  category: string;
+  type: string;
+  description: string | null;
+  image_url: string | null;
+  tech: string[] | null;
+  year: string | null;
+  link: string | null;
+}
+
+// Fallback static data
+const fallbackProjects: PortfolioItem[] = [
+  { id: "1", title: "FinTrack", category: "Fintech", type: "web", description: "Dashboardová aplikácia pre správu financií s real-time analytikou.", image_url: null, tech: ["React", "Node.js", "PostgreSQL"], year: "2026", link: null },
+  { id: "2", title: "MedConnect", category: "HealthTech", type: "web", description: "Telemedicínska platforma s video konzultáciami a AI diagnostikou.", image_url: null, tech: ["Next.js", "WebRTC", "AI/ML"], year: "2025", link: null },
+  { id: "3", title: "ShopForge", category: "E-commerce", type: "web", description: "Headless e-commerce riešenie s bleskovou rýchlosťou a custom CMS.", image_url: null, tech: ["Remix", "Stripe", "Sanity"], year: "2025", link: null },
+  { id: "4", title: "DataPulse", category: "SaaS", type: "web", description: "Real-time analytická platforma pre B2B klientov.", image_url: null, tech: ["TypeScript", "D3.js", "Supabase"], year: "2026", link: null },
 ];
 
 const Portfolio = () => {
+  const [items, setItems] = useState<PortfolioItem[]>(fallbackProjects);
+  const [filter, setFilter] = useState<"all" | "web" | "camera">("all");
+
+  useEffect(() => {
+    supabase.from("portfolio_items").select("*").order("sort_order").then(({ data }) => {
+      if (data && data.length > 0) setItems(data as PortfolioItem[]);
+    });
+  }, []);
+
+  const filtered = filter === "all" ? items : items.filter(i => i.type === filter);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Header />
@@ -47,47 +49,71 @@ const Portfolio = () => {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-6">
-              Naše práce
+              Naše projekty
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mb-20">
-              Vybrané projekty, na ktoré sme hrdí. Každý z nich bol výzvou — a my výzvy milujeme.
+            <p className="text-lg text-muted-foreground max-w-xl mb-10">
+              Weby, aplikácie a kamerové inštalácie — všetko na jednom mieste.
             </p>
           </motion.div>
 
+          {/* Filter tabs */}
+          <div className="flex gap-2 mb-12">
+            {([
+              { key: "all", label: "Všetko", icon: null },
+              { key: "web", label: "Weby & Appky", icon: Code2 },
+              { key: "camera", label: "Kamery", icon: Camera },
+            ] as const).map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`inline-flex items-center gap-2 text-sm px-5 py-2 rounded-full transition-all duration-300 font-medium ${
+                  filter === f.key
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground border border-border/50"
+                }`}
+              >
+                {f.icon && <f.icon size={14} />}
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((p, i) => (
+            {filtered.map((p, i) => (
               <motion.div
-                key={p.title}
+                key={p.id}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.12, duration: 0.7 }}
-                className="group relative p-8 sm:p-10 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 cursor-pointer"
+                transition={{ delay: 0.1 + i * 0.08, duration: 0.7 }}
+                className="group relative rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 cursor-pointer overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <span className="text-xs text-muted-foreground">{p.year}</span>
-                    <h3 className="text-2xl font-bold mt-1">{p.title}</h3>
-                    <span className="text-xs text-primary uppercase tracking-wider">
-                      {p.category}
-                    </span>
+                {p.image_url && (
+                  <div className="h-48 overflow-hidden">
+                    <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   </div>
-                  <ArrowUpRight
-                    className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"
-                    size={20}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                  {p.desc}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {p.tech.map((t) => (
-                    <span
-                      key={t}
-                      className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground"
-                    >
-                      {t}
-                    </span>
-                  ))}
+                )}
+                <div className="p-8 sm:p-10">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-muted-foreground">{p.year}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.type === "web" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground"}`}>
+                          {p.type === "web" ? "Web" : "Kamery"}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold mt-1">{p.title}</h3>
+                      <span className="text-xs text-primary uppercase tracking-wider">{p.category}</span>
+                    </div>
+                    <ArrowUpRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" size={20} />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{p.description}</p>
+                  {p.tech && (
+                    <div className="flex flex-wrap gap-2">
+                      {p.tech.map(t => (
+                        <span key={t} className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">{t}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
