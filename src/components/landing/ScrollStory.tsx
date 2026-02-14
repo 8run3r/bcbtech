@@ -45,8 +45,22 @@ const slides: StorySlide[] = [
 /* ─────────────────────────────────────────
    3D Laptop (Web section)
    ───────────────────────────────────────── */
-const Laptop = () => {
+const Laptop = ({ progress }: { progress: number }) => {
   const groupRef = useRef<THREE.Group>(null);
+  const lidRef = useRef<THREE.Group>(null);
+
+  // Compute lid angle based on scroll progress
+  // Slide 2 (Web) starts at progress ~0.33, fully open by ~0.5
+  const getLidAngle = (p: number) => {
+    // Closed = Math.PI (lid flat on keyboard), Open = 0 (upright)
+    const openStart = 0.2;
+    const openEnd = 0.45;
+    if (p <= openStart) return -Math.PI * 0.55; // fully closed (lid down)
+    if (p >= openEnd) return 0; // fully open
+    const t = (p - openStart) / (openEnd - openStart);
+    const eased = t * t * (3 - 2 * t); // smoothstep
+    return -Math.PI * 0.55 * (1 - eased);
+  };
 
   // Screen content texture
   const screenTex = useMemo(() => {
@@ -177,26 +191,21 @@ const Laptop = () => {
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     groupRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.3) * 0.15;
+    
+    // Animate lid
+    if (lidRef.current) {
+      const targetAngle = getLidAngle(progress);
+      lidRef.current.rotation.x = THREE.MathUtils.lerp(
+        lidRef.current.rotation.x,
+        targetAngle,
+        0.08
+      );
+    }
   });
 
   return (
     <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.4}>
       <group ref={groupRef} position={[4, 0, 0]}>
-        {/* Screen */}
-        <group position={[0, 0.6, 0]}>
-          {/* Monitor frame */}
-          <RoundedBox args={[3.2, 2.0, 0.08]} radius={0.06} position={[0, 0, 0]}>
-            <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
-          </RoundedBox>
-          {/* Screen display */}
-          <mesh position={[0, 0, 0.045]}>
-            <planeGeometry args={[2.9, 1.8]} />
-            <meshBasicMaterial map={screenTex} toneMapped={false} />
-          </mesh>
-          {/* Screen glow */}
-          <pointLight position={[0, 0, 1]} intensity={0.3} color="#00ffaa" distance={3} />
-        </group>
-        
         {/* Base / Keyboard area */}
         <RoundedBox args={[3.4, 0.08, 2.0]} radius={0.04} position={[0, -0.45, 0.9]}>
           <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.7} />
@@ -224,6 +233,23 @@ const Laptop = () => {
           <boxGeometry args={[0.9, 0.01, 0.5]} />
           <meshStandardMaterial color="#222222" roughness={0.5} metalness={0.5} />
         </mesh>
+
+        {/* Lid (screen) — pivots at the hinge (back edge of base) */}
+        <group ref={lidRef} position={[0, -0.45, -0.1]} rotation={[-Math.PI * 0.55, 0, 0]}>
+          {/* Screen frame — origin at bottom edge so it rotates like a real lid */}
+          <group position={[0, 1.0, 0]}>
+            <RoundedBox args={[3.2, 2.0, 0.08]} radius={0.06}>
+              <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
+            </RoundedBox>
+            {/* Screen display */}
+            <mesh position={[0, 0, 0.045]}>
+              <planeGeometry args={[2.9, 1.8]} />
+              <meshBasicMaterial map={screenTex} toneMapped={false} />
+            </mesh>
+            {/* Screen glow */}
+            <pointLight position={[0, 0, 1]} intensity={0.3} color="#00ffaa" distance={3} />
+          </group>
+        </group>
       </group>
     </Float>
   );
@@ -239,9 +265,8 @@ const SecurityCamera = () => {
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     const t = clock.getElapsedTime();
-    // Slow subtle rotation — camera faces viewer
-    cameraRef.current.rotation.y = Math.sin(t * 0.3) * 0.25;
-    cameraRef.current.rotation.x = Math.sin(t * 0.2) * 0.08;
+    // Slow subtle pan — camera sweeps left/right
+    cameraRef.current.rotation.y = Math.sin(t * 0.3) * 0.2;
     
     // Blinking green LED
     if (ledRef.current) {
@@ -254,16 +279,16 @@ const SecurityCamera = () => {
   return (
     <Float speed={0.8} rotationIntensity={0.05} floatIntensity={0.3}>
       <group position={[0, 0, 0]}>
-        {/* Mount arm */}
-        <mesh position={[0, 1.2, 0]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.8, 8]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.8} />
-        </mesh>
-        
-        {/* Mount plate */}
+        {/* Ceiling mount plate */}
         <mesh position={[0, 1.6, 0]}>
           <boxGeometry args={[0.5, 0.06, 0.5]} />
           <meshStandardMaterial color="#333" roughness={0.3} metalness={0.9} />
+        </mesh>
+        
+        {/* Mount arm (vertical) */}
+        <mesh position={[0, 1.2, 0]}>
+          <cylinderGeometry args={[0.06, 0.06, 0.8, 8]} />
+          <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.8} />
         </mesh>
         
         {/* Joint ball */}
@@ -272,28 +297,28 @@ const SecurityCamera = () => {
           <meshStandardMaterial color="#333" roughness={0.3} metalness={0.8} />
         </mesh>
         
-        {/* Camera body — faces viewer (z+) */}
-        <group ref={cameraRef} position={[0, 0.5, 0]}>
-          {/* Main body - bullet style, rotated to face viewer */}
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
+        {/* Camera body group — tilted to face viewer */}
+        <group ref={cameraRef} position={[0, 0.5, 0]} rotation={[-0.3, 0, 0]}>
+          {/* Main body - bullet style, oriented along Z axis (toward viewer) */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
             <cylinderGeometry args={[0.28, 0.32, 1.2, 16]} />
             <meshStandardMaterial color="#e8e8e8" roughness={0.15} metalness={0.7} />
           </mesh>
           
           {/* Front ring — facing viewer */}
-          <mesh position={[0, 0, 0.6]} rotation={[0, 0, 0]}>
+          <mesh position={[0, 0, 0.6]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.34, 0.34, 0.06, 16]} />
             <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.9} />
           </mesh>
           
           {/* Lens housing */}
-          <mesh position={[0, 0, 0.68]}>
+          <mesh position={[0, 0, 0.68]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.22, 0.28, 0.15, 16]} />
             <meshStandardMaterial color="#111" roughness={0.1} metalness={0.95} />
           </mesh>
           
-          {/* Lens glass */}
-          <mesh position={[0, 0, 0.78]}>
+          {/* Lens glass — dark reflective */}
+          <mesh position={[0, 0, 0.78]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.16, 0.18, 0.04, 16]} />
             <meshStandardMaterial
               color="#001a0d"
@@ -304,30 +329,26 @@ const SecurityCamera = () => {
             />
           </mesh>
           
-          {/* IR LED ring */}
+          {/* IR LED ring around lens */}
           <mesh position={[0, 0, 0.76]}>
             <torusGeometry args={[0.2, 0.015, 8, 24]} />
-            <meshStandardMaterial
-              color="#111"
-              roughness={0.3}
-              metalness={0.7}
-            />
+            <meshStandardMaterial color="#111" roughness={0.3} metalness={0.7} />
           </mesh>
           
           {/* Back cap */}
-          <mesh position={[0, 0, -0.6]}>
+          <mesh position={[0, 0, -0.6]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.25, 0.28, 0.08, 16]} />
             <meshStandardMaterial color="#ddd" roughness={0.2} metalness={0.7} />
           </mesh>
           
           {/* Cable connector */}
-          <mesh position={[0, 0, -0.7]}>
+          <mesh position={[0, 0, -0.7]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.08, 0.08, 0.2, 8]} />
             <meshStandardMaterial color="#333" roughness={0.5} metalness={0.6} />
           </mesh>
 
-          {/* Blinking GREEN Status LED */}
-          <mesh ref={ledRef} position={[0.2, 0.3, 0.3]}>
+          {/* Blinking GREEN Status LED — on top front of body */}
+          <mesh ref={ledRef} position={[0, 0.3, 0.4]}>
             <sphereGeometry args={[0.035, 8, 8]} />
             <meshStandardMaterial
               color="#00ff55"
@@ -338,10 +359,10 @@ const SecurityCamera = () => {
           </mesh>
           
           {/* Green LED glow light */}
-          <pointLight position={[0.2, 0.3, 0.3]} intensity={0.3} color="#00ff55" distance={2} />
+          <pointLight position={[0, 0.3, 0.4]} intensity={0.3} color="#00ff55" distance={2} />
         </group>
         
-        {/* Ambient glow */}
+        {/* Ambient glow from lens direction */}
         <pointLight position={[0, 0.3, 1.5]} intensity={0.4} color="#00ffaa" distance={4} />
       </group>
     </Float>
@@ -546,7 +567,7 @@ const Scene3D = ({ progress }: { progress: number }) => {
 
       {/* Contextual 3D objects */}
       <SecurityCamera />
-      <Laptop />
+      <Laptop progress={progress} />
       <ServerRack />
     </>
   );
