@@ -8,7 +8,6 @@ const links = [
   { label: "Projekty", href: "/portfolio" },
   { label: "Balíčky", href: "/balicky" },
   { label: "Tech", href: "/tech" },
-  { label: "Kontakt", href: "/kontakt" },
 ];
 
 const Header = () => {
@@ -70,7 +69,7 @@ const Header = () => {
           to="/kontakt"
           className="hidden md:inline-flex text-[13px] uppercase tracking-wide font-medium bg-primary text-primary-foreground px-7 py-2.5 rounded-full hover:bg-primary/90 transition-all duration-300 z-10"
         >
-          Začať projekt
+          Kontakt
         </Link>
 
         {/* Mobile toggle */}
@@ -119,7 +118,7 @@ const Header = () => {
                 to="/kontakt"
                 className="mt-4 bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm uppercase tracking-wider inline-block hover:bg-primary/90 transition-all"
               >
-                Začať projekt
+                Kontakt
               </Link>
             </motion.div>
           </motion.nav>
