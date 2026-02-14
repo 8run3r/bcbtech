@@ -52,14 +52,14 @@ const Laptop = ({ progress }: { progress: number }) => {
   // Compute lid angle based on scroll progress
   // Slide 2 (Web) starts at progress ~0.33, fully open by ~0.5
   const getLidAngle = (p: number) => {
-    // Closed = Math.PI (lid flat on keyboard), Open = 0 (upright)
+    // Closed = lid folded down onto keyboard, Open = upright
     const openStart = 0.2;
     const openEnd = 0.45;
-    if (p <= openStart) return -Math.PI * 0.55; // fully closed (lid down)
-    if (p >= openEnd) return 0; // fully open
+    if (p <= openStart) return Math.PI * 0.55; // fully closed (lid folded forward)
+    if (p >= openEnd) return 0; // fully open (upright)
     const t = (p - openStart) / (openEnd - openStart);
-    const eased = t * t * (3 - 2 * t); // smoothstep
-    return -Math.PI * 0.55 * (1 - eased);
+    const eased = t * t * (3 - 2 * t);
+    return Math.PI * 0.55 * (1 - eased);
   };
 
   // Screen content texture
@@ -235,7 +235,7 @@ const Laptop = ({ progress }: { progress: number }) => {
         </mesh>
 
         {/* Lid (screen) — pivots at the hinge (back edge of base) */}
-        <group ref={lidRef} position={[0, -0.45, -0.1]} rotation={[-Math.PI * 0.55, 0, 0]}>
+        <group ref={lidRef} position={[0, -0.45, -0.1]} rotation={[Math.PI * 0.55, 0, 0]}>
           {/* Screen frame — origin at bottom edge so it rotates like a real lid */}
           <group position={[0, 1.0, 0]}>
             <RoundedBox args={[3.2, 2.0, 0.08]} radius={0.06}>
