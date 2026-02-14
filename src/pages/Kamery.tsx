@@ -1,9 +1,11 @@
+import { Link } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import CameraServices from "@/components/landing/CameraServices";
 import Footer from "@/components/landing/Footer";
 import { motion } from "framer-motion";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Settings2 } from "lucide-react";
 
 const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
@@ -47,6 +49,13 @@ const Kamery = () => {
             <p className="text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
               Profesionálna montáž, konfigurácia a servis bezpečnostných kamerových systémov — Hikvision, Dahua, Uniview a ďalšie.
             </p>
+            <Link
+              to="/konfigurator"
+              className="mt-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
+            >
+              <Settings2 size={18} />
+              Konfigurátor systému
+            </Link>
           </motion.div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
