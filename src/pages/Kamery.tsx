@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings2 } from "lucide-react";
-import cctvCameraImg from "@/assets/cctv-camera.png";
+import cctvCameraImg from "@/assets/bullet-camera-hero.png";
 
 const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
