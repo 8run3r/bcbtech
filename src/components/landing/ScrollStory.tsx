@@ -262,14 +262,13 @@ const SecurityCamera = () => {
   const cameraRef = useRef<THREE.Group>(null);
   const ledRef = useRef<THREE.Mesh>(null);
   const lensRef = useRef<THREE.Mesh>(null);
-  // Random start angle within ±20° (±0.35 rad) — facing roughly towards us
-  const startAngle = useRef((Math.random() - 0.5) * 0.7);
 
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     const t = clock.getElapsedTime();
-    // Slow sweeping pan ±40° from start angle
-    cameraRef.current.rotation.y = startAngle.current + Math.sin(t * 0.15) * 0.7;
+    // Start facing us (angle=0), then slowly start panning after 2s
+    const rampUp = Math.min(t / 4, 1); // 0→1 over 4 seconds
+    cameraRef.current.rotation.y = rampUp * Math.sin(t * 0.12) * 0.6;
 
     if (ledRef.current) {
       const mat = ledRef.current.material as THREE.MeshStandardMaterial;
@@ -323,15 +322,10 @@ const SecurityCamera = () => {
 
             {/* Bullet body */}
             <group position={[0.6, -0.12, 0]}>
-              {/* Back cap — full hemisphere closing the cylinder */}
-              <mesh position={[-0.58, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
-                <sphereGeometry args={[0.27, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
+              {/* Back cap — closed rounded end */}
+              <mesh position={[-0.6, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.001, 0.27, 0.25, 24]} />
                 <meshStandardMaterial color="#f0f0f0" roughness={0.3} metalness={0.25} />
-              </mesh>
-              {/* Back end cap (flat disc to seal) */}
-              <mesh position={[-0.60, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <circleGeometry args={[0.25, 24]} />
-                <meshStandardMaterial color="#e8e8e8" roughness={0.35} metalness={0.3} />
               </mesh>
 
               {/* Main cylinder */}
