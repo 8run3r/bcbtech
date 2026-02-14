@@ -51,18 +51,33 @@ const Admin = () => {
   const [portForm, setPortForm] = useState({ title: "", category: "Web", type: "web", description: "", image_url: "", tech: "", year: "", link: "" });
 
   useEffect(() => {
+    const checkRole = async (userId: string) => {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
+      setIsAdmin(data?.role === "admin");
+    };
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        checkRole(u.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
-        const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.id).single();
-        setIsAdmin(data?.role === "admin");
+        await checkRole(u.id);
       } else {
         setIsAdmin(false);
       }
       setLoading(false);
     });
-    supabase.auth.getSession();
+
     return () => subscription.unsubscribe();
   }, []);
 
