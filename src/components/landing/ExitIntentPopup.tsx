@@ -62,7 +62,7 @@ const ExitIntentPopup = () => {
               </h2>
 
               <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-sm">
-                Získajte <span className="text-primary font-semibold">bezplatnú konzultáciu</span> a nezáväzný nacenenie vášho projektu. 
+                Získajte <span className="text-primary font-semibold">bezplatnú konzultáciu</span> a nezáväzné nacenenie vášho projektu. 
                 Garantujeme nekonkurenčné ceny na trhu.
               </p>
 
