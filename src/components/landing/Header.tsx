@@ -5,8 +5,8 @@ import { Link, useLocation } from "react-router-dom";
 
 const links = [
   { label: "Zabezpečenie", href: "/kamery" },
-  { label: "Projekty", href: "/portfolio" },
   { label: "Balíčky", href: "/balicky" },
+  { label: "Portfolio", href: "/portfolio" },
   { label: "Tech", href: "/tech" },
 ];
 
