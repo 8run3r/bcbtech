@@ -159,23 +159,6 @@ const Packages = () => {
             </p>
           </motion.div>
 
-          {/* Web balíčky */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <Monitor size={24} className="text-primary" />
-            <h2 className="text-2xl font-bold">Web & Software</h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-            {webPackages.map((pkg, i) => (
-              <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" ctaLink="/kontakt" />
-            ))}
-          </div>
-
           {/* Kamerové balíčky */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -187,9 +170,26 @@ const Packages = () => {
             <h2 className="text-2xl font-bold">Kamerové systémy</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
             {cameraPackages.map((pkg, i) => (
               <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" ctaLink="/kontakt" />
+            ))}
+          </div>
+
+          {/* Web balíčky */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-3 mb-8"
+          >
+            <Monitor size={24} className="text-primary" />
+            <h2 className="text-2xl font-bold">Web & Software</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            {webPackages.map((pkg, i) => (
+              <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" ctaLink="/kontakt" />
             ))}
           </div>
 
