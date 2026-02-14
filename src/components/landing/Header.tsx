@@ -43,7 +43,7 @@ const Header = () => {
           to="/"
           onClick={() => {
             if (location.pathname === "/") {
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              window.scrollTo({ top: 0 });
             }
           }}
           className="text-xl font-bold tracking-tight z-10"
