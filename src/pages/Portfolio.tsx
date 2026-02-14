@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Code2, Camera } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,46 +77,55 @@ const Portfolio = () => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filtered.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.08, duration: 0.7 }}
-                className="group relative rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 cursor-pointer overflow-hidden"
-              >
-                {p.image_url && (
-                  <div className="h-48 overflow-hidden">
-                    <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  </div>
-                )}
-                <div className="p-8 sm:p-10">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-muted-foreground">{p.year}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.type === "web" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground"}`}>
-                          {p.type === "web" ? "Web" : "Kamery"}
-                        </span>
-                      </div>
-                      <h3 className="text-2xl font-bold mt-1">{p.title}</h3>
-                      <span className="text-xs text-primary uppercase tracking-wider">{p.category}</span>
-                    </div>
-                    <ArrowUpRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" size={20} />
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{p.description}</p>
-                  {p.tech && (
-                    <div className="flex flex-wrap gap-2">
-                      {p.tech.map(t => (
-                        <span key={t} className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">{t}</span>
-                      ))}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={filter}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {filtered.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.5 }}
+                  className="group relative rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 cursor-pointer overflow-hidden"
+                >
+                  {p.image_url && (
+                    <div className="h-48 overflow-hidden">
+                      <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </div>
                   )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="p-8 sm:p-10">
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-muted-foreground">{p.year}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.type === "web" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground"}`}>
+                            {p.type === "web" ? "Web" : "Kamery"}
+                          </span>
+                        </div>
+                        <h3 className="text-2xl font-bold mt-1">{p.title}</h3>
+                        <span className="text-xs text-primary uppercase tracking-wider">{p.category}</span>
+                      </div>
+                      <ArrowUpRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" size={20} />
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{p.description}</p>
+                    {p.tech && (
+                      <div className="flex flex-wrap gap-2">
+                        {p.tech.map(t => (
+                          <span key={t} className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
 
