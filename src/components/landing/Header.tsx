@@ -48,7 +48,7 @@ const Header = () => {
           }}
           className="text-xl font-bold tracking-tight z-10"
         >
-          <span className="text-primary">Bruner</span>
+          <span className="text-primary">Cok</span>
           <span className="text-foreground"> Tech</span>
         </Link>
 

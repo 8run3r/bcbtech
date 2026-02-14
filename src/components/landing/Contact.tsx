@@ -31,7 +31,7 @@ const Contact = () => {
         >
           <div className="flex flex-col items-center p-6 rounded-lg bg-card border border-border">
             <Mail className="text-primary mb-3" size={24} strokeWidth={1.5} />
-            <span className="text-sm text-muted-foreground">hello@brunertech.sk</span>
+            <span className="text-sm text-muted-foreground">hello@coktech.sk</span>
           </div>
           <div className="flex flex-col items-center p-6 rounded-lg bg-card border border-border">
             <Phone className="text-primary mb-3" size={24} strokeWidth={1.5} />
