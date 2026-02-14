@@ -40,6 +40,7 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"cameras" | "portfolio">("cameras");
+  const [isRegister, setIsRegister] = useState(false);
 
   // Camera state
   const [cameras, setCameras] = useState<CameraProduct[]>([]);
@@ -170,14 +171,26 @@ const Admin = () => {
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Načítavanie...</div>;
 
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Registrácia úspešná! Teraz sa prihláste.");
+    setIsRegister(false);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
+        <form onSubmit={isRegister ? handleRegister : handleLogin} className="w-full max-w-sm space-y-4">
           <h1 className="text-2xl font-bold text-foreground text-center mb-8">Admin Panel</h1>
           <Input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-          <Button type="submit" className="w-full">Prihlásiť sa</Button>
+          <Button type="submit" className="w-full">{isRegister ? "Registrovať sa" : "Prihlásiť sa"}</Button>
+          <button type="button" onClick={() => setIsRegister(!isRegister)} className="text-sm text-muted-foreground hover:text-foreground w-full text-center">
+            {isRegister ? "Už mám účet → Prihlásiť sa" : "Nemám účet → Registrovať sa"}
+          </button>
         </form>
       </div>
     );
