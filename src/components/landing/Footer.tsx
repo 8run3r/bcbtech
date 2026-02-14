@@ -14,7 +14,7 @@ const Footer = () => {
               viewport={{ once: true }}
             >
               <Link to="/" className="text-2xl font-bold tracking-tight inline-block mb-4">
-                <span className="text-primary">Bruner</span>
+                <span className="text-primary">Cok</span>
                 <span className="text-foreground"> Tech</span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
@@ -67,7 +67,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-border/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © 2026 Bruner Tech. Všetky práva vyhradené.
+            © 2026 Cok Tech. Všetky práva vyhradené.
           </p>
           <div className="flex gap-6">
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">

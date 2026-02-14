@@ -32,7 +32,7 @@ const ContactCTA = () => {
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
-              href="mailto:hello@brunertech.sk"
+              href="mailto:hello@coktech.sk"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               8run3r@gmail.com
 
