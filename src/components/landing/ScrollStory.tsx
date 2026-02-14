@@ -256,7 +256,7 @@ const Laptop = ({ progress }: { progress: number }) => {
 };
 
 /* ─────────────────────────────────────────
-   3D Security Camera — Realistic Bullet (Hikvision-style)
+   3D Security Camera — Ceiling-mounted Bullet (Hikvision-style)
    ───────────────────────────────────────── */
 const SecurityCamera = () => {
   const cameraRef = useRef<THREE.Group>(null);
@@ -266,14 +266,13 @@ const SecurityCamera = () => {
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     const t = clock.getElapsedTime();
-    cameraRef.current.rotation.y = Math.sin(t * 0.3) * 0.15;
+    // Subtle pan
+    cameraRef.current.rotation.y = Math.sin(t * 0.25) * 0.2;
 
-    // Blinking LED
     if (ledRef.current) {
       const mat = ledRef.current.material as THREE.MeshStandardMaterial;
       mat.emissiveIntensity = Math.sin(t * 3) > 0.3 ? 4 : 0.5;
     }
-    // Subtle lens reflection pulse
     if (lensRef.current) {
       const mat = lensRef.current.material as THREE.MeshStandardMaterial;
       mat.emissiveIntensity = 0.3 + Math.sin(t * 1.5) * 0.15;
@@ -282,203 +281,164 @@ const SecurityCamera = () => {
 
   return (
     <Float speed={0.8} rotationIntensity={0.05} floatIntensity={0.3}>
-      <group position={[0, 0, 0]} scale={1.15}>
+      {/* Entire camera group — rotated so mount is on top (ceiling) and lens points down-forward */}
+      <group position={[0, 0.8, 0]} scale={1.15}>
 
-        {/* ── Wall mount base plate ── */}
-        <mesh position={[-1.35, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.5, 0.5, 0.06, 32]} />
+        {/* ── Ceiling mount plate (flat on ceiling) ── */}
+        <mesh position={[0, 1.6, 0]}>
+          <cylinderGeometry args={[0.45, 0.45, 0.06, 32]} />
           <meshStandardMaterial color="#e8e8e8" roughness={0.3} metalness={0.35} />
         </mesh>
         {/* Plate rim */}
-        <mesh position={[-1.35, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <torusGeometry args={[0.5, 0.015, 8, 32]} />
+        <mesh position={[0, 1.6, 0]}>
+          <torusGeometry args={[0.45, 0.012, 8, 32]} />
           <meshStandardMaterial color="#d0d0d0" roughness={0.3} metalness={0.5} />
         </mesh>
-        {/* Mount screws (4 corners) */}
-        {[[0.3, 0.3], [0.3, -0.3], [-0.3, 0.3], [-0.3, -0.3]].map(([y, z]) => (
-          <group key={`screw${y}${z}`}>
-            <mesh position={[-1.38, y, z]}>
-              <cylinderGeometry args={[0.035, 0.035, 0.04, 12]} />
-              <meshStandardMaterial color="#888" roughness={0.4} metalness={0.7} />
-            </mesh>
-            {/* Screw slot */}
-            <mesh position={[-1.40, y, z]} rotation={[0, 0, Math.PI / 2]}>
-              <boxGeometry args={[0.005, 0.04, 0.005]} />
-              <meshStandardMaterial color="#555" roughness={0.6} metalness={0.5} />
-            </mesh>
-          </group>
+        {/* Mount screws */}
+        {[[0.28, 0.28], [0.28, -0.28], [-0.28, 0.28], [-0.28, -0.28]].map(([x, z]) => (
+          <mesh key={`screw${x}${z}`} position={[x, 1.63, z]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.03, 10]} />
+            <meshStandardMaterial color="#888" roughness={0.4} metalness={0.7} />
+          </mesh>
         ))}
-        {/* Cable entry hole */}
-        <mesh position={[-1.32, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <torusGeometry args={[0.1, 0.02, 8, 16]} />
-          <meshStandardMaterial color="#aaa" roughness={0.4} metalness={0.5} />
+
+        {/* ── Vertical drop arm from ceiling ── */}
+        <mesh position={[0, 1.3, 0]}>
+          <cylinderGeometry args={[0.08, 0.12, 0.55, 16]} />
+          <meshStandardMaterial color="#e2e2e2" roughness={0.35} metalness={0.3} />
+        </mesh>
+        {/* Arm ring */}
+        <mesh position={[0, 1.05, 0]}>
+          <torusGeometry args={[0.1, 0.012, 8, 20]} />
+          <meshStandardMaterial color="#ccc" roughness={0.3} metalness={0.45} />
         </mesh>
 
-        {/* ── Bracket / mounting arm ── */}
-        <group ref={cameraRef}>
-          {/* Arm — tapered with detail */}
-          <mesh position={[-0.85, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.1, 0.16, 0.7, 16]} />
-            <meshStandardMaterial color="#e2e2e2" roughness={0.35} metalness={0.3} />
-          </mesh>
-          {/* Arm ring detail */}
-          <mesh position={[-0.55, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <torusGeometry args={[0.12, 0.012, 8, 20]} />
-            <meshStandardMaterial color="#ccc" roughness={0.3} metalness={0.45} />
-          </mesh>
+        {/* ── Ball joint ── */}
+        <mesh position={[0, 0.95, 0]}>
+          <sphereGeometry args={[0.18, 24, 24]} />
+          <meshStandardMaterial color="#d8d8d8" roughness={0.3} metalness={0.35} />
+        </mesh>
 
-          {/* Joint — ball joint with collar */}
-          <mesh position={[-0.42, 0, 0]}>
-            <sphereGeometry args={[0.2, 24, 24]} />
-            <meshStandardMaterial color="#d8d8d8" roughness={0.3} metalness={0.35} />
-          </mesh>
-          {/* Joint collar ring */}
-          <mesh position={[-0.28, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <torusGeometry args={[0.16, 0.015, 8, 20]} />
-            <meshStandardMaterial color="#bbb" roughness={0.3} metalness={0.5} />
-          </mesh>
-
-          {/* ── Bullet camera body ── */}
-          <group position={[0.45, 0, 0]} rotation={[0, 0, -0.08]}>
-
-            {/* Back cap — rounded */}
-            <mesh position={[-0.72, 0, 0]}>
-              <sphereGeometry args={[0.30, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-              <meshStandardMaterial color="#f2f2f2" roughness={0.3} metalness={0.25} />
+        {/* ── Camera body — angled downward from joint ── */}
+        <group ref={cameraRef} position={[0, 0.95, 0]}>
+          {/* Pivot the bullet body to point down-forward (~35 degrees) */}
+          <group rotation={[0, 0, -Math.PI * 0.2]}>
+            {/* Short connector from joint to body */}
+            <mesh position={[0.2, -0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.08, 0.1, 0.2, 12]} />
+              <meshStandardMaterial color="#ddd" roughness={0.35} metalness={0.3} />
             </mesh>
 
-            {/* Main body — multi-segment for realism */}
-            <mesh rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.30, 0.33, 1.5, 24]} />
-              <meshStandardMaterial color="#f0f0f0" roughness={0.3} metalness={0.25} />
-            </mesh>
-
-            {/* Body panel line (upper) */}
-            <mesh position={[0, 0.31, 0]} rotation={[0, 0, 0]}>
-              <boxGeometry args={[1.2, 0.003, 0.3]} />
-              <meshStandardMaterial color="#ddd" roughness={0.4} metalness={0.3} />
-            </mesh>
-
-            {/* Body accent rings */}
-            {[-0.5, -0.2, 0.15].map((x, i) => (
-              <mesh key={`ring${i}`} position={[x, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <torusGeometry args={[0.315, 0.008, 8, 24]} />
-                <meshStandardMaterial color="#d5d5d5" roughness={0.3} metalness={0.4} />
+            {/* ── Bullet body ── */}
+            <group position={[0.65, -0.15, 0]}>
+              {/* Back cap */}
+              <mesh position={[-0.65, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <sphereGeometry args={[0.28, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
+                <meshStandardMaterial color="#f2f2f2" roughness={0.3} metalness={0.25} />
               </mesh>
-            ))}
 
-            {/* Ventilation slits (sides) */}
-            {Array.from({ length: 5 }).map((_, i) => (
-              <mesh key={`vent${i}`} position={[-0.35 + i * 0.12, 0, 0.32]} rotation={[0, 0, 0]}>
-                <boxGeometry args={[0.06, 0.08, 0.005]} />
-                <meshStandardMaterial color="#d0d0d0" roughness={0.5} metalness={0.3} />
+              {/* Main cylinder */}
+              <mesh rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.28, 0.30, 1.3, 24]} />
+                <meshStandardMaterial color="#f0f0f0" roughness={0.3} metalness={0.25} />
               </mesh>
-            ))}
 
-            {/* ── Sunshield / visor ── */}
-            <mesh position={[0.6, 0.1, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.37, 0.39, 0.4, 24, 1, true, -Math.PI * 0.15, Math.PI * 1.3]} />
-              <meshStandardMaterial color="#eaeaea" roughness={0.35} metalness={0.3} side={THREE.DoubleSide} />
-            </mesh>
-            {/* Visor edge */}
-            <mesh position={[0.8, 0.1, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <torusGeometry args={[0.38, 0.008, 6, 24, Math.PI * 1.3]} />
-              <meshStandardMaterial color="#d0d0d0" roughness={0.3} metalness={0.4} />
-            </mesh>
-
-            {/* ── Front lens assembly ── */}
-            {/* Lens housing outer */}
-            <mesh position={[0.78, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.26, 0.30, 0.2, 24]} />
-              <meshStandardMaterial color="#1a1a1a" roughness={0.15} metalness={0.85} />
-            </mesh>
-
-            {/* Lens housing inner ring */}
-            <mesh position={[0.88, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.20, 0.24, 0.06, 24]} />
-              <meshStandardMaterial color="#111" roughness={0.1} metalness={0.9} />
-            </mesh>
-
-            {/* Lens glass — reflective */}
-            <mesh ref={lensRef} position={[0.92, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.16, 0.18, 0.03, 24]} />
-              <meshStandardMaterial
-                color="#001a11"
-                emissive="#003322"
-                emissiveIntensity={0.3}
-                roughness={0.02}
-                metalness={0.15}
-                transparent
-                opacity={0.8}
-              />
-            </mesh>
-
-            {/* Inner lens barrel */}
-            <mesh position={[0.89, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.1, 0.1, 0.08, 20]} />
-              <meshStandardMaterial color="#050505" roughness={0.05} metalness={0.95} />
-            </mesh>
-
-            {/* Lens center (deep black) */}
-            <mesh position={[0.93, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.06, 0.06, 0.02, 16]} />
-              <meshStandardMaterial color="#000" roughness={0.02} metalness={1} />
-            </mesh>
-
-            {/* IR LED ring (24 LEDs) */}
-            {Array.from({ length: 24 }).map((_, i) => {
-              const angle = (i / 24) * Math.PI * 2;
-              const r = 0.21;
-              return (
-                <mesh key={`ir${i}`} position={[0.89, Math.sin(angle) * r, Math.cos(angle) * r]}>
-                  <sphereGeometry args={[0.012, 8, 8]} />
-                  <meshStandardMaterial
-                    color={i % 3 === 0 ? "#220000" : "#1a0000"}
-                    roughness={0.2}
-                    metalness={0.6}
-                  />
+              {/* Body accent rings */}
+              {[-0.4, -0.1, 0.2].map((x, i) => (
+                <mesh key={`ring${i}`} position={[x, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                  <torusGeometry args={[0.29, 0.006, 8, 24]} />
+                  <meshStandardMaterial color="#d5d5d5" roughness={0.3} metalness={0.4} />
                 </mesh>
-              );
-            })}
+              ))}
 
-            {/* ── Status LED ── */}
-            <mesh ref={ledRef} position={[0.2, 0.32, 0]}>
-              <sphereGeometry args={[0.02, 10, 10]} />
-              <meshStandardMaterial
-                color="#00ff55"
-                emissive="#00ff55"
-                emissiveIntensity={4}
-                toneMapped={false}
-              />
-            </mesh>
-            <pointLight position={[0.2, 0.32, 0]} intensity={0.2} color="#00ff55" distance={1.5} />
+              {/* Panel line */}
+              <mesh position={[0, 0.29, 0]}>
+                <boxGeometry args={[1.0, 0.003, 0.25]} />
+                <meshStandardMaterial color="#ddd" roughness={0.4} metalness={0.3} />
+              </mesh>
 
-            {/* Brand logo area */}
-            <mesh position={[0.0, 0.315, 0]}>
-              <planeGeometry args={[0.45, 0.06]} />
-              <meshStandardMaterial color="#e5e5e5" roughness={0.5} metalness={0.2} />
-            </mesh>
+              {/* Sunshield / visor */}
+              <mesh position={[0.5, 0.06, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.34, 0.36, 0.35, 24, 1, true, -Math.PI * 0.15, Math.PI * 1.3]} />
+                <meshStandardMaterial color="#eaeaea" roughness={0.35} metalness={0.3} side={THREE.DoubleSide} />
+              </mesh>
 
-            {/* Bottom info label */}
-            <mesh position={[0.3, -0.31, 0]} rotation={[Math.PI, 0, 0]}>
-              <planeGeometry args={[0.3, 0.04]} />
-              <meshStandardMaterial color="#ddd" roughness={0.6} metalness={0.15} />
-            </mesh>
+              {/* ── Lens assembly ── */}
+              <mesh position={[0.68, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.24, 0.28, 0.18, 24]} />
+                <meshStandardMaterial color="#1a1a1a" roughness={0.15} metalness={0.85} />
+              </mesh>
+              <mesh position={[0.78, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.18, 0.22, 0.06, 24]} />
+                <meshStandardMaterial color="#111" roughness={0.1} metalness={0.9} />
+              </mesh>
+              {/* Lens glass */}
+              <mesh ref={lensRef} position={[0.82, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.14, 0.16, 0.03, 24]} />
+                <meshStandardMaterial
+                  color="#001a11"
+                  emissive="#003322"
+                  emissiveIntensity={0.3}
+                  roughness={0.02}
+                  metalness={0.15}
+                  transparent
+                  opacity={0.8}
+                />
+              </mesh>
+              {/* Inner lens */}
+              <mesh position={[0.80, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.08, 0.08, 0.06, 16]} />
+                <meshStandardMaterial color="#050505" roughness={0.05} metalness={0.95} />
+              </mesh>
+              <mesh position={[0.83, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.05, 0.05, 0.02, 16]} />
+                <meshStandardMaterial color="#000" roughness={0.02} metalness={1} />
+              </mesh>
 
-            {/* Side cable grommet */}
-            <mesh position={[-0.6, -0.25, 0]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.06, 0.06, 0.08, 12]} />
-              <meshStandardMaterial color="#222" roughness={0.3} metalness={0.7} />
-            </mesh>
-            {/* Cable */}
-            <mesh position={[-0.6, -0.42, 0]} rotation={[0, 0, 0]}>
-              <cylinderGeometry args={[0.025, 0.025, 0.3, 8]} />
-              <meshStandardMaterial color="#1a1a1a" roughness={0.6} metalness={0.3} />
-            </mesh>
+              {/* IR LEDs ring */}
+              {Array.from({ length: 20 }).map((_, i) => {
+                const angle = (i / 20) * Math.PI * 2;
+                const r = 0.19;
+                return (
+                  <mesh key={`ir${i}`} position={[0.79, Math.sin(angle) * r, Math.cos(angle) * r]}>
+                    <sphereGeometry args={[0.01, 6, 6]} />
+                    <meshStandardMaterial
+                      color={i % 3 === 0 ? "#220000" : "#1a0000"}
+                      roughness={0.2}
+                      metalness={0.6}
+                    />
+                  </mesh>
+                );
+              })}
+
+              {/* Status LED */}
+              <mesh ref={ledRef} position={[0.1, 0.29, 0]}>
+                <sphereGeometry args={[0.018, 10, 10]} />
+                <meshStandardMaterial
+                  color="#00ff55"
+                  emissive="#00ff55"
+                  emissiveIntensity={4}
+                  toneMapped={false}
+                />
+              </mesh>
+              <pointLight position={[0.1, 0.29, 0]} intensity={0.2} color="#00ff55" distance={1.5} />
+
+              {/* Brand area */}
+              <mesh position={[-0.05, 0.29, 0]}>
+                <planeGeometry args={[0.4, 0.05]} />
+                <meshStandardMaterial color="#e5e5e5" roughness={0.5} metalness={0.2} />
+              </mesh>
+
+              {/* Cable out back-bottom */}
+              <mesh position={[-0.55, -0.22, 0]} rotation={[0, 0, 0.3]}>
+                <cylinderGeometry args={[0.025, 0.025, 0.35, 8]} />
+                <meshStandardMaterial color="#1a1a1a" roughness={0.6} metalness={0.3} />
+              </mesh>
+            </group>
           </group>
         </group>
 
-        {/* Scene lighting for camera */}
+        {/* Scene lighting */}
         <pointLight position={[1.5, 0.5, 1]} intensity={0.5} color="#00ffaa" distance={5} />
         <pointLight position={[-0.5, -0.5, 1.5]} intensity={0.2} color="#ffffff" distance={4} />
       </group>
