@@ -10,6 +10,8 @@ import Tech from "./pages/Tech";
 import Kontakt from "./pages/Kontakt";
 import Kamery from "./pages/Kamery";
 import Admin from "./pages/Admin";
+import RoiKalkulator from "./pages/RoiKalkulator";
+import Konfigurator from "./pages/Konfigurator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/tech" element={<Tech />} />
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/kamery" element={<Kamery />} />
+          <Route path="/roi-kalkulator" element={<RoiKalkulator />} />
+          <Route path="/konfigurator" element={<Konfigurator />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
