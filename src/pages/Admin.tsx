@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Trash2, Plus, LogOut, Camera, Code2, Upload } from "lucide-react";
+import CameraEditRow from "@/components/admin/CameraEditRow";
+import PortfolioEditRow from "@/components/admin/PortfolioEditRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -278,28 +280,7 @@ const Admin = () => {
 
             <div className="space-y-3">
               {cameras.map(c => (
-                <div key={c.id} className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card/50">
-                  <div className="w-16 h-16 rounded bg-muted/30 flex items-center justify-center overflow-hidden shrink-0">
-                    {c.image_url ? (
-                      <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Camera size={20} className="text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{c.name}</p>
-                    <p className="text-xs text-muted-foreground">{c.brand} · {c.category} · {c.price}</p>
-                  </div>
-                  <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) updateCameraImage(c.id, e.target.files[0]); }} />
-                    <div className="p-2 rounded-md hover:bg-muted/50 transition-colors">
-                      <Upload size={16} className="text-muted-foreground" />
-                    </div>
-                  </label>
-                  <Button variant="ghost" size="icon" onClick={() => deleteCamera(c.id)}>
-                    <Trash2 size={16} className="text-destructive" />
-                  </Button>
-                </div>
+                <CameraEditRow key={c.id} camera={c} onRefresh={fetchCameras} onUploadImage={updateCameraImage} />
               ))}
               {cameras.length === 0 && <p className="text-muted-foreground text-sm text-center py-8">Žiadne kamery. Pridajte prvú.</p>}
             </div>
@@ -332,16 +313,7 @@ const Admin = () => {
 
             <div className="space-y-3">
               {portfolio.map(p => (
-                <div key={p.id} className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card/50">
-                  {p.image_url && <img src={p.image_url} alt={p.title} className="w-16 h-16 rounded object-cover" />}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{p.title}</p>
-                    <p className="text-xs text-muted-foreground">{p.type === "web" ? "🌐 Web" : "📹 Kamery"} · {p.category} · {p.year}</p>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => deletePortfolio(p.id)}>
-                    <Trash2 size={16} className="text-destructive" />
-                  </Button>
-                </div>
+                <PortfolioEditRow key={p.id} item={p} onRefresh={fetchPortfolio} />
               ))}
               {portfolio.length === 0 && <p className="text-muted-foreground text-sm text-center py-8">Žiadne projekty. Pridajte prvý.</p>}
             </div>
