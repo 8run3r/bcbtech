@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Camera, Shield, Eye, Wifi, MonitorPlay, Settings } from "lucide-react";
+import { Camera, Shield, Eye, Wifi, MonitorPlay, Settings, Settings2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const cameraServices = [
   {
@@ -102,13 +103,22 @@ const CameraServices = () => {
           transition={{ delay: 0.5 }}
           className="mt-16 text-center"
         >
-          <a
-            href="/kontakt"
-            className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500"
-          >
-            <Camera size={18} />
-            Nezáväzná konzultácia
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="/kontakt"
+              className="inline-flex items-center gap-3 bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500"
+            >
+              <Camera size={18} />
+              Nezáväzná konzultácia
+            </a>
+            <Link
+              to="/konfigurator"
+              className="inline-flex items-center gap-3 border border-border text-foreground px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-foreground hover:text-background transition-all duration-500"
+            >
+              <Settings2 size={18} />
+              Konfigurátor systému
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>
