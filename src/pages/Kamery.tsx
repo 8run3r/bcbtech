@@ -53,7 +53,7 @@ const Kamery = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <p className="text-sm text-primary font-mono mb-6 tracking-[0.2em] uppercase">[ Surveillance Systems ]</p>
+            <p className="text-sm text-primary font-mono mb-6 tracking-[0.2em] uppercase">[ Security Systems ]</p>
             <h1 className="text-5xl sm:text-7xl font-bold tracking-tighter mb-6">Kamerové systémy</h1>
             <p className="text-lg text-muted-foreground max-w-lg leading-relaxed mx-auto">
               Profesionálna montáž, konfigurácia a servis bezpečnostných kamerových systémov — Hikvision, Dahua, Uniview a ďalšie.
@@ -69,8 +69,6 @@ const Kamery = () => {
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
-
-      <CameraServices />
 
       {/* Products from DB */}
       {products.length > 0 && (
@@ -132,6 +130,8 @@ const Kamery = () => {
           </div>
         </section>
       )}
+
+      <CameraServices />
 
       {/* Brands Section */}
       <section className="py-20 px-6">
