@@ -51,34 +51,52 @@ const Admin = () => {
   const [portForm, setPortForm] = useState({ title: "", category: "Web", type: "web", description: "", image_url: "", tech: "", year: "", link: "" });
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkRole = async (userId: string) => {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
-      setIsAdmin(data?.role === "admin");
+      try {
+        const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+        if (isMounted) setIsAdmin(!!data);
+      } catch {
+        if (isMounted) setIsAdmin(false);
+      }
     };
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        checkRole(u.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+    // Listener for ongoing auth changes — use setTimeout to avoid deadlock
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_, session) => {
+        if (!isMounted) return;
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u) {
+          setTimeout(() => checkRole(u.id), 0);
+        } else {
+          setIsAdmin(false);
+        }
       }
-    });
+    );
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        await checkRole(u.id);
-      } else {
-        setIsAdmin(false);
+    // Initial load
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u) {
+          await checkRole(u.id);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
