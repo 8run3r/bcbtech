@@ -3,6 +3,7 @@ import { Check, Camera, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import FluidCursor from "@/components/landing/FluidCursor";
 
 const webPackages = [
   {
@@ -140,7 +141,11 @@ const PackageCard = ({ pkg, i, cta, ctaLink }: { pkg: any; i: number; cta: strin
 
 const Packages = () => {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground relative">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <FluidCursor blobCount={3} intensity={0.4} />
+      </div>
+      <div className="relative z-10">
       <Header />
 
       <section className="pt-40 pb-20 px-6">
@@ -228,6 +233,7 @@ const Packages = () => {
       </section>
 
       <Footer />
+      </div>
     </main>
   );
 };
