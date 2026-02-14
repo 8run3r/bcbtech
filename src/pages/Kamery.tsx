@@ -23,12 +23,20 @@ interface CameraProduct {
 
 const Kamery = () => {
   const [products, setProducts] = useState<CameraProduct[]>([]);
+  const [activeFilter, setActiveFilter] = useState<string>("Všetky");
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     supabase.from("camera_products").select("*").order("sort_order").then(({ data }) => {
-      if (data) setProducts(data as CameraProduct[]);
+      if (data) {
+        setProducts(data as CameraProduct[]);
+        const cats = Array.from(new Set((data as CameraProduct[]).map(p => p.category).filter(Boolean))) as string[];
+        setCategories(cats);
+      }
     });
   }, []);
+
+  const filtered = activeFilter === "Všetky" ? products : products.filter(p => p.category === activeFilter);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -68,12 +76,30 @@ const Kamery = () => {
       {products.length > 0 && (
         <section className="py-20 px-6">
           <div className="max-w-7xl mx-auto">
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="mb-12">
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="mb-8">
               <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ Produkty ]</span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Naša ponuka kamier</h2>
             </motion.div>
+
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2 mb-10">
+              {["Všetky", ...categories].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveFilter(cat)}
+                  className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider border transition-all duration-300 ${
+                    activeFilter === cat
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((p, i) => (
+              {filtered.map((p, i) => (
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -83,15 +109,12 @@ const Kamery = () => {
                   className="rounded-xl border border-border bg-card/50 overflow-hidden hover:border-primary/30 transition-all duration-500"
                 >
                   {p.image_url && (
-                    <div className="h-48 overflow-hidden">
-                      <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                    <div className="h-48 overflow-hidden bg-black/20">
+                      <img src={p.image_url} alt={p.name} className="w-full h-full object-contain" />
                     </div>
                   )}
                   <div className="p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      {p.brand && <span className="text-[10px] text-primary font-mono uppercase">{p.brand}</span>}
-                      {p.category && <span className="text-[10px] text-muted-foreground">· {p.category}</span>}
-                    </div>
+                    {p.category && <span className="text-[10px] text-muted-foreground font-mono mb-2 block">· {p.category}</span>}
                     <h3 className="text-lg font-semibold mb-2">{p.name}</h3>
                     {p.description && <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{p.description}</p>}
                     {p.features && p.features.length > 0 && (

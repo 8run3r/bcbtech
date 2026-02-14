@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Trash2, Plus, LogOut, Camera, Code2 } from "lucide-react";
+import { Trash2, Plus, LogOut, Camera, Code2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,12 +87,30 @@ const Admin = () => {
     if (data) setCameras(data as CameraProduct[]);
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("camera-images").upload(path, file);
+    if (error) { toast.error("Upload failed: " + error.message); return null; }
+    const { data } = supabase.storage.from("camera-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const addCamera = async (e: React.FormEvent) => {
     e.preventDefault();
+    let imageUrl = camForm.image_url || null;
+
+    // If a file was selected, upload it
+    const fileInput = document.getElementById("cam-image-input") as HTMLInputElement;
+    if (fileInput?.files?.[0]) {
+      const url = await uploadImage(fileInput.files[0]);
+      if (url) imageUrl = url;
+    }
+
     const { error } = await supabase.from("camera_products").insert({
       name: camForm.name,
       description: camForm.description || null,
-      image_url: camForm.image_url || null,
+      image_url: imageUrl,
       category: camForm.category,
       brand: camForm.brand || null,
       price: camForm.price || null,
@@ -101,6 +119,16 @@ const Admin = () => {
     if (error) { toast.error(error.message); return; }
     toast.success("Kamera pridaná");
     setCamForm({ name: "", description: "", image_url: "", category: "IP Camera", brand: "", price: "", features: "" });
+    if (fileInput) fileInput.value = "";
+    fetchCameras();
+  };
+
+  const updateCameraImage = async (id: string, file: File) => {
+    const url = await uploadImage(file);
+    if (!url) return;
+    const { error } = await supabase.from("camera_products").update({ image_url: url }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Obrázok aktualizovaný");
     fetchCameras();
   };
 
@@ -201,7 +229,11 @@ const Admin = () => {
                 <Input placeholder="Značka" value={camForm.brand} onChange={e => setCamForm(p => ({ ...p, brand: e.target.value }))} />
                 <Input placeholder="Kategória" value={camForm.category} onChange={e => setCamForm(p => ({ ...p, category: e.target.value }))} />
                 <Input placeholder="Cena" value={camForm.price} onChange={e => setCamForm(p => ({ ...p, price: e.target.value }))} />
-                <Input placeholder="URL obrázka" value={camForm.image_url} onChange={e => setCamForm(p => ({ ...p, image_url: e.target.value }))} className="md:col-span-2" />
+                <Input placeholder="URL obrázka (alebo nahraj súbor)" value={camForm.image_url} onChange={e => setCamForm(p => ({ ...p, image_url: e.target.value }))} className="md:col-span-2" />
+                <div className="md:col-span-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">Alebo nahraj obrázok:</label>
+                  <input id="cam-image-input" type="file" accept="image/*" className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                </div>
                 <Input placeholder="Vlastnosti (oddelené čiarkou)" value={camForm.features} onChange={e => setCamForm(p => ({ ...p, features: e.target.value }))} className="md:col-span-2" />
               </div>
               <Textarea placeholder="Popis" value={camForm.description} onChange={e => setCamForm(p => ({ ...p, description: e.target.value }))} />
@@ -211,11 +243,23 @@ const Admin = () => {
             <div className="space-y-3">
               {cameras.map(c => (
                 <div key={c.id} className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card/50">
-                  {c.image_url && <img src={c.image_url} alt={c.name} className="w-16 h-16 rounded object-cover" />}
+                  <div className="w-16 h-16 rounded bg-muted/30 flex items-center justify-center overflow-hidden shrink-0">
+                    {c.image_url ? (
+                      <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera size={20} className="text-muted-foreground" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">{c.name}</p>
                     <p className="text-xs text-muted-foreground">{c.brand} · {c.category} · {c.price}</p>
                   </div>
+                  <label className="cursor-pointer">
+                    <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) updateCameraImage(c.id, e.target.files[0]); }} />
+                    <div className="p-2 rounded-md hover:bg-muted/50 transition-colors">
+                      <Upload size={16} className="text-muted-foreground" />
+                    </div>
+                  </label>
                   <Button variant="ghost" size="icon" onClick={() => deleteCamera(c.id)}>
                     <Trash2 size={16} className="text-destructive" />
                   </Button>
