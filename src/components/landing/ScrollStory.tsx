@@ -648,17 +648,17 @@ const SlideOverlay = ({ slide, index, progress }: { slide: StorySlide; index: nu
 
   return (
     <div
-      className="absolute inset-0 flex items-center z-20 pointer-events-none px-8 md:px-20"
+      className="absolute inset-0 flex items-end sm:items-center z-20 pointer-events-none px-5 sm:px-8 md:px-20 pb-24 sm:pb-0"
       style={{ opacity, transform: `translateY(${y}px)` }}
     >
-      <div className={`max-w-md ${isRight ? "ml-auto text-right" : ""}`}>
-        <span className="inline-block text-[11px] uppercase tracking-[0.25em] text-primary/80 mb-5 font-mono">
+      <div className={`max-w-xs sm:max-w-md ${isRight ? "sm:ml-auto sm:text-right" : ""}`}>
+        <span className="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-primary/80 mb-3 sm:mb-5 font-mono">
           {slide.label}
         </span>
-        <h2 className="text-[clamp(2rem,5vw,3.8rem)] font-bold leading-[1.05] tracking-tight mb-6 text-foreground whitespace-pre-line">
+        <h2 className="text-2xl sm:text-[clamp(2rem,5vw,3.8rem)] font-bold leading-[1.1] tracking-tight mb-3 sm:mb-6 text-foreground whitespace-pre-line">
           {slide.heading}
         </h2>
-        <p className="text-base text-muted-foreground leading-relaxed max-w-sm">
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xs sm:max-w-sm">
           {slide.description}
         </p>
       </div>
@@ -695,6 +695,7 @@ const ScrollStory = () => {
               dpr={[1, 1.5]}
               gl={{ antialias: true, alpha: true }}
               style={{ background: "transparent" }}
+              className="!touch-auto"
             >
               <Scene3D progress={progress} />
             </Canvas>
@@ -713,7 +714,7 @@ const ScrollStory = () => {
         ))}
 
         {/* Progress dots */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
+        <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3">
           {slides.map((_, i) => {
             const slideProgress = i / slides.length;
             const isActive = progress >= slideProgress && progress < (i + 1) / slides.length;
@@ -721,7 +722,7 @@ const ScrollStory = () => {
               <div key={i} className="flex items-center gap-2">
                 <div
                   className={`rounded-full transition-all duration-500 ${
-                    isActive ? "w-8 h-1.5 bg-primary" : "w-2 h-1.5 bg-muted-foreground/20"
+                    isActive ? "w-6 sm:w-8 h-1 sm:h-1.5 bg-primary" : "w-1.5 sm:w-2 h-1 sm:h-1.5 bg-muted-foreground/20"
                   }`}
                 />
               </div>
