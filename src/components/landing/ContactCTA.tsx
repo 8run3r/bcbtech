@@ -9,8 +9,8 @@ const ContactCTA = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
+          viewport={{ once: true }}>
+
           <span className="text-xs uppercase tracking-[0.2em] text-primary mb-6 block font-mono">
             [ Kontakt ]
           </span>
@@ -26,22 +26,22 @@ const ContactCTA = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
             <Link
               to="/kontakt"
-              className="group bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500 inline-flex items-center gap-2"
-            >
+              className="group bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500 inline-flex items-center gap-2">
+
               Začať projekt
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
               href="mailto:hello@brunertech.sk"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              hello@brunertech.sk
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              8run3r@gmail.com
+
             </a>
           </div>
         </motion.div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default ContactCTA;
