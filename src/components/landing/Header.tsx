@@ -39,7 +39,15 @@ const Header = () => {
     >
       <div className="max-w-[1400px] mx-auto flex items-center justify-between px-8">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold tracking-tight z-10">
+        <Link
+          to="/"
+          onClick={() => {
+            if (location.pathname === "/") {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+          className="text-xl font-bold tracking-tight z-10"
+        >
           <span className="text-primary">Bruner</span>
           <span className="text-foreground"> Tech</span>
         </Link>
