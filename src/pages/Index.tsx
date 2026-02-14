@@ -10,6 +10,7 @@ import ContactCTA from "@/components/landing/ContactCTA";
 import Footer from "@/components/landing/Footer";
 import ParticleField from "@/components/landing/ParticleField";
 import FluidCursor from "@/components/landing/FluidCursor";
+import ExitIntentPopup from "@/components/landing/ExitIntentPopup";
 
 const Index = () => {
   const [particlesEnded, setParticlesEnded] = useState(false);
@@ -56,6 +57,7 @@ const Index = () => {
         <CameraServices />
         <ContactCTA />
         <Footer />
+        <ExitIntentPopup />
       </div>
     </main>
   );
