@@ -45,7 +45,7 @@ const slides: StorySlide[] = [
 /* ─────────────────────────────────────────
    3D Laptop (Web section)
    ───────────────────────────────────────── */
-const Laptop = ({ progress }: { progress: number }) => {
+const Laptop = ({ progress, isMobile }: { progress: number; isMobile: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
   const lidRef = useRef<THREE.Group>(null);
 
@@ -205,7 +205,7 @@ const Laptop = ({ progress }: { progress: number }) => {
 
   return (
     <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.4}>
-      <group ref={groupRef} position={[4, 0, 0]}>
+      <group ref={groupRef} position={isMobile ? [2, 0.5, 0] : [4, 0, 0]} scale={isMobile ? 0.55 : 1}>
         {/* Base / Keyboard area */}
         <RoundedBox args={[3.4, 0.08, 2.0]} radius={0.04} position={[0, -0.45, 0.9]}>
           <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.7} />
@@ -420,7 +420,7 @@ const SecurityCamera = () => {
 /* ─────────────────────────────────────────
    3D Server Rack (Infrastructure section)
    ───────────────────────────────────────── */
-const ServerRack = () => {
+const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
   const groupRef = useRef<THREE.Group>(null);
   const ledRefs = useRef<THREE.Mesh[]>([]);
 
@@ -444,7 +444,7 @@ const ServerRack = () => {
 
   return (
     <Float speed={0.6} rotationIntensity={0.08} floatIntensity={0.3}>
-      <group ref={groupRef} position={[-4, 0, 0]}>
+      <group ref={groupRef} position={isMobile ? [-2, 0, 0] : [-4, 0, 0]} scale={isMobile ? 0.6 : 1}>
         {/* Rack frame */}
         <RoundedBox args={[1.8, 3.2, 1.0]} radius={0.04} position={[0, 0, 0]}>
           <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.85} />
@@ -520,11 +520,28 @@ const ServerRack = () => {
 /* ─────────────────────────────────────────
    Camera Controller (scroll-driven)
    ───────────────────────────────────────── */
-const CameraController = ({ progress }: { progress: number }) => {
+const CameraController = ({ progress, isMobile }: { progress: number; isMobile: boolean }) => {
   const { camera } = useThree();
   const targetPos = useRef(new THREE.Vector3(0, 0, 5));
   const targetLook = useRef(new THREE.Vector3(0, 0, 0));
   const currentLook = useRef(new THREE.Vector3(0, 0, 0));
+
+  // Mobile-adjusted slide camera positions
+  const getSlidePositions = (slide: StorySlide, idx: number) => {
+    if (!isMobile) return { pos: slide.cameraPos, look: slide.cameraLookAt };
+    // On mobile, bring cameras closer and more centered
+    const mobilePositions: [number, number, number][] = [
+      [0, 0.3, 5],    // Camera slide - slightly further
+      [2, 0.5, 5],    // Laptop - more centered, further back
+      [-2, 0, 5],     // Server - more centered, further back
+    ];
+    const mobileLookAts: [number, number, number][] = [
+      [0, 0, 0],
+      [2, 0, 0],
+      [-2, 0, 0],
+    ];
+    return { pos: mobilePositions[idx] || slide.cameraPos, look: mobileLookAts[idx] || slide.cameraLookAt };
+  };
 
   useFrame(() => {
     const totalSlides = slides.length;
@@ -532,21 +549,21 @@ const CameraController = ({ progress }: { progress: number }) => {
     const idx = Math.min(Math.floor(raw), totalSlides - 2);
     const t = raw - idx;
 
-    const from = slides[idx];
-    const to = slides[idx + 1] || slides[idx];
+    const fromData = getSlidePositions(slides[idx], idx);
+    const toData = getSlidePositions(slides[idx + 1] || slides[idx], idx + 1);
 
     const ease = t * t * (3 - 2 * t);
 
     targetPos.current.set(
-      THREE.MathUtils.lerp(from.cameraPos[0], to.cameraPos[0], ease),
-      THREE.MathUtils.lerp(from.cameraPos[1], to.cameraPos[1], ease),
-      THREE.MathUtils.lerp(from.cameraPos[2], to.cameraPos[2], ease)
+      THREE.MathUtils.lerp(fromData.pos[0], toData.pos[0], ease),
+      THREE.MathUtils.lerp(fromData.pos[1], toData.pos[1], ease),
+      THREE.MathUtils.lerp(fromData.pos[2], toData.pos[2], ease)
     );
 
     targetLook.current.set(
-      THREE.MathUtils.lerp(from.cameraLookAt[0], to.cameraLookAt[0], ease),
-      THREE.MathUtils.lerp(from.cameraLookAt[1], to.cameraLookAt[1], ease),
-      THREE.MathUtils.lerp(from.cameraLookAt[2], to.cameraLookAt[2], ease)
+      THREE.MathUtils.lerp(fromData.look[0], toData.look[0], ease),
+      THREE.MathUtils.lerp(fromData.look[1], toData.look[1], ease),
+      THREE.MathUtils.lerp(fromData.look[2], toData.look[2], ease)
     );
 
     camera.position.lerp(targetPos.current, 0.06);
@@ -602,9 +619,12 @@ const FloatingParticles = () => {
    3D Scene
    ───────────────────────────────────────── */
 const Scene3D = ({ progress }: { progress: number }) => {
+  const { viewport } = useThree();
+  const isMobile = viewport.width < 8;
+
   return (
     <>
-      <CameraController progress={progress} />
+      <CameraController progress={progress} isMobile={isMobile} />
 
       <ambientLight intensity={0.25} />
       <directionalLight position={[5, 5, 5]} intensity={0.7} />
@@ -615,8 +635,8 @@ const Scene3D = ({ progress }: { progress: number }) => {
 
       {/* Contextual 3D objects */}
       <SecurityCamera />
-      <Laptop progress={progress} />
-      <ServerRack />
+      <Laptop progress={progress} isMobile={isMobile} />
+      <ServerRack isMobile={isMobile} />
     </>
   );
 };
