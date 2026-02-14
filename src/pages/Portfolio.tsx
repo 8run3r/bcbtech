@@ -27,7 +27,7 @@ const fallbackProjects: PortfolioItem[] = [
 
 const Portfolio = () => {
   const [items, setItems] = useState<PortfolioItem[]>(fallbackProjects);
-  const [filter, setFilter] = useState<"all" | "web" | "camera">("all");
+  const [filter, setFilter] = useState<"web" | "camera">("camera");
 
   useEffect(() => {
     supabase.from("portfolio_items").select("*").order("sort_order").then(({ data }) => {
@@ -35,7 +35,7 @@ const Portfolio = () => {
     });
   }, []);
 
-  const filtered = filter === "all" ? items : items.filter(i => i.type === filter);
+  const filtered = items.filter(i => i.type === filter);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -52,16 +52,15 @@ const Portfolio = () => {
               Naše projekty
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mb-10">
-              Weby, aplikácie a kamerové inštalácie — všetko na jednom mieste.
+              Zabezpečenie a digitálne riešenia — vyberte si kategóriu.
             </p>
           </motion.div>
 
           {/* Filter tabs */}
           <div className="flex gap-2 mb-12">
             {([
-              { key: "all", label: "Všetko", icon: null },
+              { key: "camera", label: "Kamery & Zabezpečenie", icon: Camera },
               { key: "web", label: "Weby & Appky", icon: Code2 },
-              { key: "camera", label: "Kamery", icon: Camera },
             ] as const).map(f => (
               <button
                 key={f.key}
@@ -72,7 +71,7 @@ const Portfolio = () => {
                     : "text-muted-foreground hover:text-foreground border border-border/50"
                 }`}
               >
-                {f.icon && <f.icon size={14} />}
+                <f.icon size={14} />
                 {f.label}
               </button>
             ))}
