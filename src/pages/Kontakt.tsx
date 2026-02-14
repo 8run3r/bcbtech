@@ -32,7 +32,7 @@ const Kontakt = () => {
           >
             <div className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border">
               <Mail className="text-primary mb-3" size={24} strokeWidth={1.5} />
-              <span className="text-sm text-muted-foreground">hello@nexsol.dev</span>
+              <span className="text-sm text-muted-foreground">hello@brunertech.sk</span>
             </div>
             <div className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border">
               <Phone className="text-primary mb-3" size={24} strokeWidth={1.5} />
