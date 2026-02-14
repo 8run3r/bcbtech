@@ -8,9 +8,13 @@ import { useRef, useEffect, useCallback } from "react";
 
 interface FluidCursorProps {
   className?: string;
+  /** Number of blobs (default 6) */
+  blobCount?: number;
+  /** Opacity multiplier 0-1 (default 1) */
+  intensity?: number;
 }
 
-const FluidCursor = ({ className = "" }: FluidCursorProps) => {
+const FluidCursor = ({ className = "", blobCount = 6, intensity = 1 }: FluidCursorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const mouseRef = useRef({ x: 0, y: 0, px: 0, py: 0, down: false });
@@ -20,7 +24,7 @@ const FluidCursor = ({ className = "" }: FluidCursorProps) => {
 
   const initBlobs = useCallback((w: number, h: number) => {
     const blobs = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < blobCount; i++) {
       blobs.push({
         x: Math.random() * w,
         y: Math.random() * h,
@@ -31,7 +35,7 @@ const FluidCursor = ({ className = "" }: FluidCursorProps) => {
       });
     }
     return blobs;
-  }, []);
+  }, [blobCount]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -90,9 +94,10 @@ const FluidCursor = ({ className = "" }: FluidCursorProps) => {
           blob.x, blob.y, 0,
           blob.x, blob.y, blob.radius
         );
-        gradient.addColorStop(0, `hsla(${blob.hue}, 90%, 50%, 0.12)`);
-        gradient.addColorStop(0.4, `hsla(${blob.hue}, 85%, 45%, 0.07)`);
-        gradient.addColorStop(0.7, `hsla(${blob.hue}, 80%, 40%, 0.03)`);
+        const a = intensity;
+        gradient.addColorStop(0, `hsla(${blob.hue}, 90%, 50%, ${0.12 * a})`);
+        gradient.addColorStop(0.4, `hsla(${blob.hue}, 85%, 45%, ${0.07 * a})`);
+        gradient.addColorStop(0.7, `hsla(${blob.hue}, 80%, 40%, ${0.03 * a})`);
         gradient.addColorStop(1, `hsla(${blob.hue}, 80%, 40%, 0)`);
 
         ctx.beginPath();
@@ -102,9 +107,10 @@ const FluidCursor = ({ className = "" }: FluidCursorProps) => {
       }
 
       // Extra cursor-following blob (brighter, smaller)
+      const ca = intensity;
       const cursorGrad = ctx.createRadialGradient(mx, my, 0, mx, my, w * 0.18);
-      cursorGrad.addColorStop(0, "hsla(155, 95%, 55%, 0.18)");
-      cursorGrad.addColorStop(0.5, "hsla(155, 90%, 48%, 0.06)");
+      cursorGrad.addColorStop(0, `hsla(155, 95%, 55%, ${0.18 * ca})`);
+      cursorGrad.addColorStop(0.5, `hsla(155, 90%, 48%, ${0.06 * ca})`);
       cursorGrad.addColorStop(1, "hsla(155, 80%, 40%, 0)");
       ctx.beginPath();
       ctx.arc(mx, my, w * 0.18, 0, Math.PI * 2);
