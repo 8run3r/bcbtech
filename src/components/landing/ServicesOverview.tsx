@@ -71,7 +71,7 @@ const ServicesOverview = () => {
               </div>
 
               <Link
-                to="/balicky"
+                to="/balicky?tab=web"
                 className="inline-flex items-center gap-2 text-sm text-primary hover:text-foreground transition-colors group/link"
               >
                 Pozrieť balíčky
