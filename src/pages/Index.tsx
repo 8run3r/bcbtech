@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
-import Marquee from "@/components/landing/Marquee";
+
 import ScrollStory from "@/components/landing/ScrollStory";
 import ServicesOverview from "@/components/landing/ServicesOverview";
 import BeforeAfter from "@/components/landing/BeforeAfter";
@@ -48,7 +48,7 @@ const Index = () => {
       <div className="relative z-10">
         <Header />
         <Hero />
-        <Marquee />
+        
         <div ref={scrollStoryRef}>
           <ScrollStory />
         </div>
