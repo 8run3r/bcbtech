@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import beforeImg from "@/assets/before-cameras.jpg";
 import afterImg from "@/assets/after-cameras.jpg";
@@ -15,10 +15,25 @@ const BeforeAfter = () => {
     setSliderPos((x / rect.width) * 100);
   }, []);
 
-  const onPointerDown = () => { isDragging.current = true; };
-  const onPointerUp = () => { isDragging.current = false; };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (isDragging.current) updateSlider(e.clientX);
+  // Use window-level listeners so dragging works even when cursor leaves the container
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (isDragging.current) updateSlider(e.clientX);
+    };
+    const onUp = () => { isDragging.current = false; };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [updateSlider]);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    isDragging.current = true;
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    updateSlider(e.clientX);
   };
 
   return (
@@ -47,38 +62,30 @@ const BeforeAfter = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           ref={containerRef}
-          className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-col-resize select-none border border-border/30"
+          className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-col-resize select-none border border-border/30 touch-none"
           onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
-          onPointerMove={onPointerMove}
-          onClick={(e) => updateSlider(e.clientX)}
         >
           {/* After image (full background) */}
           <img
             src={afterImg}
             alt="Po inštalácii"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             draggable={false}
           />
 
-          {/* Before image (clipped) */}
-          <div
-            className="absolute inset-0 overflow-hidden"
-            style={{ width: `${sliderPos}%` }}
-          >
+          {/* Before image (clipped via clip-path for pixel-perfect alignment) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}>
             <img
               src={beforeImg}
               alt="Pred inštaláciou"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ width: `${containerRef.current?.offsetWidth || 1000}px`, maxWidth: "none" }}
               draggable={false}
             />
           </div>
 
           {/* Slider line */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-primary z-10"
+            className="absolute top-0 bottom-0 w-0.5 bg-primary z-10 pointer-events-none"
             style={{ left: `${sliderPos}%` }}
           >
             {/* Handle */}
@@ -91,10 +98,10 @@ const BeforeAfter = () => {
           </div>
 
           {/* Labels */}
-          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full z-20">
+          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full z-20 pointer-events-none">
             Pred
           </div>
-          <div className="absolute top-4 right-4 bg-primary/90 text-primary-foreground text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full z-20">
+          <div className="absolute top-4 right-4 bg-primary/90 text-primary-foreground text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full z-20 pointer-events-none">
             Po
           </div>
         </motion.div>
