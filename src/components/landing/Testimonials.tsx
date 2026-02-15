@@ -66,20 +66,27 @@ const Testimonials = () => {
   const words = current.quote.split(" ");
 
   return (
-    <section className="relative py-32 px-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[80px_1fr] gap-8 lg:gap-12">
-          {/* Vertical label */}
-          <div className="hidden lg:flex items-center justify-center">
+    <section className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden">
+      <div className="max-w-5xl mx-auto">
+        {/* Mobile label */}
+        <div className="lg:hidden mb-6">
+          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground font-mono">
+            Testimonials
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[60px_1fr] gap-4 lg:gap-8">
+          {/* Vertical label — desktop only */}
+          <div className="hidden lg:flex items-start pt-16 justify-center">
             <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground font-mono -rotate-90 whitespace-nowrap">
               Testimonials
             </span>
           </div>
 
           {/* Main content */}
-          <div>
+          <div className="min-w-0">
             {/* Company badge + counter */}
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.company}
@@ -87,12 +94,12 @@ const Testimonials = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="px-4 py-1.5 rounded-full border border-border bg-card/50 text-xs font-medium text-muted-foreground"
+                  className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-border bg-card/50 text-[11px] sm:text-xs font-medium text-muted-foreground"
                 >
                   {current.company}
                 </motion.div>
               </AnimatePresence>
-              <span className="text-sm font-mono text-muted-foreground">
+              <span className="text-xs sm:text-sm font-mono text-muted-foreground">
                 <span className="text-primary">
                   {String(active + 1).padStart(2, "0")}
                 </span>
@@ -101,7 +108,7 @@ const Testimonials = () => {
             </div>
 
             {/* Quote with word-by-word animation */}
-            <div className="mb-12 min-h-[180px] sm:min-h-[140px]">
+            <div className="mb-8 sm:mb-12 min-h-[120px] sm:min-h-[140px]">
               <AnimatePresence mode="wait">
                 <motion.blockquote
                   key={active}
@@ -109,7 +116,7 @@ const Testimonials = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="text-[clamp(1.5rem,4vw,3rem)] font-bold tracking-tight leading-[1.15]"
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2] sm:leading-[1.15] break-words"
                 >
                   {words.map((word, i) => (
                     <motion.span
@@ -121,7 +128,7 @@ const Testimonials = () => {
                         duration: 0.4,
                         ease: "easeOut",
                       }}
-                      className="inline-block mr-[0.3em]"
+                      className="inline-block mr-[0.25em]"
                     >
                       {word}
                     </motion.span>
@@ -138,7 +145,7 @@ const Testimonials = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
-                className="mb-16"
+                className="mb-10 sm:mb-16"
               >
                 <p className="text-sm font-semibold text-foreground">
                   {current.author}
@@ -150,7 +157,7 @@ const Testimonials = () => {
             </AnimatePresence>
 
             {/* Navigation dots */}
-            <div className="flex gap-2 mb-10">
+            <div className="flex gap-2 mb-8 sm:mb-10">
               {testimonials.map((_, i) => (
                 <button
                   key={i}
@@ -158,8 +165,8 @@ const Testimonials = () => {
                   className={cn(
                     "h-1 rounded-full transition-all duration-500",
                     i === active
-                      ? "w-10 bg-primary"
-                      : "w-4 bg-border hover:bg-muted-foreground/40"
+                      ? "w-8 sm:w-10 bg-primary"
+                      : "w-3 sm:w-4 bg-border hover:bg-muted-foreground/40"
                   )}
                   aria-label={`Testimonial ${i + 1}`}
                 />
@@ -167,9 +174,9 @@ const Testimonials = () => {
             </div>
 
             {/* Company ticker */}
-            <div className="overflow-hidden border-t border-border pt-6">
+            <div className="overflow-hidden border-t border-border pt-4 sm:pt-6">
               <motion.div
-                animate={{ x: [0, -50 * companies.length] }}
+                animate={{ x: ["0%", "-50%"] }}
                 transition={{
                   x: {
                     repeat: Infinity,
@@ -178,13 +185,13 @@ const Testimonials = () => {
                     ease: "linear",
                   },
                 }}
-                className="flex gap-8 whitespace-nowrap"
+                className="flex gap-6 sm:gap-8 whitespace-nowrap"
               >
                 {[...companies, ...companies, ...companies, ...companies].map(
                   (company, i) => (
                     <span
                       key={i}
-                      className="text-xs text-muted-foreground/40 font-medium uppercase tracking-widest"
+                      className="text-[10px] sm:text-xs text-muted-foreground/40 font-medium uppercase tracking-widest"
                     >
                       {company}
                     </span>
