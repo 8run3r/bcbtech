@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings2 } from "lucide-react";
+import KonfiguratorModal from "@/components/KonfiguratorModal";
 
 
 const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
@@ -25,6 +26,7 @@ const Kamery = () => {
   const [products, setProducts] = useState<CameraProduct[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("Všetky");
   const [categories, setCategories] = useState<string[]>([]);
+  const [konfiguratorOpen, setKonfiguratorOpen] = useState(false);
 
   useEffect(() => {
     supabase.from("camera_products").select("*").order("sort_order").then(({ data }) => {
@@ -58,13 +60,13 @@ const Kamery = () => {
             <p className="text-lg text-muted-foreground max-w-lg leading-relaxed mx-auto">
               Profesionálna montáž, konfigurácia a servis bezpečnostných kamerových systémov — Hikvision, Dahua, Uniview a ďalšie.
             </p>
-            <Link
-              to="/konfigurator"
+            <button
+              onClick={() => setKonfiguratorOpen(true)}
               className="mt-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
             >
               <Settings2 size={18} />
               Konfigurátor systému
-            </Link>
+            </button>
           </motion.div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
@@ -131,7 +133,7 @@ const Kamery = () => {
         </section>
       )}
 
-      <CameraServices />
+      <CameraServices onOpenKonfigurator={() => setKonfiguratorOpen(true)} />
 
       {/* Brands Section */}
       <section className="py-20 px-6">
@@ -156,6 +158,7 @@ const Kamery = () => {
         </div>
       </section>
 
+      <KonfiguratorModal open={konfiguratorOpen} onClose={() => setKonfiguratorOpen(false)} />
       <Footer />
     </main>
   );

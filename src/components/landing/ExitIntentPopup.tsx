@@ -76,11 +76,11 @@ const ExitIntentPopup = () => {
                 </Link>
 
                 <Link
-                  to="/konfigurator"
+                  to="/kamery"
                   onClick={close}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-border text-foreground font-medium text-sm hover:border-primary/40 hover:bg-primary/5 transition-all"
                 >
-                  Nakonfigurovať systém
+                  Pozrieť kamery
                 </Link>
               </div>
 
