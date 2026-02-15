@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Camera, Monitor } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import FluidCursor from "@/components/landing/FluidCursor";
@@ -141,7 +141,9 @@ const PackageCard = ({ pkg, i, cta, ctaLink }: { pkg: any; i: number; cta: strin
 );
 
 const Packages = () => {
-  const [activeTab, setActiveTab] = useState<"cameras" | "web">("cameras");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "web" ? "web" : "cameras";
+  const [activeTab, setActiveTab] = useState<"cameras" | "web">(initialTab);
 
   return (
     <main className="min-h-screen bg-background text-foreground relative">
