@@ -606,62 +606,134 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
     if (el) ledRefs.current[i] = el;
   };
 
+  // Cable paths — bundles of ethernet/power cables inside the rack
+  const cables = useMemo(() => {
+    const cableData: { points: [number, number, number][]; color: string }[] = [];
+    const cableColors = ["#1a6bff", "#ffaa00", "#00ccaa", "#ff4466", "#8844ff", "#44cc44", "#cc8800", "#4488ff"];
+    // Vertical cable bundles on the back-left
+    for (let c = 0; c < 8; c++) {
+      const xBase = -0.55 + (c % 4) * 0.06;
+      const zBase = -0.25 + Math.floor(c / 4) * 0.12;
+      const pts: [number, number, number][] = [];
+      // Goes from top connector down to bottom, with slight S-curves
+      for (let s = 0; s <= 10; s++) {
+        const t = s / 10;
+        const y = 1.4 - t * 2.8;
+        const xWobble = Math.sin(t * Math.PI * 2 + c * 0.8) * 0.03;
+        const zWobble = Math.cos(t * Math.PI * 1.5 + c * 1.2) * 0.02;
+        pts.push([xBase + xWobble, y, zBase + zWobble]);
+      }
+      cableData.push({ points: pts, color: cableColors[c] });
+    }
+    // Horizontal patch cables connecting servers to vertical bundle
+    for (let s = 0; s < 6; s++) {
+      const y = 1.3 - s * 0.48;
+      for (let p = 0; p < 2; p++) {
+        const pts: [number, number, number][] = [];
+        const startX = 0.5 + p * 0.12;
+        const endX = -0.45 + p * 0.04;
+        const midDrop = -0.04 + Math.random() * 0.08;
+        pts.push([startX, y - 0.05, -0.1]);
+        pts.push([startX * 0.5 + endX * 0.5, y + midDrop, -0.2]);
+        pts.push([endX, y, -0.25]);
+        cableData.push({ points: pts, color: cableColors[(s * 2 + p) % 8] });
+      }
+    }
+    return cableData;
+  }, []);
+
   return (
     <Float speed={0.6} rotationIntensity={0.08} floatIntensity={0.3}>
       <group ref={groupRef} position={isMobile ? [-2, 0, 0] : [-4, 0, 0]} scale={isMobile ? 0.6 : 1}>
-        {/* Rack frame — outer shell */}
-        <RoundedBox args={[1.9, 3.4, 1.1]} radius={0.03} position={[0, 0, 0]}>
-          <meshStandardMaterial color="#141414" roughness={0.25} metalness={0.9} />
-        </RoundedBox>
-        <RoundedBox args={[1.7, 3.2, 1.0]} radius={0.02} position={[0, 0, 0.02]}>
-          <meshStandardMaterial color="#0a0a0a" roughness={0.8} metalness={0.3} />
-        </RoundedBox>
 
-        {/* Vertical rack rails */}
-        {[-0.82, 0.82].map((x, i) => (
-          <mesh key={`rail-${i}`} position={[x, 0, 0.52]}>
-            <boxGeometry args={[0.04, 3.3, 0.02]} />
+        {/* ── Metal frame (4 vertical posts + top/bottom rails) ── */}
+        {/* Vertical corner posts */}
+        {[[-0.9, -0.4], [-0.9, 0.4], [0.9, -0.4], [0.9, 0.4]].map(([x, z], i) => (
+          <mesh key={`post-${i}`} position={[x, 0, z]}>
+            <boxGeometry args={[0.06, 3.4, 0.06]} />
+            <meshStandardMaterial color="#222" roughness={0.2} metalness={0.9} />
+          </mesh>
+        ))}
+        {/* Top frame rails */}
+        {[[-0.4, 0.4], [-0.4, -0.4], [0.4, 0.4], [0.4, -0.4]].map(([z1], i) => (
+          <mesh key={`toprail-${i}`} position={[0, 1.7, i < 2 ? -0.4 : 0.4]} rotation={[0, 0, Math.PI / 2]}>
+            <boxGeometry args={[0.04, 1.8, 0.04]} />
+            <meshStandardMaterial color="#252525" roughness={0.2} metalness={0.85} />
+          </mesh>
+        ))}
+        {/* Bottom frame rails */}
+        {[0.4, -0.4].map((z, i) => (
+          <mesh key={`botrail-${i}`} position={[0, -1.7, z]} rotation={[0, 0, Math.PI / 2]}>
+            <boxGeometry args={[0.04, 1.8, 0.04]} />
+            <meshStandardMaterial color="#252525" roughness={0.2} metalness={0.85} />
+          </mesh>
+        ))}
+        {/* Side connecting rails */}
+        {[[-0.9, 1.7], [-0.9, -1.7], [0.9, 1.7], [0.9, -1.7]].map(([x, y], i) => (
+          <mesh key={`siderail-${i}`} position={[x, y, 0]}>
+            <boxGeometry args={[0.06, 0.04, 0.84]} />
+            <meshStandardMaterial color="#252525" roughness={0.2} metalness={0.85} />
+          </mesh>
+        ))}
+
+        {/* ── Glass side panels (transparent) ── */}
+        {/* Left glass panel */}
+        <mesh position={[-0.92, 0, 0]}>
+          <boxGeometry args={[0.02, 3.3, 0.78]} />
+          <meshStandardMaterial color="#1a3040" roughness={0.05} metalness={0.1} transparent opacity={0.15} />
+        </mesh>
+        {/* Right glass panel */}
+        <mesh position={[0.92, 0, 0]}>
+          <boxGeometry args={[0.02, 3.3, 0.78]} />
+          <meshStandardMaterial color="#1a3040" roughness={0.05} metalness={0.1} transparent opacity={0.15} />
+        </mesh>
+        {/* Back panel — slightly more opaque mesh */}
+        <mesh position={[0, 0, -0.42]}>
+          <boxGeometry args={[1.78, 3.3, 0.02]} />
+          <meshStandardMaterial color="#0a0a0a" roughness={0.6} metalness={0.4} transparent opacity={0.4} />
+        </mesh>
+
+        {/* ── Top panel — perforated ── */}
+        <mesh position={[0, 1.71, 0]}>
+          <boxGeometry args={[1.82, 0.02, 0.82]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
+        </mesh>
+
+        {/* ── Rack rails (inner) ── */}
+        {[-0.75, 0.75].map((x, i) => (
+          <mesh key={`innerrail-${i}`} position={[x, 0, 0.35]}>
+            <boxGeometry args={[0.03, 3.2, 0.02]} />
             <meshStandardMaterial color="#333" roughness={0.2} metalness={0.85} />
           </mesh>
         ))}
-        {/* Rail holes */}
-        {[-0.82, 0.82].map((x) =>
-          Array.from({ length: 20 }).map((_, i) => (
-            <mesh key={`rh-${x}-${i}`} position={[x, -1.4 + i * 0.15, 0.53]}>
-              <boxGeometry args={[0.02, 0.04, 0.005]} />
-              <meshStandardMaterial color="#1a1a1a" roughness={0.5} metalness={0.7} />
-            </mesh>
-          ))
-        )}
 
-        {/* Server units (6 units stacked) */}
+        {/* ── Server units (6 units) — properly mounted to rails ── */}
         {Array.from({ length: 6 }).map((_, i) => {
-          const isSpecial = i === 1 || i === 4;
-          const unitColor = isSpecial ? "#1e1e1e" : "#161616";
-          const faceColor = isSpecial ? "#1a1a1a" : "#131313";
-          
+          const y = 1.3 - i * 0.48;
           return (
-            <group key={i} position={[0, 1.3 - i * 0.48, 0.05]}>
-              <RoundedBox args={[1.6, 0.38, 0.95]} radius={0.015}>
-                <meshStandardMaterial color={unitColor} roughness={0.35} metalness={0.75} />
+            <group key={i} position={[0, y, 0.1]}>
+              {/* Server body — sits between rails */}
+              <RoundedBox args={[1.45, 0.36, 0.6]} radius={0.01}>
+                <meshStandardMaterial color={i % 2 === 0 ? "#161616" : "#1a1a1a"} roughness={0.35} metalness={0.75} />
               </RoundedBox>
-              <mesh position={[0, 0, 0.48]}>
-                <planeGeometry args={[1.55, 0.34]} />
-                <meshStandardMaterial color={faceColor} roughness={0.4} metalness={0.65} />
+              {/* Front face plate */}
+              <mesh position={[0, 0, 0.31]}>
+                <planeGeometry args={[1.42, 0.33]} />
+                <meshStandardMaterial color="#131313" roughness={0.4} metalness={0.65} />
               </mesh>
               {/* Vent perforation */}
-              {Array.from({ length: 10 }).map((_, v) => (
-                <mesh key={v} position={[0.2 + v * 0.09, 0, 0.482]}>
-                  <planeGeometry args={[0.035, 0.22]} />
+              {Array.from({ length: 8 }).map((_, v) => (
+                <mesh key={v} position={[0.15 + v * 0.1, 0, 0.315]}>
+                  <planeGeometry args={[0.04, 0.2]} />
                   <meshStandardMaterial color="#0b0b0b" roughness={0.9} />
                 </mesh>
               ))}
-              {/* Status LEDs */}
-              <mesh ref={(el) => setLedRef(el, i * 2)} position={[-0.68, 0.06, 0.482]}>
+              {/* Status LEDs — green + amber/blue */}
+              <mesh ref={(el) => setLedRef(el, i * 2)} position={[-0.62, 0.06, 0.315]}>
                 <sphereGeometry args={[0.018, 10, 10]} />
                 <meshStandardMaterial color="#00ffaa" emissive="#00ffaa" emissiveIntensity={2} toneMapped={false} />
               </mesh>
-              <mesh ref={(el) => setLedRef(el, i * 2 + 1)} position={[-0.68, -0.04, 0.482]}>
+              <mesh ref={(el) => setLedRef(el, i * 2 + 1)} position={[-0.62, -0.04, 0.315]}>
                 <sphereGeometry args={[0.018, 10, 10]} />
                 <meshStandardMaterial
                   color={i === 3 ? "#f59e0b" : i === 5 ? "#3b82f6" : "#00ffaa"}
@@ -670,44 +742,84 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
                   toneMapped={false}
                 />
               </mesh>
-              {/* Drive bay handle */}
-              <mesh position={[-0.58, 0, 0.482]}>
-                <boxGeometry args={[0.045, 0.18, 0.008]} />
+              {/* Drive handle */}
+              <mesh position={[-0.52, 0, 0.315]}>
+                <boxGeometry args={[0.04, 0.16, 0.008]} />
                 <meshStandardMaterial color="#2a2a2a" roughness={0.2} metalness={0.85} />
               </mesh>
-              <mesh position={[-0.55, 0.06, 0.485]}>
-                <boxGeometry args={[0.015, 0.03, 0.005]} />
-                <meshStandardMaterial color="#444" roughness={0.2} metalness={0.8} />
-              </mesh>
-              {/* Port indicators */}
-              {Array.from({ length: 2 }).map((_, p) => (
-                <mesh key={`port-${p}`} position={[0.7, 0.04 - p * 0.08, 0.482]}>
-                  <boxGeometry args={[0.04, 0.02, 0.005]} />
-                  <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.7} />
+              {/* Mounting ears (attach to rails) */}
+              {[-0.74, 0.74].map((mx, mi) => (
+                <mesh key={`ear-${mi}`} position={[mx, 0, 0.34]}>
+                  <boxGeometry args={[0.04, 0.32, 0.02]} />
+                  <meshStandardMaterial color="#282828" roughness={0.25} metalness={0.8} />
                 </mesh>
               ))}
-              {/* Unit label plate */}
-              <mesh position={[-0.3, -0.12, 0.482]}>
-                <planeGeometry args={[0.18, 0.04]} />
-                <meshStandardMaterial color="#1e1e1e" roughness={0.3} metalness={0.6} />
-              </mesh>
+              {/* Ear screws */}
+              {[-0.74, 0.74].map((mx) =>
+                [-0.1, 0.1].map((my, si) => (
+                  <mesh key={`screw-${mx}-${si}`} position={[mx, my, 0.352]}>
+                    <cylinderGeometry args={[0.008, 0.008, 0.005, 6]} />
+                    <meshStandardMaterial color="#555" roughness={0.2} metalness={0.9} />
+                  </mesh>
+                ))
+              )}
             </group>
           );
         })}
 
-        {/* Top panel with ventilation */}
-        <mesh position={[0, 1.7, 0]}>
-          <boxGeometry args={[1.85, 0.02, 1.05]} />
-          <meshStandardMaterial color="#181818" roughness={0.3} metalness={0.85} />
-        </mesh>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <mesh key={`topvent-${i}`} position={[-0.5 + i * 0.14, 1.71, 0]}>
-            <boxGeometry args={[0.06, 0.005, 0.6]} />
-            <meshStandardMaterial color="#0d0d0d" roughness={0.8} />
+        {/* ── Internal cables (visible through glass) ── */}
+        {cables.map((cable, ci) => {
+          // Render each cable as a series of connected cylinders
+          return cable.points.slice(0, -1).map((pt, pi) => {
+            const next = cable.points[pi + 1];
+            const dx = next[0] - pt[0];
+            const dy = next[1] - pt[1];
+            const dz = next[2] - pt[2];
+            const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const midX = (pt[0] + next[0]) / 2;
+            const midY = (pt[1] + next[1]) / 2;
+            const midZ = (pt[2] + next[2]) / 2;
+            // Direction angles
+            const rotX = Math.atan2(dz, dy);
+            const rotZ = Math.atan2(dx, Math.sqrt(dy * dy + dz * dz));
+            return (
+              <mesh key={`cable-${ci}-${pi}`} position={[midX, midY, midZ]} rotation={[rotX, 0, -rotZ]}>
+                <cylinderGeometry args={[0.012, 0.012, len, 4]} />
+                <meshStandardMaterial color={cable.color} roughness={0.6} metalness={0.15} />
+              </mesh>
+            );
+          });
+        })}
+
+        {/* ── Cable management clips on back ── */}
+        {Array.from({ length: 5 }).map((_, i) => (
+          <mesh key={`clip-${i}`} position={[-0.5, 1.1 - i * 0.55, -0.32]}>
+            <boxGeometry args={[0.3, 0.04, 0.04]} />
+            <meshStandardMaterial color="#333" roughness={0.3} metalness={0.7} />
           </mesh>
         ))}
-        
-        <pointLight position={[0, 0, 1.5]} intensity={0.4} color="#00ffaa" distance={4} />
+
+        {/* ── Power distribution unit (vertical on back-right) ── */}
+        <mesh position={[0.6, 0, -0.3]}>
+          <boxGeometry args={[0.08, 2.8, 0.08]} />
+          <meshStandardMaterial color="#222" roughness={0.3} metalness={0.7} />
+        </mesh>
+        {/* PDU outlets */}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <mesh key={`outlet-${i}`} position={[0.6, 1.1 - i * 0.32, -0.26]}>
+            <boxGeometry args={[0.05, 0.06, 0.02]} />
+            <meshStandardMaterial color="#1a1a1a" roughness={0.5} metalness={0.5} />
+          </mesh>
+        ))}
+        {/* PDU power LED */}
+        <mesh position={[0.6, 1.35, -0.26]}>
+          <sphereGeometry args={[0.012, 8, 8]} />
+          <meshStandardMaterial color="#00ff55" emissive="#00ff55" emissiveIntensity={3} toneMapped={false} />
+        </mesh>
+
+        {/* ── Interior glow ── */}
+        <pointLight position={[0, 0, 0]} intensity={0.15} color="#00ffaa" distance={3} />
+        <pointLight position={[0, 0, 0.8]} intensity={0.3} color="#00ffaa" distance={4} />
       </group>
     </Float>
   );
