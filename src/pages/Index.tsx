@@ -4,15 +4,14 @@ import Hero from "@/components/landing/Hero";
 import Marquee from "@/components/landing/Marquee";
 import ScrollStory from "@/components/landing/ScrollStory";
 import ServicesOverview from "@/components/landing/ServicesOverview";
+import BeforeAfter from "@/components/landing/BeforeAfter";
 import PortfolioPreview from "@/components/landing/PortfolioPreview";
-import CameraServices from "@/components/landing/CameraServices";
+import FAQ from "@/components/landing/FAQ";
 import ContactCTA from "@/components/landing/ContactCTA";
 import Footer from "@/components/landing/Footer";
 import ParticleField from "@/components/landing/ParticleField";
 import FluidCursor from "@/components/landing/FluidCursor";
 import ExitIntentPopup from "@/components/landing/ExitIntentPopup";
-import BeforeAfter from "@/components/landing/BeforeAfter";
-import FAQ from "@/components/landing/FAQ";
 
 const Index = () => {
   const [particlesEnded, setParticlesEnded] = useState(false);
@@ -22,7 +21,6 @@ const Index = () => {
     const handleScroll = () => {
       if (!scrollStoryRef.current) return;
       const rect = scrollStoryRef.current.getBoundingClientRect();
-      // Particles end when ScrollStory bottom passes the viewport top
       setParticlesEnded(rect.bottom < window.innerHeight * 0.5);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -55,9 +53,8 @@ const Index = () => {
           <ScrollStory />
         </div>
         <ServicesOverview />
-        <PortfolioPreview />
-        <CameraServices />
         <BeforeAfter />
+        <PortfolioPreview />
         <FAQ />
         <ContactCTA />
         <Footer />
