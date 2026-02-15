@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import EncryptedText from "@/components/ui/encrypted-text";
 
 const Hero = () => {
   return (
@@ -19,7 +20,18 @@ const Hero = () => {
             transition={{ delay: 0.3 }}
             className="text-sm text-muted-foreground mb-8 tracking-[0.15em] uppercase font-mono">
 
-            <span className="text-primary/60">[</span> Digitálne štúdio + Kamerové systémy <span className="text-primary/60">]</span>
+            <span className="text-primary/60">[</span>
+            {" "}
+            <EncryptedText
+              text="Digitálne štúdio + Kamerové systémy"
+              revealDelayMs={35}
+              flipDelayMs={30}
+              className="text-sm tracking-[0.15em]"
+              encryptedClassName="text-primary/40"
+              revealedClassName="text-muted-foreground"
+            />
+            {" "}
+            <span className="text-primary/60">]</span>
           </motion.p>
 
           <h1 className="text-[clamp(3rem,8vw,8rem)] font-bold leading-[0.85] tracking-tighter mb-10">
