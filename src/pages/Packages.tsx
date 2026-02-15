@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import { Check, Camera, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/landing/Header";
@@ -140,6 +141,8 @@ const PackageCard = ({ pkg, i, cta, ctaLink }: { pkg: any; i: number; cta: strin
 );
 
 const Packages = () => {
+  const [activeTab, setActiveTab] = useState<"cameras" | "web">("cameras");
+
   return (
     <main className="min-h-screen bg-background text-foreground relative">
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -154,7 +157,7 @@ const Packages = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-20"
+            className="text-center mb-12"
           >
             <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-6">
               Balíčky
@@ -164,71 +167,97 @@ const Packages = () => {
             </p>
           </motion.div>
 
-          {/* Kamerové balíčky */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <Camera size={24} className="text-primary" />
-            <h2 className="text-2xl font-bold">Kamerové systémy</h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-            {cameraPackages.map((pkg, i) => (
-              <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" ctaLink="/kontakt" />
-            ))}
-          </div>
-
-          {/* Web balíčky */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <Monitor size={24} className="text-primary" />
-            <h2 className="text-2xl font-bold">Web & Software</h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {webPackages.map((pkg, i) => (
-              <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" ctaLink="/kontakt" />
-            ))}
-          </div>
-
-          {/* Doplnkové služby */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-16 p-8 rounded-2xl border border-border bg-card/50"
-          >
-            <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-              <div>
-                <p className="font-semibold text-foreground mb-1">Servisný výjazd</p>
-                <p className="text-primary font-bold">od 45 €</p>
-                <p className="text-muted-foreground text-xs mt-1">Diagnostika, oprava, údržba</p>
-              </div>
-              <div>
-                <p className="font-semibold text-foreground mb-1">Rozšírenie systému</p>
-                <p className="text-primary font-bold">od 120 € / kamera</p>
-                <p className="text-muted-foreground text-xs mt-1">Doinštalovanie kamier do existujúceho systému</p>
-              </div>
-              <div>
-                <p className="font-semibold text-foreground mb-1">Mesačný monitoring</p>
-                <p className="text-primary font-bold">od 29 € / mes.</p>
-                <p className="text-muted-foreground text-xs mt-1">Vzdialený dohľad a správa systému</p>
-              </div>
-              <div>
-                <p className="font-semibold text-foreground mb-1">Servisná zmluva</p>
-                <p className="text-primary font-bold">od 19 € / mes.</p>
-                <p className="text-muted-foreground text-xs mt-1">Pravidelná údržba + prioritný servis</p>
-              </div>
+          {/* Tab switcher */}
+          <div className="flex justify-center mb-16">
+            <div className="inline-flex rounded-full border border-border bg-card p-1 gap-1">
+              <button
+                onClick={() => setActiveTab("cameras")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "cameras"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Camera size={18} />
+                Kamerové systémy
+              </button>
+              <button
+                onClick={() => setActiveTab("web")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "web"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Monitor size={18} />
+                Webové balíčky
+              </button>
             </div>
-          </motion.div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === "cameras" ? (
+              <motion.div
+                key="cameras"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                  {cameraPackages.map((pkg, i) => (
+                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" ctaLink="/kontakt" />
+                  ))}
+                </div>
+
+                {/* Doplnkové služby - only under cameras */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="p-8 rounded-2xl border border-border bg-card/50"
+                >
+                  <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Servisný výjazd</p>
+                      <p className="text-primary font-bold">od 45 €</p>
+                      <p className="text-muted-foreground text-xs mt-1">Diagnostika, oprava, údržba</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Rozšírenie systému</p>
+                      <p className="text-primary font-bold">od 120 € / kamera</p>
+                      <p className="text-muted-foreground text-xs mt-1">Doinštalovanie kamier do existujúceho systému</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Mesačný monitoring</p>
+                      <p className="text-primary font-bold">od 29 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Vzdialený dohľad a správa systému</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Servisná zmluva</p>
+                      <p className="text-primary font-bold">od 19 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Pravidelná údržba + prioritný servis</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="web"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {webPackages.map((pkg, i) => (
+                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" ctaLink="/kontakt" />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
