@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Camera, Shield, Eye, Wifi, MonitorPlay, Settings, Settings2 } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const cameraServices = [
   {
     icon: Camera,
@@ -35,7 +34,7 @@ const cameraServices = [
   },
 ];
 
-const CameraServices = () => {
+const CameraServices = ({ onOpenKonfigurator }: { onOpenKonfigurator?: () => void }) => {
   return (
     <section className="relative py-32 px-6 overflow-hidden">
       {/* Scan line effect */}
@@ -111,13 +110,13 @@ const CameraServices = () => {
               <Camera size={18} />
               Nezáväzná konzultácia
             </a>
-            <Link
-              to="/konfigurator"
+            <button
+              onClick={onOpenKonfigurator}
               className="inline-flex items-center gap-3 border border-border text-foreground px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-foreground hover:text-background transition-all duration-500"
             >
               <Settings2 size={18} />
               Konfigurátor systému
-            </Link>
+            </button>
           </div>
         </motion.div>
       </div>
