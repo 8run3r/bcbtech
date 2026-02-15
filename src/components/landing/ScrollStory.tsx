@@ -313,7 +313,7 @@ const SecurityCamera = () => {
 
         {/* ── Camera body — angled down-forward ── */}
         <group ref={cameraRef} position={[0, 1.05, 0]}>
-          <group rotation={[0.25, 0, -0.5]}>
+          <group rotation={[0.25, 0.523, -0.5]}>
             {/* Connector */}
             <mesh position={[0.18, -0.04, 0]} rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.07, 0.09, 0.18, 12]} />
