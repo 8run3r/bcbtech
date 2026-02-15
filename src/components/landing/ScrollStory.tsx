@@ -49,139 +49,253 @@ const Laptop = ({ progress, isMobile }: { progress: number; isMobile: boolean })
   const groupRef = useRef<THREE.Group>(null);
   const lidRef = useRef<THREE.Group>(null);
 
-  // Compute lid angle based on scroll progress
-  // Slide 2 (Web) starts at progress ~0.33, fully open by ~0.5
   const getLidAngle = (p: number) => {
-    // Closed = lid folded down onto keyboard, Open = upright
     const openStart = 0.2;
     const openEnd = 0.45;
-    if (p <= openStart) return Math.PI * 0.55; // fully closed (lid folded forward)
-    if (p >= openEnd) return 0; // fully open (upright)
+    if (p <= openStart) return Math.PI * 0.55;
+    if (p >= openEnd) return 0;
     const t = (p - openStart) / (openEnd - openStart);
     const eased = t * t * (3 - 2 * t);
     return Math.PI * 0.55 * (1 - eased);
   };
 
-  // Screen content texture
   const screenTex = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 320;
     const ctx = canvas.getContext("2d")!;
     
-    // Dark background
-    ctx.fillStyle = "#0a0d10";
+    ctx.fillStyle = "#0c1017";
     ctx.fillRect(0, 0, 512, 320);
     
     // Sidebar
-    ctx.fillStyle = "#111419";
-    ctx.fillRect(0, 0, 90, 320);
-    
-    // Sidebar dots
-    const sideColors = ["#00ffaa", "#8b5cf6", "#3b82f6", "#6b7280", "#6b7280"];
+    ctx.fillStyle = "#0f1318";
+    ctx.fillRect(0, 0, 80, 320);
+    const sideColors = ["#00ffaa", "#8b5cf6", "#3b82f6", "#475569", "#475569", "#475569"];
     sideColors.forEach((c, i) => {
+      if (i === 0) {
+        ctx.fillStyle = "#151c25";
+        ctx.beginPath();
+        ctx.roundRect(6, 28 + i * 30, 68, 24, 4);
+        ctx.fill();
+      }
       ctx.fillStyle = c;
       ctx.beginPath();
-      ctx.arc(45, 40 + i * 28, 4, 0, Math.PI * 2);
+      ctx.arc(22, 40 + i * 30, 3.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = i === 0 ? "#e2e8f0" : "#64748b";
+      ctx.font = "7px sans-serif";
+      ctx.fillText(["Home", "Users", "Stats", "Files", "Mail", "Conf"][i], 32, 42 + i * 30);
     });
     
-    // Header bar
-    ctx.fillStyle = "#151920";
-    ctx.fillRect(90, 0, 422, 36);
-    
-    // Search bar
-    ctx.fillStyle = "#1a1f28";
-    ctx.strokeStyle = "#2a2f38";
-    ctx.lineWidth = 1;
-    const rx = 200, ry = 10, rw = 180, rh = 18;
+    // Top bar
+    ctx.fillStyle = "#111820";
+    ctx.fillRect(80, 0, 432, 32);
+    ctx.fillStyle = "#1e293b";
     ctx.beginPath();
-    ctx.roundRect(rx, ry, rw, rh, 9);
+    ctx.roundRect(180, 7, 200, 18, 9);
     ctx.fill();
-    ctx.stroke();
+    ctx.fillStyle = "#475569";
+    ctx.font = "8px sans-serif";
+    ctx.fillText("⌕  Search...", 195, 19);
+    ctx.fillStyle = "#3b82f6";
+    ctx.beginPath();
+    ctx.arc(470, 16, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 8px sans-serif";
+    ctx.fillText("A", 467, 19);
     
     // Stat cards
-    const cardColors = ["#00ffaa", "#8b5cf6", "#3b82f6", "#f59e0b"];
+    const cardData = [
+      { value: "€60,791", label: "Revenue", color: "#00ffaa", change: "+12.5%" },
+      { value: "42,703", label: "Users", color: "#8b5cf6", change: "+8.2%" },
+      { value: "2,847", label: "Orders", color: "#3b82f6", change: "+3.1%" },
+      { value: "98.2%", label: "Uptime", color: "#f59e0b", change: "+0.1%" },
+    ];
     for (let i = 0; i < 4; i++) {
-      const cx = 110 + i * 95;
-      ctx.fillStyle = "#151920";
+      const cx = 95 + i * 100;
+      ctx.fillStyle = "#111820";
       ctx.beginPath();
-      ctx.roundRect(cx, 50, 80, 45, 6);
+      ctx.roundRect(cx, 42, 90, 52, 6);
       ctx.fill();
-      ctx.fillStyle = cardColors[i];
-      ctx.font = "bold 14px monospace";
-      ctx.fillText(["60,791", "42,703", "2", "100,345"][i], cx + 8, 72);
-      ctx.fillStyle = "#6b7280";
-      ctx.font = "8px sans-serif";
-      ctx.fillText(["Revenue", "Users", "New", "Views"][i], cx + 8, 86);
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.fillStyle = "#f1f5f9";
+      ctx.font = "bold 12px monospace";
+      ctx.fillText(cardData[i].value, cx + 8, 62);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "7px sans-serif";
+      ctx.fillText(cardData[i].label, cx + 8, 74);
+      ctx.fillStyle = cardData[i].color + "22";
+      ctx.beginPath();
+      ctx.roundRect(cx + 8, 78, 30, 10, 3);
+      ctx.fill();
+      ctx.fillStyle = cardData[i].color;
+      ctx.font = "bold 6px monospace";
+      ctx.fillText(cardData[i].change, cx + 12, 86);
     }
     
-    // Chart area
-    ctx.fillStyle = "#151920";
+    // Main chart
+    ctx.fillStyle = "#111820";
     ctx.beginPath();
-    ctx.roundRect(110, 110, 185, 100, 6);
+    ctx.roundRect(95, 105, 200, 110, 6);
     ctx.fill();
-    
-    // Chart line
-    ctx.strokeStyle = "#00ffaa";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    const points = [
-      [120, 190], [140, 175], [160, 180], [180, 155], [200, 160],
-      [220, 140], [240, 145], [260, 125], [280, 130]
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 8px sans-serif";
+    ctx.fillText("Revenue Overview", 105, 120);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 0.3;
+    for (let g = 0; g < 4; g++) {
+      ctx.beginPath();
+      ctx.moveTo(105, 135 + g * 18);
+      ctx.lineTo(280, 135 + g * 18);
+      ctx.stroke();
+    }
+    const chartPoints = [
+      [110, 185], [130, 172], [150, 176], [170, 155], [190, 160],
+      [210, 142], [230, 148], [250, 132], [270, 138]
     ];
-    points.forEach(([px, py], idx) => {
+    ctx.beginPath();
+    chartPoints.forEach(([px, py], idx) => {
+      if (idx === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.lineTo(270, 195);
+    ctx.lineTo(110, 195);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 130, 0, 195);
+    grad.addColorStop(0, "rgba(0,255,170,0.2)");
+    grad.addColorStop(1, "rgba(0,255,170,0.01)");
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = "#00ffaa";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    chartPoints.forEach(([px, py], idx) => {
       if (idx === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     });
     ctx.stroke();
+    chartPoints.forEach(([px, py]) => {
+      ctx.fillStyle = "#00ffaa";
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
     
-    // Right cards
-    ctx.fillStyle = "#151920";
+    // Donut chart card
+    ctx.fillStyle = "#111820";
     ctx.beginPath();
-    ctx.roundRect(310, 110, 85, 100, 6);
+    ctx.roundRect(305, 105, 90, 110, 6);
     ctx.fill();
-    ctx.beginPath();
-    ctx.roundRect(405, 110, 85, 100, 6);
-    ctx.fill();
-
-    // Donut chart
-    ctx.strokeStyle = "#8b5cf6";
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.arc(352, 160, 22, -0.5, Math.PI * 1.3);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 0.5;
     ctx.stroke();
-    ctx.strokeStyle = "#f43f5e";
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 7px sans-serif";
+    ctx.fillText("Traffic", 315, 120);
+    const donutData = [
+      { angle: 1.8, color: "#8b5cf6" },
+      { angle: 1.2, color: "#3b82f6" },
+      { angle: 0.8, color: "#f43f5e" },
+      { angle: 0.5, color: "#f59e0b" },
+    ];
+    let startAngle = -Math.PI / 2;
+    donutData.forEach(({ angle, color }) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.arc(350, 158, 20, startAngle, startAngle + angle);
+      ctx.stroke();
+      startAngle += angle;
+    });
+    ctx.fillStyle = "#111820";
     ctx.beginPath();
-    ctx.arc(352, 160, 22, Math.PI * 1.3, Math.PI * 2 - 0.5);
+    ctx.arc(350, 158, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 7px monospace";
+    ctx.fillText("73%", 341, 161);
+    ["Direct", "Social", "Email", "Other"].forEach((label, i) => {
+      ctx.fillStyle = ["#8b5cf6", "#3b82f6", "#f43f5e", "#f59e0b"][i];
+      ctx.beginPath();
+      ctx.arc(315, 192 + i * 6, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "5px sans-serif";
+      ctx.fillText(label, 321, 194 + i * 6);
+    });
+    
+    // Bar chart card
+    ctx.fillStyle = "#111820";
+    ctx.beginPath();
+    ctx.roundRect(400, 105, 95, 110, 6);
+    ctx.fill();
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 0.5;
     ctx.stroke();
-
-    // Pie chart
-    ctx.fillStyle = "#3b82f6";
-    ctx.beginPath();
-    ctx.moveTo(447, 160);
-    ctx.arc(447, 160, 22, 0, Math.PI * 1.2);
-    ctx.fill();
-    ctx.fillStyle = "#06b6d4";
-    ctx.beginPath();
-    ctx.moveTo(447, 160);
-    ctx.arc(447, 160, 22, Math.PI * 1.2, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 7px sans-serif";
+    ctx.fillText("Activity", 410, 120);
+    const barHeights = [28, 42, 35, 50, 38, 55, 45];
+    barHeights.forEach((h, i) => {
+      const barGrad = ctx.createLinearGradient(0, 200 - h, 0, 200);
+      barGrad.addColorStop(0, "#3b82f6");
+      barGrad.addColorStop(1, "#1e40af");
+      ctx.fillStyle = barGrad;
+      ctx.beginPath();
+      ctx.roundRect(412 + i * 11, 200 - h, 8, h, 2);
+      ctx.fill();
+    });
     
-    // Bottom section
-    ctx.fillStyle = "#151920";
+    // Bottom table
+    ctx.fillStyle = "#111820";
     ctx.beginPath();
-    ctx.roundRect(110, 225, 380, 80, 6);
+    ctx.roundRect(95, 225, 400, 85, 6);
     ctx.fill();
-    
-    // Table rows
-    for (let r = 0; r < 3; r++) {
-      ctx.fillStyle = "#2a2f38";
-      ctx.fillRect(120, 248 + r * 18, 360, 1);
-      ctx.fillStyle = "#6b7280";
-      ctx.font = "7px sans-serif";
-      ctx.fillText(["Dashboard   |   60,791   |   +1.2%   |   Active", "Users        |   42,703   |   +0.8%   |   Active", "Analytics   |   100,345  |   -0.5%   |   Pending"][r], 125, 244 + r * 18);
-    }
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 7px sans-serif";
+    ctx.fillText("Recent Transactions", 105, 240);
+    ctx.fillStyle = "#64748b";
+    ctx.font = "bold 6px sans-serif";
+    ["ID", "Customer", "Amount", "Status", "Date"].forEach((h, i) => {
+      ctx.fillText(h, 105 + i * 80, 254);
+    });
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(105, 257, 380, 0.5);
+    const rows = [
+      ["#4231", "John Doe", "€1,250", "Completed", "Today"],
+      ["#4230", "Jane Smith", "€890", "Pending", "Today"],
+      ["#4229", "Bob Wilson", "€2,100", "Completed", "Yesterday"],
+    ];
+    rows.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        if (c === 3) {
+          const isCompleted = cell === "Completed";
+          ctx.fillStyle = isCompleted ? "#00ffaa22" : "#f59e0b22";
+          ctx.beginPath();
+          ctx.roundRect(105 + c * 80 - 2, 262 + r * 14, 36, 9, 3);
+          ctx.fill();
+          ctx.fillStyle = isCompleted ? "#00ffaa" : "#f59e0b";
+        } else {
+          ctx.fillStyle = c === 0 ? "#94a3b8" : "#cbd5e1";
+        }
+        ctx.font = "6px sans-serif";
+        ctx.fillText(cell, 105 + c * 80, 269 + r * 14);
+      });
+      if (r < 2) {
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(105, 273 + r * 14, 380, 0.3);
+      }
+    });
     
     const tex = new THREE.CanvasTexture(canvas);
     tex.needsUpdate = true;
@@ -191,62 +305,98 @@ const Laptop = ({ progress, isMobile }: { progress: number; isMobile: boolean })
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     groupRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.3) * 0.15;
-    
-    // Animate lid
     if (lidRef.current) {
       const targetAngle = getLidAngle(progress);
-      lidRef.current.rotation.x = THREE.MathUtils.lerp(
-        lidRef.current.rotation.x,
-        targetAngle,
-        0.08
-      );
+      lidRef.current.rotation.x = THREE.MathUtils.lerp(lidRef.current.rotation.x, targetAngle, 0.08);
     }
   });
 
   return (
     <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.4}>
       <group ref={groupRef} position={isMobile ? [2, 0.5, 0] : [4, 0, 0]} scale={isMobile ? 0.55 : 1}>
-        {/* Base / Keyboard area */}
-        <RoundedBox args={[3.4, 0.08, 2.0]} radius={0.04} position={[0, -0.45, 0.9]}>
-          <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.7} />
+        {/* Base — tapered like a real MacBook */}
+        <RoundedBox args={[3.4, 0.06, 2.0]} radius={0.03} position={[0, -0.45, 0.9]}>
+          <meshStandardMaterial color="#2d2d30" roughness={0.25} metalness={0.85} />
         </RoundedBox>
+        <RoundedBox args={[3.38, 0.02, 1.98]} radius={0.03} position={[0, -0.49, 0.9]}>
+          <meshStandardMaterial color="#1c1c1e" roughness={0.35} metalness={0.8} />
+        </RoundedBox>
+        {/* Rubber feet */}
+        {([[-1.4, -0.50, 0.1], [1.4, -0.50, 0.1], [-1.4, -0.50, 1.7], [1.4, -0.50, 1.7]] as [number,number,number][]).map((pos, i) => (
+          <mesh key={`foot-${i}`} position={pos}>
+            <cylinderGeometry args={[0.06, 0.06, 0.01, 12]} />
+            <meshStandardMaterial color="#111" roughness={0.9} metalness={0.1} />
+          </mesh>
+        ))}
         
         {/* Keyboard keys */}
-        {Array.from({ length: 4 }).map((_, row) =>
-          Array.from({ length: 12 }).map((_, col) => (
-            <mesh
-              key={`k-${row}-${col}`}
-              position={[
-                -1.35 + col * 0.23,
-                -0.40,
-                0.2 + row * 0.22,
-              ]}
-            >
-              <boxGeometry args={[0.18, 0.02, 0.16]} />
-              <meshStandardMaterial color="#252525" roughness={0.6} metalness={0.4} />
+        {Array.from({ length: 5 }).map((_, row) =>
+          Array.from({ length: 13 }).map((_, col) => (
+            <mesh key={`k-${row}-${col}`} position={[-1.38 + col * 0.22, -0.415, 0.15 + row * 0.21]}>
+              <boxGeometry args={[0.17, 0.015, 0.15]} />
+              <meshStandardMaterial color="#1a1a1c" roughness={0.5} metalness={0.3} />
             </mesh>
           ))
         )}
         
-        {/* Trackpad */}
-        <mesh position={[0, -0.40, 1.4]}>
-          <boxGeometry args={[0.9, 0.01, 0.5]} />
-          <meshStandardMaterial color="#222222" roughness={0.5} metalness={0.5} />
+        {/* Trackpad — glass-like */}
+        <mesh position={[0, -0.42, 1.4]}>
+          <boxGeometry args={[0.95, 0.005, 0.55]} />
+          <meshStandardMaterial color="#2a2a2c" roughness={0.1} metalness={0.6} />
+        </mesh>
+        <mesh position={[0, -0.42, 1.4]}>
+          <boxGeometry args={[0.97, 0.003, 0.57]} />
+          <meshStandardMaterial color="#222224" roughness={0.2} metalness={0.7} />
         </mesh>
 
-        {/* Lid (screen) — pivots at the hinge (back edge of base) */}
+        {/* Speaker grille */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <mesh key={`sp-${i}`} position={[-1.5, -0.415, 0.3 + i * 0.07]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.02, 6]} />
+            <meshStandardMaterial color="#111" roughness={0.8} />
+          </mesh>
+        ))}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <mesh key={`sp2-${i}`} position={[1.5, -0.415, 0.3 + i * 0.07]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.02, 6]} />
+            <meshStandardMaterial color="#111" roughness={0.8} />
+          </mesh>
+        ))}
+
+        {/* Hinge barrel */}
+        <mesh position={[0, -0.44, -0.1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.035, 0.035, 3.2, 16]} />
+          <meshStandardMaterial color="#222" roughness={0.2} metalness={0.9} />
+        </mesh>
+
+        {/* Lid (screen) */}
         <group ref={lidRef} position={[0, -0.45, -0.1]} rotation={[Math.PI * 0.55, 0, 0]}>
-          {/* Screen frame — origin at bottom edge so it rotates like a real lid */}
           <group position={[0, 1.0, 0]}>
-            <RoundedBox args={[3.2, 2.0, 0.08]} radius={0.06}>
-              <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
+            <RoundedBox args={[3.3, 2.1, 0.05]} radius={0.04}>
+              <meshStandardMaterial color="#2d2d30" roughness={0.2} metalness={0.85} />
             </RoundedBox>
-            {/* Screen display */}
-            <mesh position={[0, 0, 0.045]}>
-              <planeGeometry args={[2.9, 1.8]} />
+            <mesh position={[0, 0, 0.026]}>
+              <planeGeometry args={[3.1, 1.95]} />
+              <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, -0.02, 0.028]}>
+              <planeGeometry args={[3.0, 1.85]} />
               <meshBasicMaterial map={screenTex} toneMapped={false} />
             </mesh>
-            {/* Screen glow */}
+            {/* Webcam */}
+            <mesh position={[0, 0.97, 0.026]}>
+              <circleGeometry args={[0.015, 16]} />
+              <meshStandardMaterial color="#111" roughness={0.1} metalness={0.8} />
+            </mesh>
+            <mesh position={[0.03, 0.97, 0.027]}>
+              <circleGeometry args={[0.005, 8]} />
+              <meshStandardMaterial color="#00ff55" emissive="#00ff55" emissiveIntensity={2} toneMapped={false} />
+            </mesh>
+            {/* Back logo */}
+            <mesh position={[0, 0, -0.027]}>
+              <circleGeometry args={[0.12, 24]} />
+              <meshStandardMaterial color="#3a3a3c" roughness={0.15} metalness={0.9} />
+            </mesh>
             <pointLight position={[0, 0, 1]} intensity={0.3} color="#00ffaa" distance={3} />
           </group>
         </group>
@@ -266,10 +416,8 @@ const SecurityCamera = () => {
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     const t = clock.getElapsedTime();
-    // Start facing us (angle=0), then slowly start panning after 2s
-    const rampUp = Math.min(t / 4, 1); // 0→1 over 4 seconds
+    const rampUp = Math.min(t / 4, 1);
     cameraRef.current.rotation.y = rampUp * Math.sin(t * 0.12) * 0.6;
-
     if (ledRef.current) {
       const mat = ledRef.current.material as THREE.MeshStandardMaterial;
       mat.emissiveIntensity = Math.sin(t * 3) > 0.3 ? 4 : 0.5;
@@ -282,134 +430,152 @@ const SecurityCamera = () => {
 
   return (
     <Float speed={0.8} rotationIntensity={0.05} floatIntensity={0.3}>
-      {/* Centered around origin so slide 1 camera sees it properly */}
       <group position={[0, 0, 0]} scale={1.0}>
-
-        {/* ── Ceiling mount plate ── */}
+        {/* Ceiling mount plate — brushed metal */}
         <mesh position={[0, 1.8, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.05, 32]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.3} metalness={0.35} />
+          <cylinderGeometry args={[0.42, 0.42, 0.04, 48]} />
+          <meshStandardMaterial color="#d4d4d4" roughness={0.2} metalness={0.6} />
         </mesh>
-        <mesh position={[0, 1.8, 0]}>
-          <torusGeometry args={[0.4, 0.01, 8, 32]} />
-          <meshStandardMaterial color="#d0d0d0" roughness={0.3} metalness={0.5} />
-        </mesh>
-
-        {/* ── Vertical drop arm ── */}
-        <mesh position={[0, 1.45, 0]}>
-          <cylinderGeometry args={[0.07, 0.1, 0.65, 16]} />
-          <meshStandardMaterial color="#e2e2e2" roughness={0.35} metalness={0.3} />
-        </mesh>
-        <mesh position={[0, 1.15, 0]}>
-          <torusGeometry args={[0.09, 0.01, 8, 20]} />
-          <meshStandardMaterial color="#ccc" roughness={0.3} metalness={0.45} />
+        {/* Mounting screws */}
+        {[0, Math.PI / 2, Math.PI, Math.PI * 1.5].map((angle, i) => (
+          <mesh key={`screw-${i}`} position={[Math.cos(angle) * 0.32, 1.79, Math.sin(angle) * 0.32]}>
+            <cylinderGeometry args={[0.015, 0.015, 0.02, 8]} />
+            <meshStandardMaterial color="#999" roughness={0.3} metalness={0.8} />
+          </mesh>
+        ))}
+        <mesh position={[0, 1.78, 0]}>
+          <torusGeometry args={[0.42, 0.008, 8, 48]} />
+          <meshStandardMaterial color="#bbb" roughness={0.25} metalness={0.65} />
         </mesh>
 
-        {/* ── Ball joint ── */}
+        {/* Vertical drop arm */}
+        <mesh position={[0, 1.48, 0]}>
+          <cylinderGeometry args={[0.065, 0.09, 0.6, 24]} />
+          <meshStandardMaterial color="#d8d8d8" roughness={0.28} metalness={0.45} />
+        </mesh>
+        {[1.62, 1.35].map((y, i) => (
+          <mesh key={`armring-${i}`} position={[0, y, 0]}>
+            <torusGeometry args={[0.075, 0.008, 8, 24]} />
+            <meshStandardMaterial color="#c0c0c0" roughness={0.25} metalness={0.55} />
+          </mesh>
+        ))}
+
+        {/* Ball joint */}
         <mesh position={[0, 1.05, 0]}>
-          <sphereGeometry args={[0.16, 24, 24]} />
-          <meshStandardMaterial color="#d8d8d8" roughness={0.3} metalness={0.35} />
+          <sphereGeometry args={[0.17, 32, 32]} />
+          <meshStandardMaterial color="#ccc" roughness={0.22} metalness={0.5} />
+        </mesh>
+        <mesh position={[0, 1.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.17, 0.006, 8, 32]} />
+          <meshStandardMaterial color="#aaa" roughness={0.2} metalness={0.6} />
         </mesh>
 
-        {/* ── Camera body — angled down-forward ── */}
+        {/* Camera body */}
         <group ref={cameraRef} position={[0, 1.05, 0]}>
           <group rotation={[0.3, -1.25, -0.5]}>
-            {/* Connector */}
+            {/* Connector bracket */}
             <mesh position={[0.18, -0.04, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.07, 0.09, 0.18, 12]} />
-              <meshStandardMaterial color="#ddd" roughness={0.35} metalness={0.3} />
+              <cylinderGeometry args={[0.065, 0.085, 0.2, 16]} />
+              <meshStandardMaterial color="#d0d0d0" roughness={0.28} metalness={0.45} />
             </mesh>
 
             {/* Bullet body */}
             <group position={[0.6, -0.12, 0]}>
-              {/* Back cap — closed rounded end */}
+              {/* Back cap — hemisphere */}
               <mesh position={[-0.6, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.001, 0.27, 0.25, 24]} />
-                <meshStandardMaterial color="#f0f0f0" roughness={0.3} metalness={0.25} />
+                <sphereGeometry args={[0.26, 32, 32, 0, Math.PI]} />
+                <meshStandardMaterial color="#e8e8e8" roughness={0.22} metalness={0.35} />
               </mesh>
-
               {/* Main cylinder */}
               <mesh rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.25, 0.27, 1.2, 24]} />
-                <meshStandardMaterial color="#f0f0f0" roughness={0.3} metalness={0.25} />
+                <cylinderGeometry args={[0.25, 0.26, 1.2, 32]} />
+                <meshStandardMaterial color="#e8e8e8" roughness={0.22} metalness={0.35} />
               </mesh>
-
               {/* Accent rings */}
-              {[-0.35, -0.05, 0.2].map((x, i) => (
+              {[-0.4, -0.15, 0.1, 0.25].map((x, i) => (
                 <mesh key={`ring${i}`} position={[x, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                  <torusGeometry args={[0.26, 0.005, 8, 24]} />
-                  <meshStandardMaterial color="#d5d5d5" roughness={0.3} metalness={0.4} />
+                  <torusGeometry args={[0.255, 0.004, 8, 32]} />
+                  <meshStandardMaterial color="#c0c0c0" roughness={0.2} metalness={0.55} />
                 </mesh>
               ))}
-
+              {/* Ventilation slots */}
+              {Array.from({ length: 6 }).map((_, i) => (
+                <mesh key={`vent-${i}`} position={[-0.2 + i * 0.08, 0.25, 0]} rotation={[0, 0, Math.PI / 2]}>
+                  <boxGeometry args={[0.03, 0.003, 0.04]} />
+                  <meshStandardMaterial color="#bbb" roughness={0.3} metalness={0.5} />
+                </mesh>
+              ))}
               {/* Sunshield */}
               <mesh position={[0.45, 0.06, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.30, 0.32, 0.3, 24, 1, true, -Math.PI * 0.15, Math.PI * 1.3]} />
-                <meshStandardMaterial color="#eaeaea" roughness={0.35} metalness={0.3} side={THREE.DoubleSide} />
+                <cylinderGeometry args={[0.30, 0.32, 0.3, 32, 1, true, -Math.PI * 0.15, Math.PI * 1.3]} />
+                <meshStandardMaterial color="#dedede" roughness={0.28} metalness={0.35} side={THREE.DoubleSide} />
               </mesh>
-
+              <mesh position={[0.58, 0.06, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <torusGeometry args={[0.30, 0.006, 8, 32, Math.PI * 1.3]} />
+                <meshStandardMaterial color="#ccc" roughness={0.2} metalness={0.5} />
+              </mesh>
               {/* Lens housing */}
               <mesh position={[0.62, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.21, 0.25, 0.16, 24]} />
-                <meshStandardMaterial color="#1a1a1a" roughness={0.15} metalness={0.85} />
+                <cylinderGeometry args={[0.21, 0.25, 0.16, 32]} />
+                <meshStandardMaterial color="#151515" roughness={0.1} metalness={0.9} />
               </mesh>
               <mesh position={[0.71, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.16, 0.20, 0.05, 24]} />
-                <meshStandardMaterial color="#111" roughness={0.1} metalness={0.9} />
+                <cylinderGeometry args={[0.16, 0.20, 0.05, 32]} />
+                <meshStandardMaterial color="#0a0a0a" roughness={0.08} metalness={0.95} />
               </mesh>
-
               {/* Lens glass */}
               <mesh ref={lensRef} position={[0.74, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.12, 0.14, 0.03, 24]} />
-                <meshStandardMaterial
-                  color="#001a11"
-                  emissive="#003322"
-                  emissiveIntensity={0.3}
-                  roughness={0.02}
-                  metalness={0.15}
-                  transparent
-                  opacity={0.8}
-                />
+                <cylinderGeometry args={[0.13, 0.15, 0.03, 32]} />
+                <meshStandardMaterial color="#001a11" emissive="#003322" emissiveIntensity={0.3} roughness={0.01} metalness={0.2} transparent opacity={0.75} />
               </mesh>
-              {/* Inner lens */}
               <mesh position={[0.72, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.07, 0.07, 0.05, 16]} />
-                <meshStandardMaterial color="#050505" roughness={0.05} metalness={0.95} />
+                <cylinderGeometry args={[0.08, 0.08, 0.04, 20]} />
+                <meshStandardMaterial color="#030303" roughness={0.03} metalness={0.95} />
               </mesh>
-              <mesh position={[0.75, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
-                <meshStandardMaterial color="#000" roughness={0.02} metalness={1} />
+              <mesh position={[0.755, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.04, 0.04, 0.015, 16]} />
+                <meshStandardMaterial color="#000" roughness={0.01} metalness={1} />
               </mesh>
-
+              {/* Lens reflection */}
+              <mesh position={[0.76, 0.03, 0.02]} rotation={[0, 0, Math.PI / 2]}>
+                <circleGeometry args={[0.015, 12]} />
+                <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
+              </mesh>
               {/* IR LEDs */}
-              {Array.from({ length: 16 }).map((_, i) => {
-                const angle = (i / 16) * Math.PI * 2;
-                const r = 0.17;
+              {Array.from({ length: 20 }).map((_, i) => {
+                const angle = (i / 20) * Math.PI * 2;
+                const r = 0.175;
                 return (
                   <mesh key={`ir${i}`} position={[0.71, Math.sin(angle) * r, Math.cos(angle) * r]}>
-                    <sphereGeometry args={[0.009, 6, 6]} />
-                    <meshStandardMaterial color="#1a0000" roughness={0.2} metalness={0.6} />
+                    <sphereGeometry args={[0.008, 8, 8]} />
+                    <meshStandardMaterial color="#1a0000" emissive="#330000" emissiveIntensity={0.3} roughness={0.15} metalness={0.7} />
                   </mesh>
                 );
               })}
-
               {/* Green LED */}
               <mesh ref={ledRef} position={[0.05, 0.26, 0]}>
-                <sphereGeometry args={[0.016, 10, 10]} />
+                <sphereGeometry args={[0.014, 12, 12]} />
                 <meshStandardMaterial color="#00ff55" emissive="#00ff55" emissiveIntensity={4} toneMapped={false} />
               </mesh>
-              <pointLight position={[0.05, 0.26, 0]} intensity={0.2} color="#00ff55" distance={1.5} />
-
-              {/* Cable */}
-              <mesh position={[-0.5, -0.2, 0]} rotation={[0, 0, 0.3]}>
-                <cylinderGeometry args={[0.02, 0.02, 0.3, 8]} />
-                <meshStandardMaterial color="#1a1a1a" roughness={0.6} metalness={0.3} />
+              <pointLight position={[0.05, 0.26, 0]} intensity={0.15} color="#00ff55" distance={1.2} />
+              {/* Label plate */}
+              <mesh position={[-0.15, -0.25, 0.01]}>
+                <planeGeometry args={[0.3, 0.04]} />
+                <meshStandardMaterial color="#d5d5d5" roughness={0.3} metalness={0.4} />
+              </mesh>
+              {/* Cable with strain relief */}
+              <mesh position={[-0.52, -0.18, 0]} rotation={[0, 0, 0.4]}>
+                <cylinderGeometry args={[0.025, 0.018, 0.25, 12]} />
+                <meshStandardMaterial color="#1a1a1a" roughness={0.7} metalness={0.2} />
+              </mesh>
+              <mesh position={[-0.45, -0.1, 0]} rotation={[0, 0, 0.4]}>
+                <cylinderGeometry args={[0.03, 0.025, 0.06, 12]} />
+                <meshStandardMaterial color="#222" roughness={0.5} metalness={0.4} />
               </mesh>
             </group>
           </group>
         </group>
 
-        {/* Lighting */}
         <pointLight position={[1.5, 0.5, 1]} intensity={0.5} color="#00ffaa" distance={5} />
         <pointLight position={[-0.5, -0.5, 1.5]} intensity={0.2} color="#ffffff" distance={4} />
       </group>
@@ -427,8 +593,6 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     groupRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.25) * 0.2;
-    
-    // Blinking LEDs
     const t = clock.getElapsedTime();
     ledRefs.current.forEach((led, i) => {
       if (!led) return;
@@ -445,72 +609,104 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
   return (
     <Float speed={0.6} rotationIntensity={0.08} floatIntensity={0.3}>
       <group ref={groupRef} position={isMobile ? [-2, 0, 0] : [-4, 0, 0]} scale={isMobile ? 0.6 : 1}>
-        {/* Rack frame */}
-        <RoundedBox args={[1.8, 3.2, 1.0]} radius={0.04} position={[0, 0, 0]}>
-          <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.85} />
+        {/* Rack frame — outer shell */}
+        <RoundedBox args={[1.9, 3.4, 1.1]} radius={0.03} position={[0, 0, 0]}>
+          <meshStandardMaterial color="#141414" roughness={0.25} metalness={0.9} />
         </RoundedBox>
-        
-        {/* Server units (5 units stacked) */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <group key={i} position={[0, 1.15 - i * 0.55, 0.05]}>
-            {/* Server body */}
-            <RoundedBox args={[1.6, 0.4, 0.9]} radius={0.02}>
-              <meshStandardMaterial
-                color={i === 1 ? "#222" : "#181818"}
-                roughness={0.4}
-                metalness={0.7}
-              />
-            </RoundedBox>
-            
-            {/* Front panel line */}
-            <mesh position={[0, 0, 0.46]}>
-              <planeGeometry args={[1.5, 0.35]} />
-              <meshStandardMaterial color="#151515" roughness={0.5} metalness={0.6} />
+        <RoundedBox args={[1.7, 3.2, 1.0]} radius={0.02} position={[0, 0, 0.02]}>
+          <meshStandardMaterial color="#0a0a0a" roughness={0.8} metalness={0.3} />
+        </RoundedBox>
+
+        {/* Vertical rack rails */}
+        {[-0.82, 0.82].map((x, i) => (
+          <mesh key={`rail-${i}`} position={[x, 0, 0.52]}>
+            <boxGeometry args={[0.04, 3.3, 0.02]} />
+            <meshStandardMaterial color="#333" roughness={0.2} metalness={0.85} />
+          </mesh>
+        ))}
+        {/* Rail holes */}
+        {[-0.82, 0.82].map((x) =>
+          Array.from({ length: 20 }).map((_, i) => (
+            <mesh key={`rh-${x}-${i}`} position={[x, -1.4 + i * 0.15, 0.53]}>
+              <boxGeometry args={[0.02, 0.04, 0.005]} />
+              <meshStandardMaterial color="#1a1a1a" roughness={0.5} metalness={0.7} />
             </mesh>
-            
-            {/* Vent holes */}
-            {Array.from({ length: 8 }).map((_, v) => (
-              <mesh key={v} position={[0.3 + v * 0.1, 0, 0.47]}>
-                <planeGeometry args={[0.04, 0.25]} />
-                <meshStandardMaterial color="#0d0d0d" roughness={0.8} />
+          ))
+        )}
+
+        {/* Server units (6 units stacked) */}
+        {Array.from({ length: 6 }).map((_, i) => {
+          const isSpecial = i === 1 || i === 4;
+          const unitColor = isSpecial ? "#1e1e1e" : "#161616";
+          const faceColor = isSpecial ? "#1a1a1a" : "#131313";
+          
+          return (
+            <group key={i} position={[0, 1.3 - i * 0.48, 0.05]}>
+              <RoundedBox args={[1.6, 0.38, 0.95]} radius={0.015}>
+                <meshStandardMaterial color={unitColor} roughness={0.35} metalness={0.75} />
+              </RoundedBox>
+              <mesh position={[0, 0, 0.48]}>
+                <planeGeometry args={[1.55, 0.34]} />
+                <meshStandardMaterial color={faceColor} roughness={0.4} metalness={0.65} />
               </mesh>
-            ))}
-            
-            {/* Status LEDs */}
-            <mesh
-              ref={(el) => setLedRef(el, i * 2)}
-              position={[-0.65, 0.05, 0.47]}
-            >
-              <sphereGeometry args={[0.02, 8, 8]} />
-              <meshStandardMaterial
-                color="#00ffaa"
-                emissive="#00ffaa"
-                emissiveIntensity={2}
-                toneMapped={false}
-              />
-            </mesh>
-            <mesh
-              ref={(el) => setLedRef(el, i * 2 + 1)}
-              position={[-0.65, -0.05, 0.47]}
-            >
-              <sphereGeometry args={[0.02, 8, 8]} />
-              <meshStandardMaterial
-                color={i === 3 ? "#f59e0b" : "#00ffaa"}
-                emissive={i === 3 ? "#f59e0b" : "#00ffaa"}
-                emissiveIntensity={1}
-                toneMapped={false}
-              />
-            </mesh>
-            
-            {/* Drive bay handle */}
-            <mesh position={[-0.55, 0, 0.47]}>
-              <boxGeometry args={[0.06, 0.2, 0.01]} />
-              <meshStandardMaterial color="#333" roughness={0.3} metalness={0.8} />
-            </mesh>
-          </group>
+              {/* Vent perforation */}
+              {Array.from({ length: 10 }).map((_, v) => (
+                <mesh key={v} position={[0.2 + v * 0.09, 0, 0.482]}>
+                  <planeGeometry args={[0.035, 0.22]} />
+                  <meshStandardMaterial color="#0b0b0b" roughness={0.9} />
+                </mesh>
+              ))}
+              {/* Status LEDs */}
+              <mesh ref={(el) => setLedRef(el, i * 2)} position={[-0.68, 0.06, 0.482]}>
+                <sphereGeometry args={[0.018, 10, 10]} />
+                <meshStandardMaterial color="#00ffaa" emissive="#00ffaa" emissiveIntensity={2} toneMapped={false} />
+              </mesh>
+              <mesh ref={(el) => setLedRef(el, i * 2 + 1)} position={[-0.68, -0.04, 0.482]}>
+                <sphereGeometry args={[0.018, 10, 10]} />
+                <meshStandardMaterial
+                  color={i === 3 ? "#f59e0b" : i === 5 ? "#3b82f6" : "#00ffaa"}
+                  emissive={i === 3 ? "#f59e0b" : i === 5 ? "#3b82f6" : "#00ffaa"}
+                  emissiveIntensity={1}
+                  toneMapped={false}
+                />
+              </mesh>
+              {/* Drive bay handle */}
+              <mesh position={[-0.58, 0, 0.482]}>
+                <boxGeometry args={[0.045, 0.18, 0.008]} />
+                <meshStandardMaterial color="#2a2a2a" roughness={0.2} metalness={0.85} />
+              </mesh>
+              <mesh position={[-0.55, 0.06, 0.485]}>
+                <boxGeometry args={[0.015, 0.03, 0.005]} />
+                <meshStandardMaterial color="#444" roughness={0.2} metalness={0.8} />
+              </mesh>
+              {/* Port indicators */}
+              {Array.from({ length: 2 }).map((_, p) => (
+                <mesh key={`port-${p}`} position={[0.7, 0.04 - p * 0.08, 0.482]}>
+                  <boxGeometry args={[0.04, 0.02, 0.005]} />
+                  <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.7} />
+                </mesh>
+              ))}
+              {/* Unit label plate */}
+              <mesh position={[-0.3, -0.12, 0.482]}>
+                <planeGeometry args={[0.18, 0.04]} />
+                <meshStandardMaterial color="#1e1e1e" roughness={0.3} metalness={0.6} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {/* Top panel with ventilation */}
+        <mesh position={[0, 1.7, 0]}>
+          <boxGeometry args={[1.85, 0.02, 1.05]} />
+          <meshStandardMaterial color="#181818" roughness={0.3} metalness={0.85} />
+        </mesh>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <mesh key={`topvent-${i}`} position={[-0.5 + i * 0.14, 1.71, 0]}>
+            <boxGeometry args={[0.06, 0.005, 0.6]} />
+            <meshStandardMaterial color="#0d0d0d" roughness={0.8} />
+          </mesh>
         ))}
         
-        {/* Ambient glow */}
         <pointLight position={[0, 0, 1.5]} intensity={0.4} color="#00ffaa" distance={4} />
       </group>
     </Float>
@@ -526,14 +722,12 @@ const CameraController = ({ progress, isMobile }: { progress: number; isMobile: 
   const targetLook = useRef(new THREE.Vector3(0, 0, 0));
   const currentLook = useRef(new THREE.Vector3(0, 0, 0));
 
-  // Mobile-adjusted slide camera positions
   const getSlidePositions = (slide: StorySlide, idx: number) => {
     if (!isMobile) return { pos: slide.cameraPos, look: slide.cameraLookAt };
-    // On mobile, bring cameras closer and more centered
     const mobilePositions: [number, number, number][] = [
-      [0, 0.3, 5],    // Camera slide - slightly further
-      [2, 0.5, 5],    // Laptop - more centered, further back
-      [-2, 0, 5],     // Server - more centered, further back
+      [0, 0.3, 5],
+      [2, 0.5, 5],
+      [-2, 0, 5],
     ];
     const mobileLookAts: [number, number, number][] = [
       [0, 0, 0],
@@ -638,7 +832,6 @@ const Scene3D = ({ progress }: { progress: number }) => {
 
       <FloatingParticles />
 
-      {/* Contextual 3D objects */}
       <SecurityCamera />
       <Laptop progress={progress} isMobile={isMobile} />
       <ServerRack isMobile={isMobile} />
@@ -668,7 +861,6 @@ const SlideOverlay = ({ slide, index, progress }: { slide: StorySlide; index: nu
   opacity = Math.max(0, Math.min(1, opacity));
   const y = (1 - opacity) * 50;
 
-  // Alternate sides: 0=left, 1=right, 2=left
   const isRight = index === 1;
 
   return (
