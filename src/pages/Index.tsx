@@ -6,7 +6,7 @@ import ScrollStory from "@/components/landing/ScrollStory";
 import ServicesOverview from "@/components/landing/ServicesOverview";
 import BeforeAfter from "@/components/landing/BeforeAfter";
 import PortfolioPreview from "@/components/landing/PortfolioPreview";
-import FAQ from "@/components/landing/FAQ";
+
 import ContactCTA from "@/components/landing/ContactCTA";
 import Footer from "@/components/landing/Footer";
 import ParticleField from "@/components/landing/ParticleField";
@@ -55,7 +55,7 @@ const Index = () => {
         <ServicesOverview />
         <BeforeAfter />
         <PortfolioPreview />
-        <FAQ />
+        
         <ContactCTA />
         <Footer />
         <ExitIntentPopup />
