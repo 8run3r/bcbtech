@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Trash2, Plus, LogOut, Camera, Code2, Upload } from "lucide-react";
+import { Trash2, Plus, LogOut, Camera, Code2, Upload, ImagePlus } from "lucide-react";
 import CameraEditRow from "@/components/admin/CameraEditRow";
 import PortfolioEditRow from "@/components/admin/PortfolioEditRow";
 import { Button } from "@/components/ui/button";
@@ -132,14 +132,29 @@ const Admin = () => {
     return data.publicUrl;
   };
 
+  const [camFile, setCamFile] = useState<File | null>(null);
+  const [camPreview, setCamPreview] = useState<string | null>(null);
+  const camFileRef = useRef<HTMLInputElement>(null);
+
+  const [portFile, setPortFile] = useState<File | null>(null);
+  const [portPreview, setPortPreview] = useState<string | null>(null);
+  const portFileRef = useRef<HTMLInputElement>(null);
+
+  const uploadPortfolioImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("portfolio-images").upload(path, file);
+    if (error) { toast.error("Upload zlyhal: " + error.message); return null; }
+    const { data } = supabase.storage.from("portfolio-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const addCamera = async (e: React.FormEvent) => {
     e.preventDefault();
-    let imageUrl = camForm.image_url || null;
+    let imageUrl: string | null = null;
 
-    // If a file was selected, upload it
-    const fileInput = document.getElementById("cam-image-input") as HTMLInputElement;
-    if (fileInput?.files?.[0]) {
-      const url = await uploadImage(fileInput.files[0]);
+    if (camFile) {
+      const url = await uploadImage(camFile);
       if (url) imageUrl = url;
     }
 
@@ -155,7 +170,8 @@ const Admin = () => {
     if (error) { toast.error(error.message); return; }
     toast.success("Kamera pridaná");
     setCamForm({ name: "", description: "", image_url: "", category: "IP Camera", brand: "", price: "", features: "" });
-    if (fileInput) fileInput.value = "";
+    setCamFile(null);
+    setCamPreview(null);
     fetchCameras();
   };
 
@@ -182,12 +198,19 @@ const Admin = () => {
 
   const addPortfolio = async (e: React.FormEvent) => {
     e.preventDefault();
+    let imageUrl: string | null = null;
+
+    if (portFile) {
+      const url = await uploadPortfolioImage(portFile);
+      if (url) imageUrl = url;
+    }
+
     const { error } = await supabase.from("portfolio_items").insert({
       title: portForm.title,
       category: portForm.category,
       type: portForm.type,
       description: portForm.description || null,
-      image_url: portForm.image_url || null,
+      image_url: imageUrl,
       tech: portForm.tech ? portForm.tech.split(",").map(t => t.trim()) : null,
       year: portForm.year || null,
       link: portForm.link || null,
@@ -195,6 +218,8 @@ const Admin = () => {
     if (error) { toast.error(error.message); return; }
     toast.success("Projekt pridaný");
     setPortForm({ title: "", category: "Web", type: "web", description: "", image_url: "", tech: "", year: "", link: "" });
+    setPortFile(null);
+    setPortPreview(null);
     fetchPortfolio();
   };
 
@@ -267,10 +292,28 @@ const Admin = () => {
                 <Input placeholder="Značka" value={camForm.brand} onChange={e => setCamForm(p => ({ ...p, brand: e.target.value }))} />
                 <Input placeholder="Kategória" value={camForm.category} onChange={e => setCamForm(p => ({ ...p, category: e.target.value }))} />
                 <Input placeholder="Cena" value={camForm.price} onChange={e => setCamForm(p => ({ ...p, price: e.target.value }))} />
-                <Input placeholder="URL obrázka (alebo nahraj súbor)" value={camForm.image_url} onChange={e => setCamForm(p => ({ ...p, image_url: e.target.value }))} className="md:col-span-2" />
+                {/* Image upload */}
                 <div className="md:col-span-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">Alebo nahraj obrázok:</label>
-                  <input id="cam-image-input" type="file" accept="image/*" className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                  <input ref={camFileRef} type="file" accept="image/*" className="hidden" onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) { setCamFile(f); setCamPreview(URL.createObjectURL(f)); }
+                  }} />
+                  <div
+                    onClick={() => camFileRef.current?.click()}
+                    className="border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors flex items-center gap-4"
+                  >
+                    {camPreview ? (
+                      <img src={camPreview} alt="Preview" className="w-16 h-16 rounded object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 rounded bg-muted/30 flex items-center justify-center">
+                        <ImagePlus size={20} className="text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{camFile ? camFile.name : "Klikni pre nahratie obrázku"}</p>
+                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP · max 5 MB</p>
+                    </div>
+                  </div>
                 </div>
                 <Input placeholder="Vlastnosti (oddelené čiarkou)" value={camForm.features} onChange={e => setCamForm(p => ({ ...p, features: e.target.value }))} className="md:col-span-2" />
               </div>
@@ -303,7 +346,29 @@ const Admin = () => {
                   <option value="camera">Kamerový projekt</option>
                 </select>
                 <Input placeholder="Rok" value={portForm.year} onChange={e => setPortForm(p => ({ ...p, year: e.target.value }))} />
-                <Input placeholder="URL obrázka" value={portForm.image_url} onChange={e => setPortForm(p => ({ ...p, image_url: e.target.value }))} className="md:col-span-2" />
+                {/* Image upload */}
+                <div className="md:col-span-2">
+                  <input ref={portFileRef} type="file" accept="image/*" className="hidden" onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) { setPortFile(f); setPortPreview(URL.createObjectURL(f)); }
+                  }} />
+                  <div
+                    onClick={() => portFileRef.current?.click()}
+                    className="border-2 border-dashed border-border rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors flex items-center gap-4"
+                  >
+                    {portPreview ? (
+                      <img src={portPreview} alt="Preview" className="w-16 h-16 rounded object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 rounded bg-muted/30 flex items-center justify-center">
+                        <ImagePlus size={20} className="text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{portFile ? portFile.name : "Klikni pre nahratie obrázku"}</p>
+                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP · max 5 MB</p>
+                    </div>
+                  </div>
+                </div>
                 <Input placeholder="Technológie (oddelené čiarkou)" value={portForm.tech} onChange={e => setPortForm(p => ({ ...p, tech: e.target.value }))} className="md:col-span-2" />
                 <Input placeholder="Odkaz" value={portForm.link} onChange={e => setPortForm(p => ({ ...p, link: e.target.value }))} className="md:col-span-2" />
               </div>
