@@ -11,6 +11,8 @@ import Footer from "@/components/landing/Footer";
 import ParticleField from "@/components/landing/ParticleField";
 import FluidCursor from "@/components/landing/FluidCursor";
 import ExitIntentPopup from "@/components/landing/ExitIntentPopup";
+import BeforeAfter from "@/components/landing/BeforeAfter";
+import FAQ from "@/components/landing/FAQ";
 
 const Index = () => {
   const [particlesEnded, setParticlesEnded] = useState(false);
@@ -55,6 +57,8 @@ const Index = () => {
         <ServicesOverview />
         <PortfolioPreview />
         <CameraServices />
+        <BeforeAfter />
+        <FAQ />
         <ContactCTA />
         <Footer />
         <ExitIntentPopup />
