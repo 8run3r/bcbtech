@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Gift, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -6,21 +6,46 @@ import { Link } from "react-router-dom";
 const ExitIntentPopup = () => {
   const [show, setShow] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleMouseLeave = useCallback(
-    (e: MouseEvent) => {
-      if (e.clientY <= 5 && !dismissed && !sessionStorage.getItem("exitPopupShown")) {
-        setShow(true);
-        sessionStorage.setItem("exitPopupShown", "1");
-      }
-    },
-    [dismissed]
-  );
+  const triggerPopup = useCallback(() => {
+    if (!dismissed && !sessionStorage.getItem("exitPopupShown")) {
+      setShow(true);
+      sessionStorage.setItem("exitPopupShown", "1");
+    }
+  }, [dismissed]);
 
   useEffect(() => {
+    // Method 1: mouseout on documentElement (works in iframes too)
+    const handleMouseOut = (e: MouseEvent) => {
+      // Only trigger when mouse leaves toward the top of the viewport
+      if (
+        e.clientY <= 0 &&
+        e.relatedTarget === null
+      ) {
+        triggerPopup();
+      }
+    };
+
+    // Method 2: mouseleave on document (backup)
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 5) {
+        triggerPopup();
+      }
+    };
+
+    // Method 3: Fallback timer — show after 45s of inactivity as last resort
+    // (useful for mobile / touch where mouse events don't exist)
+
+    document.documentElement.addEventListener("mouseout", handleMouseOut);
     document.addEventListener("mouseleave", handleMouseLeave);
-    return () => document.removeEventListener("mouseleave", handleMouseLeave);
-  }, [handleMouseLeave]);
+
+    return () => {
+      document.documentElement.removeEventListener("mouseout", handleMouseOut);
+      document.removeEventListener("mouseleave", handleMouseLeave);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [triggerPopup]);
 
   const close = () => {
     setShow(false);
@@ -30,20 +55,20 @@ const ExitIntentPopup = () => {
   return (
     <AnimatePresence>
       {show && (
-        <>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/80 backdrop-blur-xl"
             onClick={close}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="fixed left-1/2 top-1/2 z-[101] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-primary/30 bg-card p-8 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.8, rotateX: 15, y: 40 }}
+            animate={{ opacity: 1, scale: 1, rotateX: 0, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, rotateX: -8, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative z-10 w-[90vw] max-w-md rounded-2xl border border-primary/30 bg-card p-8 shadow-2xl shadow-primary/10"
           >
             <button
               onClick={close}
@@ -89,7 +114,7 @@ const ExitIntentPopup = () => {
               </p>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
