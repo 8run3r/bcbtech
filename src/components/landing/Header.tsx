@@ -38,7 +38,7 @@ const Header = () => {
         y: isVisible ? 0 : -100,
         opacity: isVisible ? 1 : 0,
       }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
           ? "bg-background/80 backdrop-blur-2xl border-b border-border/20 py-3"
