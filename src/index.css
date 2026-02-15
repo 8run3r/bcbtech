@@ -92,4 +92,30 @@
     pointer-events: none;
     z-index: 0;
   }
+
+  /* Shimmer underline hover effect */
+  .shimmer-link .shimmer-underline {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--primary)) 30%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--primary)) 70%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shimmer-link:hover .shimmer-underline {
+    transform: scaleX(1);
+    animation: shimmer-slide 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer-slide {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 }

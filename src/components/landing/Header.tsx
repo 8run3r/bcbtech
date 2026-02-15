@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -13,6 +13,7 @@ const links = [
 const Header = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
 
@@ -28,18 +29,22 @@ const Header = () => {
     setOpen(false);
   }, [location.pathname]);
 
-  // On homepage, hide header until scrolled
-  const isVisible = !isHome || scrolled;
+  // Visibility: on subpages always visible, on homepage after scroll
+  useEffect(() => {
+    if (!isHome) {
+      setVisible(true);
+    } else {
+      setVisible(scrolled);
+    }
+  }, [isHome, scrolled]);
 
   return (
-    <motion.header
-      initial={{ filter: "blur(10px)", opacity: 0 }}
-      animate={{
-        filter: isVisible ? "blur(0px)" : "blur(10px)",
-        opacity: isVisible ? 1 : 0,
-      }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        visible
+          ? "translate-y-0 opacity-100"
+          : "-translate-y-full opacity-0 pointer-events-none"
+      } ${
         scrolled
           ? "bg-background/80 backdrop-blur-2xl border-b border-border/20 py-3"
           : "bg-transparent py-5"
@@ -60,7 +65,7 @@ const Header = () => {
           <span className="text-foreground"> Tech</span>
         </Link>
 
-        {/* Center nav — desktop */}
+        {/* Center nav — desktop with shimmer underline hover */}
         <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
           {links.map((l) => {
             const isActive = location.pathname === l.href;
@@ -68,13 +73,17 @@ const Header = () => {
               <Link
                 key={l.href}
                 to={l.href}
-                className={`relative text-[13px] px-5 py-2 rounded-full transition-all duration-300 uppercase tracking-wide font-medium ${
+                className={`shimmer-link relative text-[13px] px-5 py-2 rounded-full transition-all duration-300 uppercase tracking-wide font-medium ${
                   isActive
                     ? "text-primary-foreground bg-foreground"
-                    : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
+                    : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 {l.label}
+                {/* Shimmer underline — only for non-active links */}
+                {!isActive && (
+                  <span className="shimmer-underline absolute left-2 right-2 bottom-0 h-[2px] rounded-full" />
+                )}
               </Link>
             );
           })}
@@ -140,7 +149,7 @@ const Header = () => {
           </motion.nav>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   );
 };
 
