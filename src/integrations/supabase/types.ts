@@ -174,6 +174,8 @@ export type Database = {
           id: string
           message: string
           name: string
+          package_category: string | null
+          package_name: string | null
           phone: string | null
           status: string
         }
@@ -183,6 +185,8 @@ export type Database = {
           id?: string
           message: string
           name: string
+          package_category?: string | null
+          package_name?: string | null
           phone?: string | null
           status?: string
         }
@@ -192,6 +196,8 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+          package_category?: string | null
+          package_name?: string | null
           phone?: string | null
           status?: string
         }

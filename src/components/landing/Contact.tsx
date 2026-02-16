@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Phone, Send, Loader2, CheckCircle } from "lucide-react";
+import { Mail, MapPin, Phone, Send, Loader2, CheckCircle, Camera, Monitor } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,13 +9,29 @@ const contactSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
   email: z.string().trim().email("Neplatný email").max(255),
   message: z.string().trim().min(1, "Správa je povinná").max(2000),
+  package_category: z.enum(["cameras", "web", ""]).optional(),
+  package_name: z.string().max(200).optional().or(z.literal("")),
 });
 
+const cameraPackageOptions = [
+  "Základ – od 590 €",
+  "Firma – od 1 490 €",
+  "Komplex – od 3 500 €",
+];
+
+const webPackageOptions = [
+  "Starter – od 490 €",
+  "Business – od 990 €",
+  "Premium – od 2 500 €",
+];
+
 const Contact = () => {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", package_category: "" as "" | "cameras" | "web", package_name: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const packageOptions = form.package_category === "cameras" ? cameraPackageOptions : form.package_category === "web" ? webPackageOptions : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +52,8 @@ const Contact = () => {
       name: result.data.name,
       email: result.data.email,
       message: result.data.message,
+      package_category: result.data.package_category || null,
+      package_name: result.data.package_name || null,
     });
 
     setSending(false);
@@ -45,7 +63,7 @@ const Contact = () => {
     }
 
     setSent(true);
-    setForm({ name: "", email: "", message: "" });
+    setForm({ name: "", email: "", message: "", package_category: "", package_name: "" });
     toast.success("Správa bola odoslaná!");
   };
 
@@ -128,6 +146,54 @@ const Contact = () => {
               />
               {errors.email && <p className="text-xs text-destructive px-1">{errors.email}</p>}
             </div>
+
+            {/* Category selector */}
+            <div className="sm:col-span-2">
+              <p className="text-sm text-muted-foreground mb-2">Mám záujem o (voliteľné):</p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, package_category: p.package_category === "cameras" ? "" : "cameras", package_name: "" }))}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-all duration-300 ${
+                    form.package_category === "cameras"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                  }`}
+                >
+                  <Camera size={16} />
+                  Kamerový systém
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, package_category: p.package_category === "web" ? "" : "web", package_name: "" }))}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-all duration-300 ${
+                    form.package_category === "web"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                  }`}
+                >
+                  <Monitor size={16} />
+                  Webová stránka
+                </button>
+              </div>
+            </div>
+
+            {/* Package selector */}
+            {form.package_category && (
+              <div className="sm:col-span-2">
+                <select
+                  value={form.package_name}
+                  onChange={(e) => setForm((p) => ({ ...p, package_name: e.target.value }))}
+                  className="w-full bg-card border border-border rounded-md px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                >
+                  <option value="">Vyberte balíček (voliteľné)</option>
+                  {packageOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="sm:col-span-2 space-y-1">
               <textarea
                 placeholder="Opíšte váš projekt... *"

@@ -438,6 +438,16 @@ const Admin = () => {
                       <span className="text-xs text-muted-foreground">{msg.email}</span>
                       {msg.phone && <span className="text-xs text-muted-foreground">· {msg.phone}</span>}
                     </div>
+                    {(msg.package_category || msg.package_name) && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {msg.package_category && (
+                          <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                            {msg.package_category === 'cameras' ? '📷 Kamery' : '🌐 Web'}
+                          </span>
+                        )}
+                        {msg.package_name && <span className="text-sm font-medium text-foreground">{msg.package_name}</span>}
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{msg.message}</p>
                     <p className="text-xs text-muted-foreground mt-2">{new Date(msg.created_at).toLocaleString('sk-SK')}</p>
                   </div>
