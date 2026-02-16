@@ -260,11 +260,42 @@ const Packages = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
                   {webPackages.map((pkg, i) => (
                     <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" onReserve={() => openReservation("web", `${pkg.name} – ${pkg.price}`)} />
                   ))}
                 </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="p-8 rounded-2xl border border-border bg-card/50"
+                >
+                  <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Správa webu</p>
+                      <p className="text-primary font-bold">100 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">SEO optimalizácia</p>
+                      <p className="text-primary font-bold">od 150 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Mesačná SEO správa a vylepšenia</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Grafické práce</p>
+                      <p className="text-primary font-bold">od 30 € / hod.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Bannery, logá, vizuálny obsah</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Technická podpora</p>
+                      <p className="text-primary font-bold">od 49 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Bug fixy, úpravy, prioritná pomoc</p>
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
