@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability_overrides: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          is_available: boolean
+          override_date: string
+          reason: string | null
+          slot_duration_minutes: number | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_available?: boolean
+          override_date: string
+          reason?: string | null
+          slot_duration_minutes?: number | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_available?: boolean
+          override_date?: string
+          reason?: string | null
+          slot_duration_minutes?: number | null
+          start_time?: string | null
+        }
+        Relationships: []
+      }
+      availability_rules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          slot_duration_minutes: number
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          slot_duration_minutes?: number
+          start_time?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          slot_duration_minutes?: number
+          start_time?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_date: string
+          booking_time: string
+          created_at: string
+          duration_minutes: number
+          email: string
+          id: string
+          message: string | null
+          name: string
+          package_category: string | null
+          package_name: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          booking_time: string
+          created_at?: string
+          duration_minutes?: number
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          package_category?: string | null
+          package_name?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          booking_time?: string
+          created_at?: string
+          duration_minutes?: number
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          package_category?: string | null
+          package_name?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       camera_products: {
         Row: {
           brand: string | null
