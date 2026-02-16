@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Trash2, Plus, LogOut, Camera, Code2, Upload, ImagePlus } from "lucide-react";
+import { Trash2, Plus, LogOut, Camera, Code2, Upload, ImagePlus, Mail, CalendarCheck, Eye, CheckCircle, Clock, XCircle } from "lucide-react";
 import CameraEditRow from "@/components/admin/CameraEditRow";
 import PortfolioEditRow from "@/components/admin/PortfolioEditRow";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ const Admin = () => {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"cameras" | "portfolio">("cameras");
+  const [tab, setTab] = useState<"cameras" | "portfolio" | "messages" | "reservations">("cameras");
   
 
   // Camera state
@@ -101,8 +101,12 @@ const Admin = () => {
     };
   }, []);
 
+  // Messages & Reservations state
+  const [messages, setMessages] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+
   useEffect(() => {
-    if (isAdmin) { fetchCameras(); fetchPortfolio(); }
+    if (isAdmin) { fetchCameras(); fetchPortfolio(); fetchMessages(); fetchReservations(); }
   }, [isAdmin]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -229,6 +233,42 @@ const Admin = () => {
     fetchPortfolio();
   };
 
+  // Messages CRUD
+  const fetchMessages = async () => {
+    const { data } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
+    if (data) setMessages(data);
+  };
+
+  const updateMessageStatus = async (id: string, status: string) => {
+    await supabase.from("contact_messages").update({ status }).eq("id", id);
+    toast.success("Status aktualizovaný");
+    fetchMessages();
+  };
+
+  const deleteMessage = async (id: string) => {
+    await supabase.from("contact_messages").delete().eq("id", id);
+    toast.success("Správa zmazaná");
+    fetchMessages();
+  };
+
+  // Reservations CRUD
+  const fetchReservations = async () => {
+    const { data } = await supabase.from("reservations").select("*").order("created_at", { ascending: false });
+    if (data) setReservations(data);
+  };
+
+  const updateReservationStatus = async (id: string, status: string) => {
+    await supabase.from("reservations").update({ status }).eq("id", id);
+    toast.success("Status aktualizovaný");
+    fetchReservations();
+  };
+
+  const deleteReservation = async (id: string) => {
+    await supabase.from("reservations").delete().eq("id", id);
+    toast.success("Rezervácia zmazaná");
+    fetchReservations();
+  };
+
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Načítavanie...</div>;
 
 
@@ -268,18 +308,18 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8">
-          <Button
-            variant={tab === "cameras" ? "default" : "outline"}
-            onClick={() => setTab("cameras")}
-          >
+        <div className="flex flex-wrap gap-2 mb-8">
+          <Button variant={tab === "cameras" ? "default" : "outline"} onClick={() => setTab("cameras")}>
             <Camera size={16} className="mr-2" /> Kamery
           </Button>
-          <Button
-            variant={tab === "portfolio" ? "default" : "outline"}
-            onClick={() => setTab("portfolio")}
-          >
+          <Button variant={tab === "portfolio" ? "default" : "outline"} onClick={() => setTab("portfolio")}>
             <Code2 size={16} className="mr-2" /> Portfólio
+          </Button>
+          <Button variant={tab === "messages" ? "default" : "outline"} onClick={() => setTab("messages")}>
+            <Mail size={16} className="mr-2" /> Správy {messages.filter(m => m.status === 'new').length > 0 && <span className="ml-1 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">{messages.filter(m => m.status === 'new').length}</span>}
+          </Button>
+          <Button variant={tab === "reservations" ? "default" : "outline"} onClick={() => setTab("reservations")}>
+            <CalendarCheck size={16} className="mr-2" /> Rezervácie {reservations.filter(r => r.status === 'new').length > 0 && <span className="ml-1 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">{reservations.filter(r => r.status === 'new').length}</span>}
           </Button>
         </div>
 
@@ -382,6 +422,108 @@ const Admin = () => {
               ))}
               {portfolio.length === 0 && <p className="text-muted-foreground text-sm text-center py-8">Žiadne projekty. Pridajte prvý.</p>}
             </div>
+          </div>
+        )}
+
+        {tab === "messages" && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2"><Mail size={18} /> Kontaktné správy</h2>
+            {messages.length === 0 && <p className="text-muted-foreground text-sm text-center py-8">Žiadne správy.</p>}
+            {messages.map((msg) => (
+              <div key={msg.id} className={`p-5 rounded-xl border bg-card space-y-3 ${msg.status === 'new' ? 'border-primary/40' : 'border-border'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{msg.name}</span>
+                      <span className="text-xs text-muted-foreground">{msg.email}</span>
+                      {msg.phone && <span className="text-xs text-muted-foreground">· {msg.phone}</span>}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{msg.message}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{new Date(msg.created_at).toLocaleString('sk-SK')}</p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {msg.status === 'new' && (
+                      <Button size="sm" variant="outline" onClick={() => updateMessageStatus(msg.id, 'read')}>
+                        <Eye size={14} className="mr-1" /> Prečítané
+                      </Button>
+                    )}
+                    {msg.status !== 'done' && (
+                      <Button size="sm" variant="outline" onClick={() => updateMessageStatus(msg.id, 'done')}>
+                        <CheckCircle size={14} className="mr-1" /> Vybavené
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => deleteMessage(msg.id)}>
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    msg.status === 'new' ? 'bg-primary/20 text-primary' :
+                    msg.status === 'read' ? 'bg-muted text-muted-foreground' :
+                    'bg-green-500/20 text-green-400'
+                  }`}>
+                    {msg.status === 'new' ? 'Nová' : msg.status === 'read' ? 'Prečítaná' : 'Vybavená'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "reservations" && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2"><CalendarCheck size={18} /> Rezervácie balíčkov</h2>
+            {reservations.length === 0 && <p className="text-muted-foreground text-sm text-center py-8">Žiadne rezervácie.</p>}
+            {reservations.map((res) => (
+              <div key={res.id} className={`p-5 rounded-xl border bg-card space-y-3 ${res.status === 'new' ? 'border-primary/40' : 'border-border'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{res.name}</span>
+                      <span className="text-xs text-muted-foreground">{res.email}</span>
+                      {res.phone && <span className="text-xs text-muted-foreground">· {res.phone}</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">{res.package_category === 'cameras' ? '📷 Kamery' : '🌐 Web'}</span>
+                      <span className="text-sm font-medium text-foreground">{res.package_name}</span>
+                    </div>
+                    {res.message && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{res.message}</p>}
+                    <p className="text-xs text-muted-foreground mt-2">{new Date(res.created_at).toLocaleString('sk-SK')}</p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <select
+                      value={res.status}
+                      onChange={(e) => updateReservationStatus(res.id, e.target.value)}
+                      className="text-xs bg-background border border-border rounded-md px-2 py-1.5"
+                    >
+                      <option value="new">Nová</option>
+                      <option value="contacted">Kontaktovaný</option>
+                      <option value="confirmed">Potvrdená</option>
+                      <option value="completed">Dokončená</option>
+                      <option value="cancelled">Zrušená</option>
+                    </select>
+                    <Button size="sm" variant="ghost" onClick={() => deleteReservation(res.id)}>
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    res.status === 'new' ? 'bg-primary/20 text-primary' :
+                    res.status === 'contacted' ? 'bg-yellow-500/20 text-yellow-400' :
+                    res.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
+                    res.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {res.status === 'new' ? 'Nová' :
+                     res.status === 'contacted' ? 'Kontaktovaný' :
+                     res.status === 'confirmed' ? 'Potvrdená' :
+                     res.status === 'completed' ? 'Dokončená' : 'Zrušená'}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

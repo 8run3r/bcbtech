@@ -1,9 +1,85 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Send, Loader2, CheckCircle } from "lucide-react";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Meno je povinné").max(100),
+  email: z.string().trim().email("Neplatný email").max(255),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  message: z.string().trim().min(1, "Správa je povinná").max(2000),
+});
+
 const Kontakt = () => {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const result = contactSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setSending(true);
+    const { error } = await supabase.from("contact_messages").insert({
+      name: result.data.name,
+      email: result.data.email,
+      phone: result.data.phone || null,
+      message: result.data.message,
+    });
+
+    setSending(false);
+    if (error) {
+      toast.error("Nepodarilo sa odoslať správu. Skúste to znova.");
+      return;
+    }
+
+    setSent(true);
+    toast.success("Správa bola odoslaná!");
+  };
+
+  if (sent) {
+    return (
+      <main className="min-h-screen bg-background text-foreground">
+        <Header />
+        <section className="pt-40 pb-20 px-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-lg mx-auto text-center"
+          >
+            <CheckCircle className="mx-auto text-primary mb-6" size={64} strokeWidth={1.5} />
+            <h1 className="text-3xl font-bold mb-4">Ďakujeme!</h1>
+            <p className="text-muted-foreground mb-8">
+              Vašu správu sme prijali. Ozveme sa vám čo najskôr.
+            </p>
+            <button
+              onClick={() => { setSent(false); setForm({ name: "", email: "", phone: "", message: "" }); }}
+              className="text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              Odoslať ďalšiu správu
+            </button>
+          </motion.div>
+        </section>
+        <Footer />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Header />
@@ -14,8 +90,8 @@ const Kontakt = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16">
-
+            className="text-center mb-16"
+          >
             <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-6">
               Poďme tvoriť
             </h1>
@@ -28,57 +104,86 @@ const Kontakt = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
-
-            <div className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border">
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14"
+          >
+            <a href="mailto:8run3r@gmail.com" className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors">
               <Mail className="text-primary mb-3" size={24} strokeWidth={1.5} />
-              <span className="text-sm text-muted-foreground">8run3r@gmail.com
-
-              </span>
-            </div>
-            <div className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border">
+              <span className="text-sm text-muted-foreground">8run3r@gmail.com</span>
+            </a>
+            <a href="tel:+421911640660" className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors">
               <Phone className="text-primary mb-3" size={24} strokeWidth={1.5} />
               <span className="text-sm text-muted-foreground">+421 911 640 660</span>
-            </div>
+            </a>
             <div className="flex flex-col items-center p-6 rounded-2xl bg-card border border-border">
               <MapPin className="text-primary mb-3" size={24} strokeWidth={1.5} />
               <span className="text-sm text-muted-foreground">Levice, SK</span>
             </div>
           </motion.div>
 
-          <motion.form initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+          <motion.form
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.7 }}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            onSubmit={(e) => e.preventDefault()}>
-
-            <input
-              type="text"
-              placeholder="Meno"
-              className="bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors" />
-
-            <input
-              type="email"
-              placeholder="Email"
-              className="bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors" />
-
-            <textarea
-              placeholder="Opíšte váš projekt..."
-              rows={5}
-              className="sm:col-span-2 bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors resize-none" />
-
+            onSubmit={handleSubmit}
+          >
+            <div className="space-y-1">
+              <input
+                type="text"
+                placeholder="Meno *"
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                className="w-full bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+              />
+              {errors.name && <p className="text-xs text-destructive px-1">{errors.name}</p>}
+            </div>
+            <div className="space-y-1">
+              <input
+                type="email"
+                placeholder="Email *"
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                className="w-full bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+              />
+              {errors.email && <p className="text-xs text-destructive px-1">{errors.email}</p>}
+            </div>
+            <div className="sm:col-span-2 space-y-1">
+              <input
+                type="tel"
+                placeholder="Telefón (voliteľné)"
+                value={form.phone}
+                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                className="w-full bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+              />
+            </div>
+            <div className="sm:col-span-2 space-y-1">
+              <textarea
+                placeholder="Opíšte váš projekt... *"
+                rows={5}
+                value={form.message}
+                onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
+                className="w-full bg-card border border-border rounded-xl px-5 py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors resize-none"
+              />
+              {errors.message && <p className="text-xs text-destructive px-1">{errors.message}</p>}
+            </div>
             <button
               type="submit"
-              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-primary/90 transition-all">
-
-              Odoslať správu
+              disabled={sending}
+              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {sending ? (
+                <><Loader2 size={16} className="animate-spin" /> Odosielam...</>
+              ) : (
+                <><Send size={16} /> Odoslať správu</>
+              )}
             </button>
           </motion.form>
         </div>
       </section>
 
       <Footer />
-    </main>);
-
+    </main>
+  );
 };
 
 export default Kontakt;
