@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, Camera, Monitor } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import FluidCursor from "@/components/landing/FluidCursor";
+import ReservationModal from "@/components/ReservationModal";
 
 const webPackages = [
   {
@@ -98,7 +99,7 @@ const cameraPackages = [
   },
 ];
 
-const PackageCard = ({ pkg, i, cta, ctaLink }: { pkg: any; i: number; cta: string; ctaLink: string }) => (
+const PackageCard = ({ pkg, i, cta, onReserve }: { pkg: any; i: number; cta: string; onReserve: () => void }) => (
   <motion.div
     key={pkg.name}
     initial={{ opacity: 0, y: 40 }}
@@ -127,16 +128,16 @@ const PackageCard = ({ pkg, i, cta, ctaLink }: { pkg: any; i: number; cta: strin
         </li>
       ))}
     </ul>
-    <Link
-      to={ctaLink}
-      className={`block text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 ${
+    <button
+      onClick={onReserve}
+      className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
         pkg.popular
           ? "bg-primary text-primary-foreground hover:bg-primary/90"
           : "border border-border text-foreground hover:bg-foreground hover:text-background"
       }`}
     >
       {cta}
-    </Link>
+    </button>
   </motion.div>
 );
 
@@ -144,6 +145,13 @@ const Packages = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "web" ? "web" : "cameras";
   const [activeTab, setActiveTab] = useState<"cameras" | "web">(initialTab);
+  const [reservationOpen, setReservationOpen] = useState(false);
+  const [selectedPkg, setSelectedPkg] = useState<{ category: "cameras" | "web"; name: string }>({ category: "cameras", name: "" });
+
+  const openReservation = (category: "cameras" | "web", name: string) => {
+    setSelectedPkg({ category, name });
+    setReservationOpen(true);
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground relative">
@@ -208,7 +216,7 @@ const Packages = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
                   {cameraPackages.map((pkg, i) => (
-                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" ctaLink="/kontakt" />
+                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" onReserve={() => openReservation("cameras", `${pkg.name} – ${pkg.price}`)} />
                   ))}
                 </div>
 
@@ -254,7 +262,7 @@ const Packages = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {webPackages.map((pkg, i) => (
-                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" ctaLink="/kontakt" />
+                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" onReserve={() => openReservation("web", `${pkg.name} – ${pkg.price}`)} />
                   ))}
                 </div>
               </motion.div>
@@ -264,6 +272,12 @@ const Packages = () => {
       </section>
 
       <Footer />
+      <ReservationModal
+        open={reservationOpen}
+        onClose={() => setReservationOpen(false)}
+        packageCategory={selectedPkg.category}
+        packageName={selectedPkg.name}
+      />
       </div>
     </main>
   );
