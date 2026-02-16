@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Trash2, Plus, LogOut, Camera, Code2, Upload, ImagePlus, Mail, CalendarCheck, Eye, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Trash2, Plus, LogOut, Camera, Code2, Upload, ImagePlus, Mail, CalendarCheck, Eye, CheckCircle, Clock, XCircle, CalendarDays } from "lucide-react";
 import CameraEditRow from "@/components/admin/CameraEditRow";
 import PortfolioEditRow from "@/components/admin/PortfolioEditRow";
+import AdminCalendar from "@/components/admin/AdminCalendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,7 +42,7 @@ const Admin = () => {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"cameras" | "portfolio" | "messages" | "reservations">("cameras");
+  const [tab, setTab] = useState<"cameras" | "portfolio" | "messages" | "reservations" | "calendar">("cameras");
   
 
   // Camera state
@@ -321,6 +322,9 @@ const Admin = () => {
           <Button variant={tab === "reservations" ? "default" : "outline"} onClick={() => setTab("reservations")}>
             <CalendarCheck size={16} className="mr-2" /> Rezervácie {reservations.filter(r => r.status === 'new').length > 0 && <span className="ml-1 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">{reservations.filter(r => r.status === 'new').length}</span>}
           </Button>
+          <Button variant={tab === "calendar" ? "default" : "outline"} onClick={() => setTab("calendar")}>
+            <CalendarDays size={16} className="mr-2" /> Kalendár
+          </Button>
         </div>
 
         {tab === "cameras" && (
@@ -526,6 +530,8 @@ const Admin = () => {
             ))}
           </div>
         )}
+
+        {tab === "calendar" && <AdminCalendar />}
       </div>
     </div>
   );
