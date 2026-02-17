@@ -4,11 +4,11 @@ import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
-  { label: "Balíčky", href: "/balicky" },
-  { label: "Zabezpečenie", href: "/kamery" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Tech", href: "/tech" },
-];
+{ label: "Balíčky", href: "/balicky" },
+{ label: "Zabezpečenie", href: "/kamery" },
+{ label: "Portfolio", href: "/portfolio" },
+{ label: "Tech", href: "/tech" }];
+
 
 const Header = () => {
   const [open, setOpen] = useState(false);
@@ -41,15 +41,15 @@ const Header = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        visible
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-full opacity-0 pointer-events-none"
-      } ${
-        scrolled
-          ? "bg-background/80 backdrop-blur-2xl border-b border-border/20 py-3"
-          : "bg-transparent py-5"
-      }`}
-    >
+      visible ?
+      "translate-y-0 opacity-100" :
+      "-translate-y-full opacity-0 pointer-events-none"} ${
+
+      scrolled ?
+      "bg-background/80 backdrop-blur-2xl border-b border-border/20 py-3" :
+      "bg-transparent py-5"}`
+      }>
+
       <div className="max-w-[1400px] mx-auto flex items-center justify-between px-8">
         {/* Logo */}
         <Link
@@ -59,9 +59,9 @@ const Header = () => {
               window.scrollTo({ top: 0 });
             }
           }}
-          className="text-xl font-bold tracking-tight z-10"
-        >
-          <span className="text-primary">Cok</span>
+          className="text-xl font-bold tracking-tight z-10">
+
+          <span className="text-primary">BCB</span>
           <span className="text-foreground"> Tech</span>
         </Link>
 
@@ -74,26 +74,26 @@ const Header = () => {
                 key={l.href}
                 to={l.href}
                 className={`shimmer-link relative text-[13px] px-5 py-2 rounded-full transition-all duration-300 uppercase tracking-wide font-medium ${
-                  isActive
-                    ? "text-primary-foreground bg-foreground"
-                    : "text-foreground/70 hover:text-foreground"
-                }`}
-              >
+                isActive ?
+                "text-primary-foreground bg-foreground" :
+                "text-foreground/70 hover:text-foreground"}`
+                }>
+
                 {l.label}
                 {/* Shimmer underline — only for non-active links */}
-                {!isActive && (
-                  <span className="shimmer-underline absolute left-2 right-2 bottom-0 h-[2px] rounded-full" />
-                )}
-              </Link>
-            );
+                {!isActive &&
+                <span className="shimmer-underline absolute left-2 right-2 bottom-0 h-[2px] rounded-full" />
+                }
+              </Link>);
+
           })}
         </nav>
 
         {/* CTA — desktop */}
         <Link
           to="/kontakt"
-          className="hidden md:inline-flex text-[13px] uppercase tracking-wide font-medium bg-primary text-primary-foreground px-7 py-2.5 rounded-full hover:bg-primary/90 transition-all duration-300 z-10"
-        >
+          className="hidden md:inline-flex text-[13px] uppercase tracking-wide font-medium bg-primary text-primary-foreground px-7 py-2.5 rounded-full hover:bg-primary/90 transition-all duration-300 z-10">
+
           Kontakt
         </Link>
 
@@ -101,56 +101,56 @@ const Header = () => {
         <button
           onClick={() => setOpen(!open)}
           className="md:hidden text-foreground z-10"
-          aria-label="Menu"
-        >
+          aria-label="Menu">
+
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Mobile fullscreen menu */}
       <AnimatePresence>
-        {open && (
-          <motion.nav
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden fixed inset-0 top-0 bg-background/98 backdrop-blur-xl z-40 flex flex-col items-center justify-center gap-8"
-          >
-            {links.map((l, i) => (
-              <motion.div
-                key={l.href}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-              >
+        {open &&
+        <motion.nav
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden fixed inset-0 top-0 bg-background/98 backdrop-blur-xl z-40 flex flex-col items-center justify-center gap-8">
+
+            {links.map((l, i) =>
+          <motion.div
+            key={l.href}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}>
+
                 <Link
-                  to={l.href}
-                  className={`text-2xl font-medium transition-colors uppercase tracking-wider ${
-                    location.pathname === l.href ? "text-primary" : "text-foreground hover:text-primary"
-                  }`}
-                >
+              to={l.href}
+              className={`text-2xl font-medium transition-colors uppercase tracking-wider ${
+              location.pathname === l.href ? "text-primary" : "text-foreground hover:text-primary"}`
+              }>
+
                   {l.label}
                 </Link>
               </motion.div>
-            ))}
+          )}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-            >
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}>
+
               <Link
-                to="/kontakt"
-                className="mt-4 bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm uppercase tracking-wider inline-block hover:bg-primary/90 transition-all"
-              >
+              to="/kontakt"
+              className="mt-4 bg-primary text-primary-foreground px-8 py-3 rounded-full text-sm uppercase tracking-wider inline-block hover:bg-primary/90 transition-all">
+
                 Kontakt
               </Link>
             </motion.div>
           </motion.nav>
-        )}
+        }
       </AnimatePresence>
-    </header>
-  );
+    </header>);
+
 };
 
 export default Header;

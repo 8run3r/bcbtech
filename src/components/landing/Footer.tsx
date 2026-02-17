@@ -12,10 +12,10 @@ const Footer = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
+              viewport={{ once: true }}>
+
               <Link to="/" className="text-2xl font-bold tracking-tight inline-block mb-4">
-                <span className="text-primary">Cok</span>
+                <span className="text-primary">BCB</span>
                 <span className="text-foreground"> Tech</span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed mb-6">
@@ -40,22 +40,22 @@ const Footer = () => {
             <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-5">Navigácia</h4>
             <ul className="space-y-3">
               {[
-                { label: "Portfólio", href: "/portfolio" },
-                { label: "Kamery", href: "/kamery" },
-                { label: "Balíčky", href: "/balicky" },
-                { label: "Tech", href: "/tech" },
-                { label: "Kontakt", href: "/kontakt" },
-              ].map((link) => (
-                <li key={link.href}>
+              { label: "Portfólio", href: "/portfolio" },
+              { label: "Kamery", href: "/kamery" },
+              { label: "Balíčky", href: "/balicky" },
+              { label: "Tech", href: "/tech" },
+              { label: "Kontakt", href: "/kontakt" }].
+              map((link) =>
+              <li key={link.href}>
                   <Link
-                    to={link.href}
-                    className="shimmer-link relative text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  to={link.href}
+                  className="shimmer-link relative text-sm text-muted-foreground hover:text-foreground transition-colors">
+
                     {link.label}
                     <span className="shimmer-underline absolute left-0 right-0 bottom-0 h-[1px] rounded-full" />
                   </Link>
                 </li>
-              ))}
+              )}
             </ul>
           </div>
 
@@ -64,21 +64,21 @@ const Footer = () => {
             <h4 className="text-xs uppercase tracking-widest text-muted-foreground mb-5">Služby</h4>
             <ul className="space-y-3">
               {[
-                { label: "Web aplikácie", href: "/balicky?tab=web" },
-                { label: "Kamerové systémy", href: "/kamery" },
-                { label: "UI/UX Dizajn", href: "/balicky" },
-                { label: "AI & Automatizácia", href: "/tech" },
-              ].map((link) => (
-                <li key={link.label}>
+              { label: "Web aplikácie", href: "/balicky?tab=web" },
+              { label: "Kamerové systémy", href: "/kamery" },
+              { label: "UI/UX Dizajn", href: "/balicky" },
+              { label: "AI & Automatizácia", href: "/tech" }].
+              map((link) =>
+              <li key={link.label}>
                   <Link
-                    to={link.href}
-                    className="shimmer-link relative text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  to={link.href}
+                  className="shimmer-link relative text-sm text-muted-foreground hover:text-foreground transition-colors">
+
                     {link.label}
                     <span className="shimmer-underline absolute left-0 right-0 bottom-0 h-[1px] rounded-full" />
                   </Link>
                 </li>
-              ))}
+              )}
             </ul>
           </div>
         </div>
@@ -93,8 +93,8 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
+
 };
 
 export default Footer;
