@@ -958,27 +958,50 @@ const SlideOverlay = ({ slide, index, progress }: { slide: StorySlide; index: nu
   const totalSlides = slides.length;
   const slideStart = index / totalSlides;
   const slideEnd = (index + 1) / totalSlides;
-  const range = (slideEnd - slideStart) * 0.2;
+  const slideDuration = slideEnd - slideStart;
+  const fadeInRange = slideDuration * 0.12;
+  // Text stays visible until 85% of the slide, then swooshes out in the last 15%
+  const exitStart = slideEnd - slideDuration * 0.15;
 
   let opacity = 0;
+  let exitProgress = 0; // 0 = fully visible, 1 = fully exited
+
   if (progress >= slideStart && progress <= slideEnd) {
-    if (progress < slideStart + range) {
-      opacity = (progress - slideStart) / range;
-    } else if (progress > slideEnd - range) {
-      opacity = (slideEnd - progress) / range;
+    if (progress < slideStart + fadeInRange) {
+      // Fade in
+      opacity = (progress - slideStart) / fadeInRange;
+    } else if (progress > exitStart) {
+      // Swoosh exit phase
+      opacity = 1;
+      exitProgress = (progress - exitStart) / (slideEnd - exitStart);
     } else {
       opacity = 1;
     }
   }
   opacity = Math.max(0, Math.min(1, opacity));
-  const y = (1 - opacity) * 50;
+  exitProgress = Math.max(0, Math.min(1, exitProgress));
+
+  // Swoosh: accelerating curve for a snappy exit
+  const easedExit = exitProgress * exitProgress * exitProgress;
+  const swooshY = easedExit * 300;
+  const swooshScale = 1 - easedExit * 0.3;
+  const swooshOpacity = opacity * (1 - exitProgress * exitProgress);
+  const swooshRotate = easedExit * 4; // subtle tilt
+
+  // Entry: slide up
+  const entryY = opacity < 1 && exitProgress === 0 ? (1 - opacity) * 40 : 0;
 
   const isRight = index === 1;
 
   return (
     <div
       className="absolute inset-0 flex items-end sm:items-center z-20 pointer-events-none px-5 sm:px-8 md:px-20 pb-24 sm:pb-0"
-      style={{ opacity, transform: `translateY(${y}px)` }}
+      style={{
+        opacity: swooshOpacity,
+        transform: `translateY(${entryY + swooshY}px) scale(${swooshScale}) rotate(${swooshRotate}deg)`,
+        transformOrigin: "center bottom",
+        transition: "none",
+      }}
     >
       <div className={`max-w-xs sm:max-w-md ${isRight ? "sm:ml-auto sm:text-right" : ""}`}>
         <span className="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-primary/80 mb-3 sm:mb-5 font-mono">
