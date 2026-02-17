@@ -4,8 +4,8 @@ import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
-  { label: "Zabezpečenie", href: "/kamery" },
   { label: "Balíčky", href: "/balicky" },
+  { label: "Zabezpečenie", href: "/kamery" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Tech", href: "/tech" },
 ];
