@@ -12,7 +12,7 @@ const BeforeAfter = () => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    setSliderPos((x / rect.width) * 100);
+    setSliderPos(x / rect.width * 100);
   }, []);
 
   // Use window-level listeners so dragging works even when cursor leaves the container
@@ -20,7 +20,7 @@ const BeforeAfter = () => {
     const onMove = (e: PointerEvent) => {
       if (isDragging.current) updateSlider(e.clientX);
     };
-    const onUp = () => { isDragging.current = false; };
+    const onUp = () => {isDragging.current = false;};
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -43,10 +43,10 @@ const BeforeAfter = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">
-            [ Pred & Po ]
+          className="text-center mb-16">
+
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ PRED A PO ]
+
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             Rozdiel je viditeľný
@@ -63,15 +63,15 @@ const BeforeAfter = () => {
           transition={{ duration: 0.6 }}
           ref={containerRef}
           className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-col-resize select-none border border-border/30 touch-none"
-          onPointerDown={onPointerDown}
-        >
+          onPointerDown={onPointerDown}>
+
           {/* After image (full background) */}
           <img
             src={afterImg}
             alt="Po inštalácii"
             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            draggable={false}
-          />
+            draggable={false} />
+
 
           {/* Before image (clipped via clip-path for pixel-perfect alignment) */}
           <div className="absolute inset-0 pointer-events-none" style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}>
@@ -79,15 +79,15 @@ const BeforeAfter = () => {
               src={beforeImg}
               alt="Pred inštaláciou"
               className="absolute inset-0 w-full h-full object-cover"
-              draggable={false}
-            />
+              draggable={false} />
+
           </div>
 
           {/* Slider line */}
           <div
             className="absolute top-0 bottom-0 w-0.5 bg-primary z-10 pointer-events-none"
-            style={{ left: `${sliderPos}%` }}
-          >
+            style={{ left: `${sliderPos}%` }}>
+
             {/* Handle */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -106,8 +106,8 @@ const BeforeAfter = () => {
           </div>
         </motion.div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default BeforeAfter;
