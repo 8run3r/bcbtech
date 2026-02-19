@@ -54,7 +54,7 @@ const webPackages = [
 
 const cameraPackages = [
   {
-    name: "Základ",
+    name: "Bezpečný domov",
     price: "od 590 €",
     desc: "Pre malé prevádzky, kancelárie a rodinné domy.",
     features: [
