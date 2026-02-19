@@ -15,7 +15,7 @@ const Footer = () => {
               viewport={{ once: true }}>
 
               <Link to="/" className="text-2xl font-bold tracking-tight inline-block mb-4">
-                <span className="text-primary">BCB</span>
+                <span className="text-primary">Cok</span>
                 <span className="text-foreground"> Tech</span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed mb-6">
