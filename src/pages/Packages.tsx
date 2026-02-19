@@ -67,7 +67,7 @@ const cameraPackages = [
     ],
   },
   {
-    name: "Firma",
+    name: "Bezpečnosť +",
     price: "od 1 490 €",
     desc: "Pre sklady, predajne a menšie firemné objekty.",
     popular: true,
