@@ -173,32 +173,6 @@ const Testimonials = () => {
               ))}
             </div>
 
-            {/* Company ticker */}
-            <div className="overflow-hidden border-t border-border pt-4 sm:pt-6">
-              <motion.div
-                animate={{ x: ["0%", "-50%"] }}
-                transition={{
-                  x: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: 20,
-                    ease: "linear",
-                  },
-                }}
-                className="flex gap-6 sm:gap-8 whitespace-nowrap"
-              >
-                {[...companies, ...companies, ...companies, ...companies].map(
-                  (company, i) => (
-                    <span
-                      key={i}
-                      className="text-[10px] sm:text-xs text-muted-foreground/40 font-medium uppercase tracking-widest"
-                    >
-                      {company}
-                    </span>
-                  )
-                )}
-              </motion.div>
-            </div>
           </div>
         </div>
       </div>
