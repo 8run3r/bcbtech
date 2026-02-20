@@ -11,14 +11,14 @@ const webPackages = [
 {
   name: "Starter",
   price: "od 490 €",
-  desc: "Pre živnostníkov a mikrofirmy, ktoré potrebujú online prezentáciu.",
+  desc: "Pre živnostníkov a podnikateľov, ktorí potrebujú web stránku.",
   features: [
-  "Jednoduchá webstránka (1–3 podstránky)",
-  "Responzívny dizajn pre mobily",
-  "Kontaktný formulár",
-  "SEO základ + Google indexácia",
-  "Napojenie na sociálne siete",
-  "Dodanie do 7 dní"]
+  "Jednoduchá prezentačná webstránka (1–3 podstránky)",
+  "Plne responzívny dizajn optimalizovaný pre mobilné zariadenia",
+  "Kontaktný formulár s doručovaním na e-mail",
+  "Základná SEO optimalizácia + registrácia do Google indexu",
+  "Prepojenie na sociálne siete",
+  "Dodanie projektu do 5 dní"]
 
 },
 {
@@ -29,11 +29,12 @@ const webPackages = [
   features: [
   "Všetko zo Starter",
   "Viacstránkový web (5–10 podstránok)",
-  "CMS na správu obsahu",
-  "Google Analytics & tracking",
-  "Animácie a moderný dizajn",
-  "SSL certifikát + hosting 1 rok",
-  "3 mesiace technickej podpory"]
+  "Redakčný systém (CMS) pre jednoduchú správu obsahu",
+  "Integrácia Google Analytics a merania návštevnosti",
+  "Moderné animácie a prémiový dizajn",
+  "SSL certifikát",
+  "3 mesiace technickej podpory",
+  "Dodanie projektu do 5 dní"]
 
 },
 {
@@ -42,12 +43,13 @@ const webPackages = [
   desc: "Komplexné riešenie pre ambiciózne firmy.",
   features: [
   "Všetko z Business",
-  "E-shop alebo rezervačný systém",
-  "Napojenie na fakturačný systém",
-  "Vlastný backend & API",
-  "SEO optimalizácia na mieru",
+  "Kompletné riešenie na mieru (e-shop alebo rezervačný systém)",
+  "Prepojenie na fakturačný alebo účtovný systém",
+  "Vlastný backend a API riešenie",
+  "Pokročilá SEO optimalizácia na mieru",
   "6 mesiacov podpory a údržby",
-  "Prioritný servis"]
+  "Prioritná zákaznícka podpora",
+  "Dodanie projektu do 14 dní"]
 
 }];
 
@@ -121,12 +123,12 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
     <p className="text-2xl font-bold text-primary mb-2">{pkg.price}</p>
     <p className="text-sm text-muted-foreground mb-8">{pkg.desc}</p>
     <ul className="space-y-3 mb-8">
-      {pkg.features.map((f: string) => {}
-
-
-
-
-    )}
+      {pkg.features.map((f: string) =>
+      <li key={f} className="flex items-start gap-2.5 text-sm">
+        <Check size={15} className="mt-0.5 shrink-0 text-primary" />
+        <span>{f}</span>
+      </li>
+      )}
     </ul>
     <button
     onClick={onReserve}
