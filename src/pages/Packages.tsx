@@ -106,7 +106,7 @@ const PackageCard = ({ pkg, i, cta, onReserve }: { pkg: any; i: number; cta: str
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay: 0.1 + i * 0.12, duration: 0.7 }}
-    className={`relative p-8 rounded-2xl border transition-all duration-500 ${
+    className={`relative p-6 sm:p-8 rounded-2xl border transition-all duration-500 ${
       pkg.popular
         ? "bg-card border-primary/40 glow-primary"
         : "bg-card border-border hover:border-primary/20"
@@ -161,7 +161,7 @@ const Packages = () => {
       <div className="relative z-10">
       <Header />
 
-      <section className="pt-40 pb-20 px-6">
+      <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -177,33 +177,35 @@ const Packages = () => {
             </p>
           </motion.div>
 
-          {/* Tab switcher */}
-          <div className="flex justify-center mb-16">
+          <div className="flex justify-center mb-12 sm:mb-16">
             <div className="inline-flex rounded-full border border-border bg-card p-1 gap-1">
               <button
                 onClick={() => setActiveTab("cameras")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
                   activeTab === "cameras"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Camera size={18} />
-                Kamerové systémy
+                <Camera size={16} />
+                <span className="hidden xs:inline">Kamerové systémy</span>
+                <span className="xs:hidden">Kamery</span>
               </button>
               <button
                 onClick={() => setActiveTab("web")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
                   activeTab === "web"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Monitor size={18} />
-                Webové balíčky
+                <Monitor size={16} />
+                <span className="hidden xs:inline">Webové balíčky</span>
+                <span className="xs:hidden">Weby</span>
               </button>
             </div>
           </div>
+
 
           <AnimatePresence mode="wait">
             {activeTab === "cameras" ? (

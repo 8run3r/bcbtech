@@ -41,23 +41,23 @@ const Portfolio = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <section className="pt-40 pb-20 px-6">
+      <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-6">
+            <h1 className="text-[clamp(2rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-4 sm:mb-6">
               Naše projekty
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mb-10">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mb-8 sm:mb-10">
               Zabezpečenie a digitálne riešenia — vyberte si kategóriu.
             </p>
           </motion.div>
 
           {/* Filter tabs */}
-          <div className="flex gap-2 mb-12">
+          <div className="flex flex-wrap gap-2 mb-10 sm:mb-12">
             {([
               { key: "camera", label: "Kamery & Zabezpečenie", icon: Camera },
               { key: "web", label: "Weby & Appky", icon: Code2 },
@@ -65,7 +65,7 @@ const Portfolio = () => {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`inline-flex items-center gap-2 text-sm px-5 py-2 rounded-full transition-all duration-300 font-medium ${
+                className={`inline-flex items-center gap-2 text-sm px-4 sm:px-5 py-2 rounded-full transition-all duration-300 font-medium ${
                   filter === f.key
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground border border-border/50"
@@ -76,6 +76,7 @@ const Portfolio = () => {
               </button>
             ))}
           </div>
+
 
           <AnimatePresence mode="wait">
             <motion.div

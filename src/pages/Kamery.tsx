@@ -53,18 +53,18 @@ const Kamery = () => {
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[180px]" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col items-center text-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 w-full flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <p className="text-sm text-primary font-mono mb-6 tracking-[0.2em] uppercase">[ Security Systems ]</p>
-            <h1 className="text-5xl sm:text-7xl font-bold tracking-tighter mb-6">Kamerové systémy</h1>
-            <p className="text-lg text-muted-foreground max-w-lg leading-relaxed mx-auto">
+            <p className="text-xs sm:text-sm text-primary font-mono mb-4 sm:mb-6 tracking-[0.2em] uppercase">[ Security Systems ]</p>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-4 sm:mb-6">Kamerové systémy</h1>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed mx-auto px-2 sm:px-0">
               Profesionálna montáž, konfigurácia a servis bezpečnostných kamerových systémov — Hikvision, Dahua, Uniview a ďalšie.
             </p>
             <button
               onClick={() => setKonfiguratorOpen(true)}
-              className="mt-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
+              className="mt-6 sm:mt-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
             >
-              <Settings2 size={18} />
+              <Settings2 size={16} />
               Konfigurátor systému
             </button>
           </motion.div>
@@ -72,9 +72,10 @@ const Kamery = () => {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
+
       {/* Products from DB */}
       {products.length > 0 && (
-        <section className="py-20 px-6">
+        <section className="py-16 sm:py-20 px-5 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="mb-8">
               <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ Produkty ]</span>
@@ -136,7 +137,7 @@ const Kamery = () => {
       <CameraServices onOpenKonfigurator={() => setKonfiguratorOpen(true)} />
 
       {/* Brands Section */}
-      <section className="py-20 px-6">
+      <section className="py-16 sm:py-20 px-5 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
             <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-mono">Značky, s ktorými pracujeme</span>
