@@ -74,7 +74,7 @@ const Kontakt = () => {
     return (
       <main className="min-h-screen bg-background text-foreground">
         <Header />
-        <section className="pt-40 pb-20 px-6">
+        <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -102,7 +102,7 @@ const Kontakt = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <section className="pt-40 pb-20 px-6">
+      <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

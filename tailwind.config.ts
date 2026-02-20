@@ -12,6 +12,9 @@ export default {
         "2xl": "1400px",
       },
     },
+    screens: {
+      xs: "375px",
+    },
     extend: {
       fontFamily: {
         sans: ['Sora', 'sans-serif'],

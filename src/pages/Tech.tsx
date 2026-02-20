@@ -34,7 +34,7 @@ const Tech = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <section className="pt-40 pb-20 px-6">
+      <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
