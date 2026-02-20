@@ -11,7 +11,7 @@ const webPackages = [
   {
     name: "Starter",
     price: "od 490 €",
-    desc: "Pre živnostníkov a mikrofirmy, ktoré potrebujú online prezentáciu.",
+    desc: "Pre živnostníkov a podnikateľov, ktorí potrebujú web stránku.",
     features: [
       "Jednoduchá webstránka (1–3 podstránky)",
       "Responzívny dizajn pre mobily",
