@@ -8,145 +8,145 @@ import FluidCursor from "@/components/landing/FluidCursor";
 import ReservationModal from "@/components/ReservationModal";
 
 const webPackages = [
-  {
-    name: "Starter",
-    price: "od 490 €",
-    desc: "Pre živnostníkov a podnikateľov, ktorí potrebujú web stránku.",
-    features: [
-      "Jednoduchá webstránka (1–3 podstránky)",
-      "Responzívny dizajn pre mobily",
-      "Kontaktný formulár",
-      "SEO základ + Google indexácia",
-      "Napojenie na sociálne siete",
-      "Dodanie do 7 dní",
-    ],
-  },
-  {
-    name: "Business",
-    price: "od 990 €",
-    desc: "Pre malé firmy, ktoré chcú rásť online.",
-    popular: true,
-    features: [
-      "Všetko zo Starter",
-      "Viacstránkový web (5–10 podstránok)",
-      "CMS na správu obsahu",
-      "Google Analytics & tracking",
-      "Animácie a moderný dizajn",
-      "SSL certifikát + hosting 1 rok",
-      "3 mesiace technickej podpory",
-    ],
-  },
-  {
-    name: "Premium",
-    price: "od 2 500 €",
-    desc: "Komplexné riešenie pre ambiciózne firmy.",
-    features: [
-      "Všetko z Business",
-      "E-shop alebo rezervačný systém",
-      "Napojenie na fakturačný systém",
-      "Vlastný backend & API",
-      "SEO optimalizácia na mieru",
-      "6 mesiacov podpory a údržby",
-      "Prioritný servis",
-    ],
-  },
-];
+{
+  name: "Starter",
+  price: "od 490 €",
+  desc: "Pre živnostníkov a mikrofirmy, ktoré potrebujú online prezentáciu.",
+  features: [
+  "Jednoduchá webstránka (1–3 podstránky)",
+  "Responzívny dizajn pre mobily",
+  "Kontaktný formulár",
+  "SEO základ + Google indexácia",
+  "Napojenie na sociálne siete",
+  "Dodanie do 7 dní"]
+
+},
+{
+  name: "Business",
+  price: "od 990 €",
+  desc: "Pre malé firmy, ktoré chcú rásť online.",
+  popular: true,
+  features: [
+  "Všetko zo Starter",
+  "Viacstránkový web (5–10 podstránok)",
+  "CMS na správu obsahu",
+  "Google Analytics & tracking",
+  "Animácie a moderný dizajn",
+  "SSL certifikát + hosting 1 rok",
+  "3 mesiace technickej podpory"]
+
+},
+{
+  name: "Premium",
+  price: "od 2 500 €",
+  desc: "Komplexné riešenie pre ambiciózne firmy.",
+  features: [
+  "Všetko z Business",
+  "E-shop alebo rezervačný systém",
+  "Napojenie na fakturačný systém",
+  "Vlastný backend & API",
+  "SEO optimalizácia na mieru",
+  "6 mesiacov podpory a údržby",
+  "Prioritný servis"]
+
+}];
+
 
 const cameraPackages = [
-  {
-    name: "Bezpečný domov",
-    price: "od 590 €",
-    desc: "Pre malé prevádzky, kancelárie a rodinné domy.",
-    features: [
-      "2–4 IP kamery (2MP / 4MP)",
-      "4-kanálový NVR rekordér",
-      "Montáž a káblové trasy",
-      "Konfigurácia vzdialeného prístupu",
-      "Mobilná appka pre monitoring",
-      "1 rok záruky na prácu",
-    ],
-  },
-  {
-    name: "Bezpečnosť +",
-    price: "od 1 490 €",
-    desc: "Pre sklady, predajne a menšie firemné objekty.",
-    popular: true,
-    features: [
-      "4–8 IP kamier (4MP / 5MP)",
-      "8-kanálový NVR s 2TB HDD",
-      "AI detekcia pohybu a osôb",
-      "Nočné videnie do 30m",
-      "PoE napájanie cez sieť",
-      "Vzdialený prístup + VPN",
-      "Zaškolenie obsluhy",
-      "2 roky záruky",
-    ],
-  },
-  {
-    name: "Komplex",
-    price: "od 3 500 €",
-    desc: "Pre výrobné haly, areály a väčšie objekty.",
-    features: [
-      "8–16+ kamier (5MP / 4K)",
-      "16-kanálový NVR s RAID",
-      "Perimeter ochrana s AI",
-      "PTZ kamery s automatickým trackingom",
-      "Integrácia s alarmom",
-      "Projektová dokumentácia",
-      "Servisná zmluva na 12 mesiacov",
-      "Prioritná podpora 24/7",
-    ],
-  },
-];
+{
+  name: "Bezpečný domov",
+  price: "od 590 €",
+  desc: "Pre malé prevádzky, kancelárie a rodinné domy.",
+  features: [
+  "2–4 IP kamery (2MP / 4MP)",
+  "4-kanálový NVR rekordér",
+  "Montáž a káblové trasy",
+  "Konfigurácia vzdialeného prístupu",
+  "Mobilná appka pre monitoring",
+  "1 rok záruky na prácu"]
 
-const PackageCard = ({ pkg, i, cta, onReserve }: { pkg: any; i: number; cta: string; onReserve: () => void }) => (
-  <motion.div
-    key={pkg.name}
-    initial={{ opacity: 0, y: 40 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: 0.1 + i * 0.12, duration: 0.7 }}
-    className={`relative p-6 sm:p-8 rounded-2xl border transition-all duration-500 ${
-      pkg.popular
-        ? "bg-card border-primary/40 glow-primary"
-        : "bg-card border-border hover:border-primary/20"
-    }`}
-  >
-    {pkg.popular && (
-      <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest bg-primary text-primary-foreground px-4 py-1 rounded-full font-semibold">
+},
+{
+  name: "Bezpečnosť +",
+  price: "od 1 490 €",
+  desc: "Pre sklady, predajne a menšie firemné objekty.",
+  popular: true,
+  features: [
+  "4–8 IP kamier (4MP / 5MP)",
+  "8-kanálový NVR s 2TB HDD",
+  "AI detekcia pohybu a osôb",
+  "Nočné videnie do 30m",
+  "PoE napájanie cez sieť",
+  "Vzdialený prístup + VPN",
+  "Zaškolenie obsluhy",
+  "2 roky záruky"]
+
+},
+{
+  name: "Komplex",
+  price: "od 3 500 €",
+  desc: "Pre výrobné haly, areály a väčšie objekty.",
+  features: [
+  "8–16+ kamier (5MP / 4K)",
+  "16-kanálový NVR s RAID",
+  "Perimeter ochrana s AI",
+  "PTZ kamery s automatickým trackingom",
+  "Integrácia s alarmom",
+  "Projektová dokumentácia",
+  "Servisná zmluva na 12 mesiacov",
+  "Prioritná podpora 24/7"]
+
+}];
+
+
+const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string;onReserve: () => void;}) =>
+<motion.div
+  key={pkg.name}
+  initial={{ opacity: 0, y: 40 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ delay: 0.1 + i * 0.12, duration: 0.7 }}
+  className={`relative p-6 sm:p-8 rounded-2xl border transition-all duration-500 ${
+  pkg.popular ?
+  "bg-card border-primary/40 glow-primary" :
+  "bg-card border-border hover:border-primary/20"}`
+  }>
+
+    {pkg.popular &&
+  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest bg-primary text-primary-foreground px-4 py-1 rounded-full font-semibold">
         Populárny
       </span>
-    )}
+  }
     <h3 className="text-xl font-bold mb-1">{pkg.name}</h3>
     <p className="text-2xl font-bold text-primary mb-2">{pkg.price}</p>
     <p className="text-sm text-muted-foreground mb-8">{pkg.desc}</p>
     <ul className="space-y-3 mb-8">
-      {pkg.features.map((f: string) => (
-        <li key={f} className="flex items-start gap-3 text-sm text-muted-foreground">
-          <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
-          {f}
-        </li>
-      ))}
+      {pkg.features.map((f: string) => {}
+
+
+
+
+    )}
     </ul>
     <button
-      onClick={onReserve}
-      className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
-        pkg.popular
-          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-          : "border border-border text-foreground hover:bg-foreground hover:text-background"
-      }`}
-    >
+    onClick={onReserve}
+    className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
+    pkg.popular ?
+    "bg-primary text-primary-foreground hover:bg-primary/90" :
+    "border border-border text-foreground hover:bg-foreground hover:text-background"}`
+    }>
+
       {cta}
     </button>
-  </motion.div>
-);
+  </motion.div>;
+
 
 const Packages = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") === "web" ? "web" : "cameras";
   const [activeTab, setActiveTab] = useState<"cameras" | "web">(initialTab);
   const [reservationOpen, setReservationOpen] = useState(false);
-  const [selectedPkg, setSelectedPkg] = useState<{ category: "cameras" | "web"; name: string }>({ category: "cameras", name: "" });
+  const [selectedPkg, setSelectedPkg] = useState<{category: "cameras" | "web";name: string;}>({ category: "cameras", name: "" });
 
   const openReservation = (category: "cameras" | "web", name: string) => {
     setSelectedPkg({ category, name });
@@ -164,11 +164,11 @@ const Packages = () => {
       <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12">
+
             <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-6">
               Balíčky
             </h1>
@@ -180,25 +180,25 @@ const Packages = () => {
           <div className="flex justify-center mb-12 sm:mb-16">
             <div className="inline-flex rounded-full border border-border bg-card p-1 gap-1">
               <button
-                onClick={() => setActiveTab("cameras")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "cameras"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                  onClick={() => setActiveTab("cameras")}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "cameras" ?
+                  "bg-primary text-primary-foreground" :
+                  "text-muted-foreground hover:text-foreground"}`
+                  }>
+
                 <Camera size={16} />
                 <span className="hidden xs:inline">Kamerové systémy</span>
                 <span className="xs:hidden">Kamery</span>
               </button>
               <button
-                onClick={() => setActiveTab("web")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                  activeTab === "web"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                  onClick={() => setActiveTab("web")}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                  activeTab === "web" ?
+                  "bg-primary text-primary-foreground" :
+                  "text-muted-foreground hover:text-foreground"}`
+                  }>
+
                 <Monitor size={16} />
                 <span className="hidden xs:inline">Webové balíčky</span>
                 <span className="xs:hidden">Weby</span>
@@ -208,18 +208,18 @@ const Packages = () => {
 
 
           <AnimatePresence mode="wait">
-            {activeTab === "cameras" ? (
+            {activeTab === "cameras" ?
               <motion.div
                 key="cameras"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
+                transition={{ duration: 0.4 }}>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-                  {cameraPackages.map((pkg, i) => (
-                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" onReserve={() => openReservation("cameras", `${pkg.name} – ${pkg.price}`)} />
-                  ))}
+                  {cameraPackages.map((pkg, i) =>
+                  <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Nezáväzná konzultácia" onReserve={() => openReservation("cameras", `${pkg.name} – ${pkg.price}`)} />
+                  )}
                 </div>
 
                 {/* Doplnkové služby - only under cameras */}
@@ -227,8 +227,8 @@ const Packages = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="p-8 rounded-2xl border border-border bg-card/50"
-                >
+                  className="p-8 rounded-2xl border border-border bg-card/50">
+
                   <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
                     <div>
@@ -253,27 +253,27 @@ const Packages = () => {
                     </div>
                   </div>
                 </motion.div>
-              </motion.div>
-            ) : (
+              </motion.div> :
+
               <motion.div
                 key="web"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
+                transition={{ duration: 0.4 }}>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-                  {webPackages.map((pkg, i) => (
-                    <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" onReserve={() => openReservation("web", `${pkg.name} – ${pkg.price}`)} />
-                  ))}
+                  {webPackages.map((pkg, i) =>
+                  <PackageCard key={pkg.name} pkg={pkg} i={i} cta="Začať projekt" onReserve={() => openReservation("web", `${pkg.name} – ${pkg.price}`)} />
+                  )}
                 </div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="p-8 rounded-2xl border border-border bg-card/50"
-                >
+                  className="p-8 rounded-2xl border border-border bg-card/50">
+
                   <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
                     <div>
@@ -299,21 +299,21 @@ const Packages = () => {
                   </div>
                 </motion.div>
               </motion.div>
-            )}
+              }
           </AnimatePresence>
         </div>
       </section>
 
       <Footer />
       <ReservationModal
-        open={reservationOpen}
-        onClose={() => setReservationOpen(false)}
-        packageCategory={selectedPkg.category}
-        packageName={selectedPkg.name}
-      />
+          open={reservationOpen}
+          onClose={() => setReservationOpen(false)}
+          packageCategory={selectedPkg.category}
+          packageName={selectedPkg.name} />
+
       </div>
-    </main>
-  );
+    </main>);
+
 };
 
 export default Packages;
