@@ -28,8 +28,8 @@ const Hero = () => {
               flipDelayMs={30}
               className="text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-[0.15em]"
               encryptedClassName="text-primary/40"
-              revealedClassName="text-muted-foreground"
-            />
+              revealedClassName="text-muted-foreground" />
+
             {" "}
             <span className="text-primary/60">]</span>
           </motion.p>
@@ -57,8 +57,8 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.7 }}
             className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-sm sm:max-w-xl mx-auto mb-12 leading-relaxed px-2 sm:px-0">
 
-            Webové aplikácie & profesionálna montáž kamerových systémov.
-            Všetko pod jednou strechou.
+            Webové aplikácie & profesionálna montáž kamerových systémov. Všetko pod jednou strechou
+          
           </motion.p>
 
           <motion.div
