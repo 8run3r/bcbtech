@@ -55,10 +55,10 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
-            className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-sm sm:max-w-xl mx-auto mb-12 leading-relaxed px-2 sm:px-0">
+            className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-sm sm:max-w-xl mx-auto mb-12 leading-relaxed px-2 sm:px-0">Webové aplikácie & profesionálna montáž kamerových systémov. Všetko pod jednou strechou.
 
-            Webové aplikácie & profesionálna montáž kamerových systémov. Všetko pod jednou strechou
-          
+
+
           </motion.p>
 
           <motion.div
