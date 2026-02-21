@@ -56,22 +56,22 @@ const webPackages = [
 
 const cameraPackages = [
 {
-  name: "Bezpečný domov",
-  price: "od 590 €",
-  desc: "Pre malé prevádzky, kancelárie a rodinné domy.",
+  name: "WiFi kamery",
+  price: "od 390 €",
+  desc: "Pre domácnosti a malé priestory bez káblových rozvodov.",
   features: [
-  "2–4 IP kamery (2MP / 4MP)",
-  "4-kanálový NVR rekordér",
-  "Montáž a káblové trasy",
-  "Konfigurácia vzdialeného prístupu",
-  "Mobilná appka pre monitoring",
+  "2–4 WiFi kamery (2MP / 4MP)",
+  "Jednoduché nastavenie cez mobilnú appku",
+  "Detekcia pohybu s notifikáciami",
+  "Nočné videnie do 15m",
+  "Obojsmerná komunikácia",
+  "Cloud alebo SD karta záznam",
   "1 rok záruky na prácu"]
-
 },
 {
-  name: "Bezpečnosť +",
-  price: "od 1 490 €",
-  desc: "Pre sklady, predajne a menšie firemné objekty.",
+  name: "IP kamery",
+  price: "od 1 290 €",
+  desc: "Pre firmy, sklady a predajne s pevnou inštaláciou.",
   popular: true,
   features: [
   "4–8 IP kamier (4MP / 5MP)",
@@ -82,12 +82,11 @@ const cameraPackages = [
   "Vzdialený prístup + VPN",
   "Zaškolenie obsluhy",
   "2 roky záruky"]
-
 },
 {
-  name: "Komplex",
+  name: "OTB kamery (4K)",
   price: "od 3 500 €",
-  desc: "Pre výrobné haly, areály a väčšie objekty.",
+  desc: "Vysoko rozlíšené kamery pre veľké objekty a areály.",
   features: [
   "8–16+ kamier (5MP / 4K)",
   "16-kanálový NVR s RAID",
@@ -97,7 +96,6 @@ const cameraPackages = [
   "Projektová dokumentácia",
   "Servisná zmluva na 12 mesiacov",
   "Prioritná podpora 24/7"]
-
 }];
 
 
