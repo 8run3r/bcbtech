@@ -3,7 +3,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
-const links = [
+const desktopLinks = [
+{ label: "Balíčky", href: "/balicky" },
+{ label: "Portfolio", href: "/portfolio" },
+{ label: "Tech", href: "/tech" }];
+
+const mobileLinks = [
 { label: "Balíčky", href: "/balicky" },
 { label: "Zabezpečenie", href: "/kamery" },
 { label: "Portfolio", href: "/portfolio" },
@@ -68,7 +73,7 @@ const Header = () => {
 
           {/* Center nav — desktop only */}
           <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-            {links.map((l) => {
+            {desktopLinks.map((l) => {
               const isActive = location.pathname === l.href;
               return (
                 <Link
@@ -158,7 +163,7 @@ const Header = () => {
                 </span>
               </motion.div>
 
-              {links.map((l, i) => (
+              {mobileLinks.map((l, i) => (
                 <motion.div
                   key={l.href}
                   initial={{ opacity: 0, y: 24 }}
@@ -183,7 +188,7 @@ const Header = () => {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                transition={{ delay: 0.08 + links.length * 0.07 + 0.05, duration: 0.3 }}
+                transition={{ delay: 0.08 + mobileLinks.length * 0.07 + 0.05, duration: 0.3 }}
                 className="mt-4"
               >
                 <Link
