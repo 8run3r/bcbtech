@@ -1065,24 +1065,6 @@ const ScrollStory = () => {
           <SlideOverlay key={i} slide={slide} index={i} progress={progress} />
         ))}
 
-        {/* Scroll indicator */}
-        <div
-          className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 transition-opacity duration-700"
-          style={{ opacity: progress < 0.05 ? 1 : 0, pointerEvents: 'none' }}
-        >
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
-            Just scroll
-          </span>
-          <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/60">
-              <path d="M12 5v14M5 12l7 7 7-7" />
-            </svg>
-          </motion.div>
-        </div>
-
         {/* Progress dots */}
         <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3">
           {slides.map((_, i) => {
