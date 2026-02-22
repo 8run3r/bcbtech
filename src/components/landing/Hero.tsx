@@ -1,8 +1,24 @@
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import EncryptedText from "@/components/ui/encrypted-text";
 
 const Hero = () => {
+  const [showIndicator, setShowIndicator] = useState(false);
+  const [hideIndicator, setHideIndicator] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIndicator(true), 2000);
+    const handleScroll = () => {
+      if (window.scrollY > 100) setHideIndicator(true);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Radial glow */}
@@ -81,6 +97,26 @@ const Hero = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Scroll indicator — appears after 2s, hides on scroll */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: showIndicator && !hideIndicator ? 1 : 0 }}
+        transition={{ duration: 0.7 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
+      >
+        <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
+          Just scroll
+        </span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/60">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </motion.div>
+      </motion.div>
     </section>);
 
 
