@@ -5,16 +5,15 @@ import { Link, useLocation } from "react-router-dom";
 
 const desktopLinks = [
   { label: "Balíčky", href: "/balicky" },
-  { label: "Zabezpečenie", href: "/kamery" },
+  { label: "Riešenia", href: "/riesenia" },
   { label: "Portfolio", href: "/portfolio" },
-  { label: "Tech", href: "/tech" },
 ];
 
 const mobileLinks = [
-{ label: "Balíčky", href: "/balicky" },
-{ label: "Zabezpečenie", href: "/kamery" },
-{ label: "Portfolio", href: "/portfolio" },
-{ label: "Tech", href: "/tech" }];
+  { label: "Balíčky", href: "/balicky" },
+  { label: "Riešenia", href: "/riesenia" },
+  { label: "Portfolio", href: "/portfolio" },
+];
 
 
 const Header = () => {
