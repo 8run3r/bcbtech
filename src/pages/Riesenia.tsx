@@ -1,5 +1,6 @@
 import Header from "@/components/landing/Header";
 import CameraServices from "@/components/landing/CameraServices";
+import { Camera, Home, Network, Move3d, Shield, Package, BatteryCharging, LayoutGrid } from "lucide-react";
 import Footer from "@/components/landing/Footer";
 import { motion } from "framer-motion";
 import { lazy, Suspense, useState, useEffect } from "react";
@@ -28,6 +29,17 @@ const techCategories = [
   { name: "AI & Automatizácia", tools: ["OpenAI", "LangChain", "Zapier", "n8n"] },
   { name: "Platby & Integrácie", tools: ["Stripe", "Shopify", "Twilio", "SendGrid"] },
 ];
+
+const categoryIcon = (cat: string) => {
+  if (cat.toLowerCase().includes("outdoor") || cat.toLowerCase().includes("všeobecné")) return Camera;
+  if (cat.toLowerCase().includes("interiér") || cat.toLowerCase().includes("bytu")) return Home;
+  if (cat.toLowerCase().includes("sieťové") || cat.toLowerCase().includes("rozlíšen")) return Network;
+  if (cat.toLowerCase().includes("ptz") || cat.toLowerCase().includes("detailné")) return Move3d;
+  if (cat.toLowerCase().includes("profesionálne") || cat.toLowerCase().includes("indoor")) return Shield;
+  if (cat.toLowerCase().includes("sety") || cat.toLowerCase().includes("viac kamier")) return Package;
+  if (cat.toLowerCase().includes("batériové") || cat.toLowerCase().includes("flexibilné")) return BatteryCharging;
+  return Camera;
+};
 
 const Riesenia = () => {
   const [products, setProducts] = useState<CameraProduct[]>([]);
@@ -124,24 +136,58 @@ const Riesenia = () => {
           {products.length > 0 && (
             <section className="py-16 sm:py-20 px-5 sm:px-6">
               <div className="max-w-7xl mx-auto">
-                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="mb-8">
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="mb-10">
                   <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ Produkty ]</span>
                   <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Naša ponuka kamier</h2>
                 </motion.div>
 
-                <div className="flex flex-wrap gap-2 mb-10">
-                  {["Všetky", ...categories].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveFilter(cat)}
-                      className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider border transition-all duration-300 ${
-                        activeFilter === cat
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-transparent text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                {/* Visual Category Filters */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-12">
+                  {[
+                    { key: "Všetky", label: "Všetky", icon: LayoutGrid, count: products.length },
+                    ...categories.map(cat => ({
+                      key: cat,
+                      label: cat,
+                      icon: categoryIcon(cat),
+                      count: products.filter(p => p.category === cat).length,
+                    })),
+                  ].map((item, i) => (
+                    <motion.button
+                      key={item.key}
+                      initial={{ opacity: 0, y: 15 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => setActiveFilter(item.key)}
+                      className={`group relative flex flex-col items-start p-4 sm:p-5 rounded-xl border text-left transition-all duration-300 overflow-hidden ${
+                        activeFilter === item.key
+                          ? "bg-primary/10 border-primary/40 shadow-[0_0_20px_-5px] shadow-primary/20"
+                          : "bg-card/40 border-border/50 hover:border-primary/20 hover:bg-card/70"
                       }`}
                     >
-                      {cat}
-                    </button>
+                      <div className="flex items-center justify-between w-full mb-2">
+                        <item.icon
+                          size={18}
+                          strokeWidth={1.5}
+                          className={`transition-colors ${activeFilter === item.key ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"}`}
+                        />
+                        <span className={`text-[10px] font-mono tabular-nums ${activeFilter === item.key ? "text-primary" : "text-muted-foreground/60"}`}>
+                          {item.count}
+                        </span>
+                      </div>
+                      <span className={`text-xs sm:text-sm font-medium leading-tight transition-colors ${
+                        activeFilter === item.key ? "text-foreground" : "text-foreground/70 group-hover:text-foreground"
+                      }`}>
+                        {item.label}
+                      </span>
+                      {activeFilter === item.key && (
+                        <motion.div
+                          layoutId="activeFilterIndicator"
+                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary"
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                    </motion.button>
                   ))}
                 </div>
 
