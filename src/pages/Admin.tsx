@@ -442,10 +442,14 @@ const Admin = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${
                           lead._source === 'balíčky' 
-                            ? 'bg-primary/20 text-primary' 
+                            ? lead.package_name?.startsWith('Konfigurátor')
+                              ? 'bg-orange-500/20 text-orange-400'
+                              : 'bg-primary/20 text-primary'
                             : 'bg-blue-500/20 text-blue-400'
                         }`}>
-                          {lead._source === 'balíčky' ? '📦 Balíčky' : '✉️ Kontakt'}
+                          {lead._source === 'balíčky' 
+                            ? lead.package_name?.startsWith('Konfigurátor') ? '🔧 Konfigurátor' : '📦 Balíčky'
+                            : '✉️ Kontakt'}
                         </span>
                         <span className="font-semibold text-sm">{lead.name}</span>
                         <span className="text-xs text-muted-foreground">{lead.email}</span>
