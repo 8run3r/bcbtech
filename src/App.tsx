@@ -31,7 +31,7 @@ const App = () => (
           <Route path="/kamery" element={<Navigate to="/riesenia" replace />} />
           <Route path="/tech" element={<Navigate to="/riesenia" replace />} />
           <Route path="/konfigurator" element={<Navigate to="/riesenia" replace />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/a7x9k2m" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
