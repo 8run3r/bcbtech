@@ -89,9 +89,9 @@ const Hero = () => {
               Začať projekt
             </Link>
             <Link
-              to="/kamery"
+              to="/riesenia"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider font-medium flex items-center gap-2 group">
-              Kamerové systémy
+              Naše riešenia
               <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
             </Link>
           </motion.div>
