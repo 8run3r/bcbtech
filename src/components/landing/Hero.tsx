@@ -81,16 +81,34 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.9 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
 
+            {/* Primary CTA — animated gradient border */}
             <Link
               to="/kontakt"
-              className="w-full sm:w-auto group relative bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500 text-center">
-              Začať projekt
+              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider text-center overflow-hidden">
+              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-foreground to-primary bg-[length:200%_100%] animate-[shimmer_3s_linear_infinite]" />
+              <span className="absolute inset-[1.5px] rounded-full bg-background group-hover:bg-primary/10 transition-colors duration-500" />
+              <span className="relative z-10 text-foreground group-hover:text-primary transition-colors duration-500">
+                Začať projekt
+              </span>
             </Link>
+
+            {/* Balíčky — outlined with hover fill */}
+            <Link
+              to="/balicky"
+              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider text-center border border-border/60 hover:border-primary/50 transition-all duration-500 overflow-hidden">
+              <span className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-all duration-500 rounded-full" />
+              <span className="relative z-10 text-muted-foreground group-hover:text-foreground transition-colors duration-300 flex items-center justify-center gap-2">
+                Balíčky
+                <span className="inline-block transition-transform group-hover:translate-x-1 text-primary/60">→</span>
+              </span>
+            </Link>
+
+            {/* Riešenia — ghost link */}
             <Link
               to="/riesenia"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider font-medium flex items-center gap-2 group">
+              className="text-sm text-muted-foreground/70 hover:text-primary transition-colors duration-300 uppercase tracking-wider font-medium flex items-center gap-2 group">
               Naše riešenia
-              <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              <span className="inline-block transition-transform group-hover:translate-x-1 text-primary/40">→</span>
             </Link>
           </motion.div>
         </motion.div>
