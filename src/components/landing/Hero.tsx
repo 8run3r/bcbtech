@@ -5,13 +5,11 @@ import EncryptedText from "@/components/ui/encrypted-text";
 
 const Hero = () => {
   const [showIndicator, setShowIndicator] = useState(false);
-  const [hideIndicator, setHideIndicator] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowIndicator(true), 2000);
-    const handleScroll = () => {
-      if (window.scrollY > 100) setHideIndicator(true);
-    };
+    const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       clearTimeout(timer);
@@ -98,11 +96,16 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator — appears after 2s, hides on scroll */}
+      {/* Scroll indicator — glitch-blur dissolve */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: showIndicator && !hideIndicator ? 1 : 0 }}
-        transition={{ duration: 0.7 }}
+        animate={{
+          opacity: showIndicator && scrollY < 300 ? 1 : scrollY >= 300 ? 0 : 0,
+          filter: scrollY < 50 ? "blur(0px)" : scrollY < 300 ? `blur(${((scrollY - 50) / 250) * 20}px)` : "blur(20px)",
+          scale: scrollY < 50 ? 1 : scrollY < 300 ? 1 + ((scrollY - 50) / 250) * 0.6 : 1.6,
+          letterSpacing: scrollY < 50 ? "0.25em" : scrollY < 300 ? `${0.25 + ((scrollY - 50) / 250) * 1.5}em` : "1.75em",
+        }}
+        transition={{ duration: 0.1, ease: "linear" }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
       >
         <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">

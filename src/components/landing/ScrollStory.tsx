@@ -1065,11 +1065,16 @@ const ScrollStory = () => {
           <SlideOverlay key={i} slide={slide} index={i} progress={progress} />
         ))}
 
-        {/* Scroll indicator — visible at start, hides on scroll */}
+        {/* Scroll indicator — glitch-blur dissolve */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: progress < 0.05 ? 1 : 0 }}
-          transition={{ duration: 0.7 }}
+          animate={{
+            opacity: progress < 0.02 ? 1 : progress < 0.12 ? 1 : 0,
+            filter: progress < 0.02 ? "blur(0px)" : progress < 0.12 ? `blur(${((progress - 0.02) / 0.1) * 20}px)` : "blur(20px)",
+            scale: progress < 0.02 ? 1 : progress < 0.12 ? 1 + ((progress - 0.02) / 0.1) * 0.6 : 1.6,
+            letterSpacing: progress < 0.02 ? "0.25em" : progress < 0.12 ? `${0.25 + ((progress - 0.02) / 0.1) * 1.5}em` : "1.75em",
+          }}
+          transition={{ duration: 0.1, ease: "linear" }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
         >
           <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
