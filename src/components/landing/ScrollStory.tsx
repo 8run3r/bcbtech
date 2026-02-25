@@ -1065,22 +1065,25 @@ const ScrollStory = () => {
           <SlideOverlay key={i} slide={slide} index={i} progress={progress} />
         ))}
 
-        {/* Progress dots */}
-        <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 sm:gap-3">
-          {slides.map((_, i) => {
-            const slideProgress = i / slides.length;
-            const isActive = progress >= slideProgress && progress < (i + 1) / slides.length;
-            return (
-              <div key={i} className="flex items-center gap-2">
-                <div
-                  className={`rounded-full transition-all duration-500 ${
-                    isActive ? "w-6 sm:w-8 h-1 sm:h-1.5 bg-primary" : "w-1.5 sm:w-2 h-1 sm:h-1.5 bg-muted-foreground/20"
-                  }`}
-                />
-              </div>
-            );
-          })}
-        </div>
+        {/* Scroll indicator — visible at start, hides on scroll */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: progress < 0.05 ? 1 : 0 }}
+          transition={{ duration: 0.7 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
+        >
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
+            Just scroll
+          </span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/60">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
