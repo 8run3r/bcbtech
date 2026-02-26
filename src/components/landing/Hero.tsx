@@ -124,7 +124,7 @@ const Hero = () => {
           letterSpacing: scrollY < 50 ? "0.25em" : scrollY < 300 ? `${0.25 + ((scrollY - 50) / 250) * 1.5}em` : "1.75em",
         }}
         transition={{ duration: 0.1, ease: "linear" }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
+        className="absolute bottom-10 left-0 right-0 z-30 flex flex-col items-center gap-2 pointer-events-none"
       >
         <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
           Just scroll
