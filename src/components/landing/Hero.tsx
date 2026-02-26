@@ -1,11 +1,18 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import EncryptedText from "@/components/ui/encrypted-text";
+import { RippleButton } from "@/components/ui/ripple-button";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [showIndicator, setShowIndicator] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+
+  const handleNavigate = useCallback((path: string) => {
+    setTimeout(() => navigate(path), 300);
+  }, [navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowIndicator(true), 2000);
@@ -81,35 +88,31 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.9 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
 
-            {/* Primary CTA — animated gradient border with solid backdrop */}
-            <Link
-              to="/kontakt"
-              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider text-center overflow-hidden">
-              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-foreground to-primary bg-[length:200%_100%] animate-[shimmer_3s_linear_infinite]" />
-              <span className="absolute inset-[1.5px] rounded-full bg-background/95 backdrop-blur-md group-hover:bg-primary/15 transition-colors duration-500" />
-              <span className="relative z-10 text-foreground font-semibold group-hover:text-primary transition-colors duration-500">
-                Začať projekt
-              </span>
-            </Link>
+            {/* Primary CTA — ripple effect */}
+            <RippleButton
+              onClick={() => handleNavigate("/kontakt")}
+              rippleColor="hsl(160 100% 50% / 0.3)"
+              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-semibold text-sm uppercase tracking-wider text-center bg-primary text-primary-foreground hover:brightness-110 transition-all duration-300"
+            >
+              Začať projekt
+            </RippleButton>
 
-            {/* Balíčky — solid bg with border */}
-            <Link
-              to="/balicky"
-              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider text-center border border-foreground/20 hover:border-primary/60 transition-all duration-500 overflow-hidden">
-              <span className="absolute inset-0 bg-background/80 backdrop-blur-md group-hover:bg-primary/10 transition-all duration-500 rounded-full" />
-              <span className="relative z-10 text-foreground/80 group-hover:text-foreground transition-colors duration-300 flex items-center justify-center gap-2 font-semibold">
-                Balíčky
-                <span className="inline-block transition-transform group-hover:translate-x-1 text-primary">→</span>
-              </span>
-            </Link>
+            {/* Balíčky — interactive hover slide */}
+            <InteractiveHoverButton
+              onClick={() => handleNavigate("/balicky")}
+              className="w-full sm:w-auto"
+            >
+              Balíčky
+            </InteractiveHoverButton>
 
-            {/* Riešenia — ghost link with backdrop */}
-            <Link
-              to="/riesenia"
-              className="text-sm text-foreground/60 hover:text-primary transition-colors duration-300 uppercase tracking-wider font-semibold flex items-center gap-2 group backdrop-blur-sm px-4 py-2 rounded-full">
+            {/* Riešenia — ripple ghost */}
+            <RippleButton
+              onClick={() => handleNavigate("/riesenia")}
+              rippleColor="hsl(160 100% 50% / 0.2)"
+              className="w-full sm:w-auto px-8 py-3 rounded-full text-sm text-foreground/70 hover:text-foreground border border-foreground/10 hover:border-foreground/20 backdrop-blur-sm font-semibold uppercase tracking-wider transition-all duration-300"
+            >
               Naše riešenia
-              <span className="inline-block transition-transform group-hover:translate-x-1 text-primary/50 group-hover:text-primary">→</span>
-            </Link>
+            </RippleButton>
           </motion.div>
         </motion.div>
       </div>
