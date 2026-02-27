@@ -4,6 +4,7 @@ import { X, Send, Loader2, CheckCircle } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useFormSecurity } from "@/hooks/use-form-security";
 
 const reservationSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
@@ -24,6 +25,7 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const { honeypot, setHoneypot, cooldown, startCooldown, canSubmit } = useFormSecurity();
 
   const handleClose = () => {
     onClose();
@@ -36,6 +38,11 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit()) {
+      if (honeypot) { setSent(true); return; }
+      toast.error(`Počkajte ${cooldown}s pred ďalším odoslaním.`);
+      return;
+    }
     setErrors({});
 
     const result = reservationSchema.safeParse(form);
@@ -64,6 +71,7 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
       return;
     }
 
+    startCooldown();
     setSent(true);
     toast.success("Rezervácia bola odoslaná!");
   };
@@ -148,6 +156,12 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
                     onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   />
+                  {/* Honeypot */}
+                  <div style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true" tabIndex={-1}>
+                    <label htmlFor="res_website">Website</label>
+                    <input id="res_website" type="text" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} autoComplete="off" tabIndex={-1} />
+                  </div>
+
                   <textarea
                     placeholder="Poznámka (voliteľné)"
                     rows={3}
@@ -157,11 +171,13 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
                   />
                   <button
                     type="submit"
-                    disabled={sending}
+                    disabled={sending || cooldown > 0}
                     className="w-full bg-primary text-primary-foreground py-3.5 rounded-full font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {sending ? (
                       <><Loader2 size={16} className="animate-spin" /> Odosielam...</>
+                    ) : cooldown > 0 ? (
+                      <>Počkajte {cooldown}s</>
                     ) : (
                       <><Send size={16} /> Odoslať rezerváciu</>
                     )}

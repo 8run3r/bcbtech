@@ -4,6 +4,7 @@ import { Mail, MapPin, Phone, Send, Loader2, CheckCircle, Camera, Monitor } from
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useFormSecurity } from "@/hooks/use-form-security";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
@@ -30,11 +31,17 @@ const Contact = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const { honeypot, setHoneypot, cooldown, startCooldown, canSubmit } = useFormSecurity();
 
   const packageOptions = form.package_category === "cameras" ? cameraPackageOptions : form.package_category === "web" ? webPackageOptions : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit()) {
+      if (honeypot) { setSent(true); return; } // silent fail for bots
+      toast.error(`Počkajte ${cooldown}s pred ďalším odoslaním.`);
+      return;
+    }
     setErrors({});
 
     const result = contactSchema.safeParse(form);
@@ -62,6 +69,7 @@ const Contact = () => {
       return;
     }
 
+    startCooldown();
     setSent(true);
     setForm({ name: "", email: "", message: "", package_category: "", package_name: "" });
     toast.success("Správa bola odoslaná!");
@@ -194,6 +202,12 @@ const Contact = () => {
               </div>
             )}
 
+            {/* Honeypot - hidden from humans */}
+            <div className="sm:col-span-2" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true" tabIndex={-1}>
+              <label htmlFor="contact_website">Website</label>
+              <input id="contact_website" type="text" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} autoComplete="off" tabIndex={-1} />
+            </div>
+
             <div className="sm:col-span-2 space-y-1">
               <textarea
                 placeholder="Opíšte váš projekt... *"
@@ -206,11 +220,13 @@ const Contact = () => {
             </div>
             <button
               type="submit"
-              disabled={sending}
+              disabled={sending || cooldown > 0}
               className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 glow-primary"
             >
               {sending ? (
                 <><Loader2 size={16} className="animate-spin" /> Odosielam...</>
+              ) : cooldown > 0 ? (
+                <>Počkajte {cooldown}s</>
               ) : (
                 <><Send size={16} /> Odoslať správu</>
               )}
