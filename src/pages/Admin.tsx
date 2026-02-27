@@ -34,6 +34,11 @@ interface PortfolioItem {
   sort_order: number;
 }
 
+const LOCKOUT_KEY = "admin_login_attempts";
+const LOCKOUT_TIME_KEY = "admin_lockout_until";
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 5 * 60 * 1000;
+
 const Admin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -42,6 +47,8 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"cameras" | "portfolio" | "leads">("cameras");
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+  const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
 
   // Camera state
@@ -109,10 +116,54 @@ const Admin = () => {
     if (isAdmin) { fetchCameras(); fetchPortfolio(); fetchMessages(); fetchReservations(); }
   }, [isAdmin]);
 
+  // Check lockout on mount
+  useEffect(() => {
+    const lockUntil = Number(sessionStorage.getItem(LOCKOUT_TIME_KEY) || 0);
+    if (lockUntil > Date.now()) {
+      startLockoutTimer(lockUntil);
+    }
+  }, []);
+
+  const startLockoutTimer = (until: number) => {
+    if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+    setLockoutRemaining(Math.ceil((until - Date.now()) / 1000));
+    lockoutTimerRef.current = setInterval(() => {
+      const rem = Math.ceil((until - Date.now()) / 1000);
+      if (rem <= 0) {
+        setLockoutRemaining(0);
+        sessionStorage.removeItem(LOCKOUT_KEY);
+        sessionStorage.removeItem(LOCKOUT_TIME_KEY);
+        if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
+      } else {
+        setLockoutRemaining(rem);
+      }
+    }, 1000);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const lockUntil = Number(sessionStorage.getItem(LOCKOUT_TIME_KEY) || 0);
+    if (lockUntil > Date.now()) {
+      toast.error(`Prihlásenie zablokované. Skúste o ${Math.ceil((lockUntil - Date.now()) / 1000)}s.`);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) toast.error(error.message);
+    if (error) {
+      const attempts = Number(sessionStorage.getItem(LOCKOUT_KEY) || 0) + 1;
+      sessionStorage.setItem(LOCKOUT_KEY, String(attempts));
+      if (attempts >= MAX_ATTEMPTS) {
+        const until = Date.now() + LOCKOUT_DURATION_MS;
+        sessionStorage.setItem(LOCKOUT_TIME_KEY, String(until));
+        startLockoutTimer(until);
+        toast.error("Príliš veľa pokusov. Prihlásenie zablokované na 5 minút.");
+      } else {
+        toast.error(`${error.message} (${MAX_ATTEMPTS - attempts} pokusov zostáva)`);
+      }
+    } else {
+      sessionStorage.removeItem(LOCKOUT_KEY);
+      sessionStorage.removeItem(LOCKOUT_TIME_KEY);
+    }
   };
 
   const handleLogout = async () => {
@@ -278,9 +329,11 @@ const Admin = () => {
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
           <h1 className="text-2xl font-bold text-foreground text-center mb-8">Admin Panel</h1>
-          <Input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-          <Button type="submit" className="w-full">Prihlásiť sa</Button>
+          <Input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={lockoutRemaining > 0} />
+          <Input placeholder="Heslo" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={lockoutRemaining > 0} />
+          <Button type="submit" className="w-full" disabled={lockoutRemaining > 0}>
+            {lockoutRemaining > 0 ? `Zablokované (${Math.floor(lockoutRemaining / 60)}:${String(lockoutRemaining % 60).padStart(2, '0')})` : 'Prihlásiť sa'}
+          </Button>
         </form>
       </div>
     );
