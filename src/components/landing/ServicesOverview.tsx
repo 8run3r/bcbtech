@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Code2, Camera, ArrowRight, Palette, Rocket, Shield, Eye, Wifi } from "lucide-react";
 import AnimatedModal from "@/components/ui/animated-modal";
+import { RippleButton } from "@/components/ui/ripple-button";
 
 const digitalServices = [
   { icon: Code2, title: "Web Aplikácie", desc: "React, TypeScript, fullstack riešenia", detail: "Tvoríme moderné webové aplikácie s dôrazom na výkon, bezpečnosť a používateľský zážitok. Od landing pages po komplexné SaaS platformy." },
@@ -112,7 +113,13 @@ const ServicesOverview = () => {
             viewport={{ once: true }}
             className="relative group"
           >
-            <div className="p-8 sm:p-10 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-500">
+            <div className="p-8 sm:p-10 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-500 overflow-hidden">
+              {/* Corner brackets */}
+              <div className="absolute top-3 left-3 w-5 h-5 border-t border-l border-primary/20" />
+              <div className="absolute top-3 right-3 w-5 h-5 border-t border-r border-primary/20" />
+              <div className="absolute bottom-3 left-3 w-5 h-5 border-b border-l border-primary/20" />
+              <div className="absolute bottom-3 right-3 w-5 h-5 border-b border-r border-primary/20" />
+
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Code2 className="text-primary" size={20} />
@@ -173,19 +180,23 @@ const ServicesOverview = () => {
               {selectedService.detail}
             </p>
             <div className="flex gap-3">
-              <Link
-                to="/kontakt"
-                onClick={() => setModalOpen(false)}
-                className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+              <RippleButton
+                onClick={() => {
+                  setModalOpen(false);
+                  setTimeout(() => window.location.href = "/kontakt", 300);
+                }}
+                rippleColor="hsl(160 100% 50% / 0.3)"
+                className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:brightness-110 transition-all"
               >
                 Mám záujem
-              </Link>
-              <button
+              </RippleButton>
+              <RippleButton
                 onClick={() => setModalOpen(false)}
+                rippleColor="hsl(0 0% 100% / 0.1)"
                 className="px-6 py-2.5 rounded-full text-sm font-medium border border-border hover:bg-card transition-colors"
               >
                 Zavrieť
-              </button>
+              </RippleButton>
             </div>
           </div>
         )}

@@ -1,8 +1,15 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useCallback } from "react";
+import { RippleButton } from "@/components/ui/ripple-button";
 
 const ContactCTA = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = useCallback((path: string) => {
+    setTimeout(() => navigate(path), 300);
+  }, [navigate]);
+
   return (
     <section className="relative py-32 px-6">
       <div className="max-w-4xl mx-auto text-center">
@@ -24,24 +31,22 @@ const ContactCTA = () => {
             a spoločne nájdeme to najlepšie riešenie.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <Link
-              to="/kontakt"
-              className="group bg-foreground text-background px-10 py-4 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-500 inline-flex items-center gap-2">
-
+            <RippleButton
+              onClick={() => handleNavigate("/kontakt")}
+              rippleColor="hsl(160 100% 50% / 0.3)"
+              className="w-full sm:w-auto group relative px-10 py-4 rounded-full font-semibold text-sm uppercase tracking-wider text-center bg-primary text-primary-foreground hover:brightness-110 transition-all duration-300"
+            >
               Začať projekt
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </RippleButton>
             <a
               href="mailto:hello@coktech.sk"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               8run3r@gmail.com
-
             </a>
           </div>
         </motion.div>
       </div>
     </section>);
-
 };
 
 export default ContactCTA;
