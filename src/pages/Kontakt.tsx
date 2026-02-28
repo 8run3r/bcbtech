@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, Send, Loader2, CheckCircle, Camera, Monitor } from "lucide-react";
+import { RippleButton } from "@/components/ui/ripple-button";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -232,17 +233,18 @@ const Kontakt = () => {
               />
               {errors.message && <p className="text-xs text-destructive px-1">{errors.message}</p>}
             </div>
-            <button
+            <RippleButton
               type="submit"
               disabled={sending}
-              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              rippleColor="hsl(160 100% 50% / 0.3)"
+              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {sending ? (
                 <><Loader2 size={16} className="animate-spin" /> Odosielam...</>
               ) : (
                 <><Send size={16} /> Odoslať správu</>
               )}
-            </button>
+            </RippleButton>
           </motion.form>
         </div>
       </section>

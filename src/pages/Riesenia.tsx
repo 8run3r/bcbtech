@@ -7,6 +7,7 @@ import { lazy, Suspense, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings2 } from "lucide-react";
 import KonfiguratorModal from "@/components/KonfiguratorModal";
+import { RippleButton } from "@/components/ui/ripple-button";
 
 const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
@@ -123,13 +124,14 @@ const Riesenia = () => {
         >
           {/* Konfigurátor CTA */}
           <div className="pt-12 sm:pt-16 text-center">
-            <button
+            <RippleButton
               onClick={() => setKonfiguratorOpen(true)}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
+              rippleColor="hsl(160 100% 50% / 0.3)"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-sm uppercase tracking-wider hover:brightness-110 transition-all duration-300"
             >
               <Settings2 size={16} />
               Konfigurátor systému
-            </button>
+            </RippleButton>
           </div>
 
           {/* Products from DB */}

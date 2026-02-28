@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useFormSecurity } from "@/hooks/use-form-security";
+import { RippleButton } from "@/components/ui/ripple-button";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
@@ -218,10 +219,11 @@ const Contact = () => {
               />
               {errors.message && <p className="text-xs text-destructive px-1">{errors.message}</p>}
             </div>
-            <button
+            <RippleButton
               type="submit"
               disabled={sending || cooldown > 0}
-              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 glow-primary"
+              rippleColor="hsl(160 100% 50% / 0.3)"
+              className="sm:col-span-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {sending ? (
                 <><Loader2 size={16} className="animate-spin" /> Odosielam...</>
@@ -230,7 +232,7 @@ const Contact = () => {
               ) : (
                 <><Send size={16} /> Odoslať správu</>
               )}
-            </button>
+            </RippleButton>
           </motion.form>
         )}
       </div>

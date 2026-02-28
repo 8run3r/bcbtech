@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Check, Camera, Monitor } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { RippleButton } from "@/components/ui/ripple-button";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import FluidCursor from "@/components/landing/FluidCursor";
@@ -128,16 +129,16 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
       </li>
       )}
     </ul>
-    <button
-    onClick={onReserve}
-    className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
-    pkg.popular ?
-    "bg-primary text-primary-foreground hover:bg-primary/90" :
-    "border border-border text-foreground hover:bg-foreground hover:text-background"}`
-    }>
-
+    <RippleButton
+      onClick={onReserve}
+      rippleColor={pkg.popular ? "hsl(160 100% 50% / 0.3)" : "hsl(0 0% 100% / 0.2)"}
+      className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
+      pkg.popular ?
+      "bg-primary text-primary-foreground hover:brightness-110" :
+      "border border-border text-foreground hover:bg-foreground hover:text-background"}`
+      }>
       {cta}
-    </button>
+    </RippleButton>
   </motion.div>;
 
 
