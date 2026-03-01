@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Check, Camera, Monitor } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { RippleButton } from "@/components/ui/ripple-button";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
-import FluidCursor from "@/components/landing/FluidCursor";
 import ReservationModal from "@/components/ReservationModal";
+
+const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
 const webPackages = [
 {
@@ -156,8 +157,10 @@ const Packages = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <FluidCursor blobCount={3} intensity={0.4} />
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+        <Suspense fallback={null}>
+          <ParticleField density={4000} particleSize={1.8} />
+        </Suspense>
       </div>
       <div className="relative z-10">
       <Header />
