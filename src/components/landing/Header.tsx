@@ -151,18 +151,6 @@ const Header = () => {
 
             {/* Menu content */}
             <nav className="relative z-10 flex flex-col items-center justify-center min-h-screen gap-6 px-6">
-              {/* Logo at top */}
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="absolute top-5 left-5"
-              >
-                <span className="text-xl font-bold tracking-tight">
-                  <span className="text-primary">Cok</span>
-                  <span className="text-foreground"> Tech</span>
-                </span>
-              </motion.div>
 
               {mobileLinks.map((l, i) => (
                 <motion.div
