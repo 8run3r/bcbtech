@@ -4,7 +4,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
-import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+
 
 const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
@@ -44,34 +44,34 @@ const Portfolio = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <section className="relative pt-32 sm:pt-40 pb-20 px-5 sm:px-6 overflow-hidden">
-        {/* Vertex particle background */}
+      <section className="relative min-h-[60vh] flex items-center overflow-hidden pt-20">
         <div className="absolute inset-0">
           <Suspense fallback={null}>
             <ParticleField />
           </Suspense>
-          {/* Progressive blur that dissolves particles */}
-          <ProgressiveBlur
-            position="bottom"
-            height="60%"
-            blurLevels={[0.5, 1, 2, 4, 8, 16]}
-          />
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[180px]" />
 
-        <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 w-full flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-[clamp(2rem,6vw,5rem)] font-bold tracking-tight leading-[1.05] mb-4 sm:mb-6">
-              Naše projekty
+            <p className="text-xs sm:text-sm text-primary font-mono mb-4 sm:mb-6 tracking-[0.2em] uppercase">[ Naše projekty ]</p>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-4 sm:mb-6">
+              Portfólio
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mb-8 sm:mb-10">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed mx-auto px-2 sm:px-0">
               Zabezpečenie a digitálne riešenia — vyberte si kategóriu.
             </p>
           </motion.div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      </section>
+
+      <section className="py-12 sm:py-16 px-5 sm:px-6">
+        <div className="max-w-7xl mx-auto">
 
           {/* Filter tabs */}
           <div className="flex flex-wrap gap-2 mb-10 sm:mb-12">
