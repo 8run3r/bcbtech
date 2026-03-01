@@ -1,9 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Code2, Camera } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+
+const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 
 interface PortfolioItem {
   id: string;
@@ -41,8 +44,22 @@ const Portfolio = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <section className="pt-32 sm:pt-40 pb-20 px-5 sm:px-6">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative pt-32 sm:pt-40 pb-20 px-5 sm:px-6 overflow-hidden">
+        {/* Vertex particle background */}
+        <div className="absolute inset-0">
+          <Suspense fallback={null}>
+            <ParticleField />
+          </Suspense>
+          {/* Progressive blur that dissolves particles */}
+          <ProgressiveBlur
+            position="bottom"
+            height="60%"
+            blurLevels={[0.5, 1, 2, 4, 8, 16]}
+          />
+        </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[180px]" />
+
+        <div className="relative z-10 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
