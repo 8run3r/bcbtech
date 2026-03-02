@@ -117,29 +117,26 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator — glitch-blur dissolve */}
+      {/* Scroll indicator — minimal pulse */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
-          opacity: showIndicator && scrollY < 300 ? 1 : scrollY >= 300 ? 0 : 0,
-          filter: scrollY < 50 ? "blur(0px)" : scrollY < 300 ? `blur(${((scrollY - 50) / 250) * 20}px)` : "blur(20px)",
-          scale: scrollY < 50 ? 1 : scrollY < 300 ? 1 + ((scrollY - 50) / 250) * 0.6 : 1.6,
-          letterSpacing: scrollY < 50 ? "0.25em" : scrollY < 300 ? `${0.25 + ((scrollY - 50) / 250) * 1.5}em` : "1.75em",
+          opacity: showIndicator && scrollY < 200 ? 1 : 0,
         }}
-        transition={{ duration: 0.1, ease: "linear" }}
-        className="absolute bottom-10 left-0 right-0 z-30 flex flex-col items-center gap-2 pointer-events-none"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3 pointer-events-none"
       >
-        <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground font-mono">
-          Just scroll
-        </span>
         <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/60">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </motion.div>
+          className="w-[1px] h-12 bg-gradient-to-b from-transparent via-primary/40 to-primary/80"
+          animate={{ scaleY: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: "top" }}
+        />
+        <motion.div
+          className="w-1.5 h-1.5 rounded-full bg-primary/60"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
       </motion.div>
     </section>);
 
