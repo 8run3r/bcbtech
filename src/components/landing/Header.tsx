@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import cokLogo from "@/assets/coktech-logo.png";
+
 
 const desktopLinks = [
   { label: "Balíčky", href: "/balicky" },
@@ -67,13 +67,10 @@ const Header = () => {
                 window.scrollTo({ top: 0 });
               }
             }}
-            className="flex items-center gap-2.5 relative z-50"
+            className="text-xl font-bold tracking-tight relative z-50"
           >
-            <img src={cokLogo} alt="Cok Tech logo" className="h-7 w-auto" />
-            <span className="text-xl font-bold tracking-tight">
-              <span className="text-primary">Cok</span>
-              <span className="text-foreground"> Tech</span>
-            </span>
+            <span className="text-primary">Cok</span>
+            <span className="text-foreground"> Tech</span>
           </Link>
 
           {/* Center nav — desktop only */}
