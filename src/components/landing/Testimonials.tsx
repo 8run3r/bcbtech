@@ -68,25 +68,16 @@ const Testimonials = () => {
   return (
     <section className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden">
       <div className="max-w-5xl mx-auto">
-        {/* Mobile label */}
-        <div className="lg:hidden mb-6">
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground font-mono">
-            Testimonials
+        <div className="mb-6 text-center">
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">
+            [ Testimonials ]
           </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[60px_1fr] gap-4 lg:gap-8">
-          {/* Vertical label — desktop only */}
-          <div className="hidden lg:flex items-start pt-16 justify-center">
-            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground font-mono -rotate-90 whitespace-nowrap">
-              Testimonials
-            </span>
-          </div>
-
-          {/* Main content */}
-          <div className="min-w-0">
+        <div>
+          <div className="max-w-3xl mx-auto">
             {/* Company badge + counter */}
-            <div className="flex items-center justify-between mb-8 sm:mb-12">
+            <div className="flex items-center justify-between mb-8 sm:mb-12 max-w-3xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.company}
@@ -116,7 +107,7 @@ const Testimonials = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2] sm:leading-[1.15] break-words"
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2] sm:leading-[1.15] break-words text-center"
                 >
                   {words.map((word, i) => (
                     <motion.span
@@ -145,7 +136,7 @@ const Testimonials = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
-                className="mb-10 sm:mb-16"
+                className="mb-10 sm:mb-16 text-center"
               >
                 <p className="text-sm font-semibold text-foreground">
                   {current.author}
@@ -157,7 +148,7 @@ const Testimonials = () => {
             </AnimatePresence>
 
             {/* Navigation dots */}
-            <div className="flex gap-2 mb-8 sm:mb-10">
+            <div className="flex gap-2 mb-8 sm:mb-10 justify-center">
               {testimonials.map((_, i) => (
                 <button
                   key={i}

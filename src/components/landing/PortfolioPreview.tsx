@@ -55,10 +55,10 @@ const PortfolioPreview = () => {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">
+          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono text-center">
             [ Portfólio ]
           </span>
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-center">
             Vybrané práce
           </h2>
         </motion.div>
