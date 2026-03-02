@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
+import cokLogo from "@/assets/coktech-logo.png";
 
 const Footer = () => {
   return (
@@ -14,9 +15,12 @@ const Footer = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}>
 
-              <Link to="/" className="text-2xl font-bold tracking-tight inline-block mb-4">
-                <span className="text-primary">Cok</span>
-                <span className="text-foreground"> Tech</span>
+              <Link to="/" className="flex items-center gap-2.5 inline-block mb-4">
+                <img src={cokLogo} alt="Cok Tech logo" className="h-8 w-auto" />
+                <span className="text-2xl font-bold tracking-tight">
+                  <span className="text-primary">Cok</span>
+                  <span className="text-foreground"> Tech</span>
+                </span>
               </Link>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed mb-6">
                 Webové aplikácie & kamerové systémy. Od dizajnu po montáž — všetko pod jednou strechou.
