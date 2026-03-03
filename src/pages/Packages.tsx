@@ -124,20 +124,20 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
     <p className="text-sm text-muted-foreground mb-8">{pkg.desc}</p>
     <ul className="space-y-3 mb-8">
       {pkg.features.map((f: string) =>
-      <li key={f} className="flex items-start gap-2.5 text-sm">
+    <li key={f} className="flex items-start gap-2.5 text-sm">
         <Check size={15} className="mt-0.5 shrink-0 text-primary" />
         <span>{f}</span>
       </li>
-      )}
+    )}
     </ul>
     <RippleButton
-      onClick={onReserve}
-      rippleColor={pkg.popular ? "hsl(160 100% 50% / 0.3)" : "hsl(0 0% 100% / 0.2)"}
-      className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
-      pkg.popular ?
-      "bg-primary text-primary-foreground hover:brightness-110" :
-      "border border-border text-foreground hover:bg-foreground hover:text-background"}`
-      }>
+    onClick={onReserve}
+    rippleColor={pkg.popular ? "hsl(160 100% 50% / 0.3)" : "hsl(0 0% 100% / 0.2)"}
+    className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
+    pkg.popular ?
+    "bg-primary text-primary-foreground hover:brightness-110" :
+    "border border-border text-foreground hover:bg-foreground hover:text-background"}`
+    }>
       {cta}
     </RippleButton>
   </motion.div>;
@@ -282,7 +282,7 @@ const Packages = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
                     <div>
                       <p className="font-semibold text-foreground mb-1">Správa webu</p>
-                      <p className="text-primary font-bold">100 € / mes.</p>
+                      <p className="text-primary font-bold">75 € / mes.</p>
                       <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring</p>
                     </div>
                     <div>
