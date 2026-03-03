@@ -283,7 +283,7 @@ const Packages = () => {
                     <div>
                       <p className="font-semibold text-foreground mb-1">Správa webu</p>
                       <p className="text-primary font-bold">75 € / mes.</p>
-                      <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring</p>
+                      <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring+Technicka podpora</p>
                     </div>
                     <div>
                       <p className="font-semibold text-foreground mb-1">SEO optimalizácia</p>
@@ -292,7 +292,7 @@ const Packages = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-foreground mb-1">Grafické práce</p>
-                      <p className="text-primary font-bold">od 30 € / hod.</p>
+                      <p className="text-primary font-bold">od 30 € </p>
                       <p className="text-muted-foreground text-xs mt-1">Bannery, logá, vizuálny obsah</p>
                     </div>
                     <div>
