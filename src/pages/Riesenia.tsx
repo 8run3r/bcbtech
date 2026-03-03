@@ -23,12 +23,36 @@ interface CameraProduct {
 }
 
 const techCategories = [
-  { name: "Frontend", tools: ["React", "Next.js", "TypeScript", "Tailwind CSS"] },
-  { name: "Backend", tools: ["Node.js", "PostgreSQL", "Supabase", "REST / GraphQL"] },
-  { name: "DevOps & Deploy", tools: ["Docker", "Vercel", "GitHub Actions", "Cloudflare"] },
-  { name: "Dizajn", tools: ["Figma", "Framer", "After Effects"] },
-  { name: "AI & Automatizácia", tools: ["OpenAI", "LangChain", "Zapier", "n8n"] },
-  { name: "Platby & Integrácie", tools: ["Stripe", "Shopify", "Twilio", "SendGrid"] },
+  {
+    name: "Šifrovaná komunikácia",
+    description: "Každý web beží výhradne cez HTTPS s TLS 1.3 certifikátom. Všetky dáta medzi návštevníkom a serverom sú šifrované — nikto ich nemôže odpočúvať ani upraviť.",
+    icon: "🔒",
+  },
+  {
+    name: "Zálohy & obnova",
+    description: "Automatické denné zálohy databázy aj súborov. V prípade problému dokážeme obnoviť web do pôvodného stavu v priebehu minút — bez straty dát.",
+    icon: "💾",
+  },
+  {
+    name: "Prístupové práva",
+    description: "Len vy rozhodujete, kto má prístup k administrácii. Každý používateľ má vlastné heslo chránené hashovaním — žiadne heslá sa neukladajú v čitateľnej forme.",
+    icon: "🛡️",
+  },
+  {
+    name: "DDoS ochrana & firewall",
+    description: "Webové stránky sú chránené pred útokmi cez Cloudflare — automaticky blokuje podozrivú premávku a zabezpečuje stabilný chod aj pri vysokej záťaži.",
+    icon: "🌐",
+  },
+  {
+    name: "Vlastníctvo kódu",
+    description: "Celý zdrojový kód je váš. Máte plný prístup cez Git repozitár — kedykoľvek si ho môžete stiahnuť, presunúť alebo upraviť bez závislosti na nás.",
+    icon: "📦",
+  },
+  {
+    name: "Monitoring & upozornenia",
+    description: "Nepretržité sledovanie dostupnosti webu. Ak nastane výpadok, okamžite sa o tom dozviete — a my reagujeme ešte skôr, než si to všimnú vaši zákazníci.",
+    icon: "📡",
+  },
 ];
 
 const categoryIcon = (cat: string) => {
@@ -271,32 +295,32 @@ const Riesenia = () => {
                 transition={{ duration: 0.8 }}
                 className="mb-16"
               >
-                <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ Tech Stack ]</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">[ Bezpečnosť & kontrola ]</span>
                 <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-                  Nástroje &amp; technológie
+                  Váš web, vaše pravidlá
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-xl">
-                  Nástroje a technológie, ktoré denne používame na tvorbu moderných digitálnych produktov.
+                  Každý projekt zabezpečujeme na viacerých úrovniach — aby ste mali nad svojím webom plnú kontrolu vy, a nikto iný.
                 </p>
               </motion.div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {techCategories.map((cat, i) => (
                   <motion.div
                     key={cat.name}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + i * 0.08, duration: 0.6 }}
-                    className="p-8 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500"
+                    className="group p-8 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 relative overflow-hidden"
                   >
-                    <h3 className="text-sm uppercase tracking-widest text-primary mb-6 font-semibold">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/[0.03] rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/[0.08] transition-all duration-700" />
+                    <span className="text-2xl mb-4 block">{cat.icon}</span>
+                    <h3 className="text-base font-semibold text-foreground mb-3">
                       {cat.name}
                     </h3>
-                    <ul className="space-y-3">
-                      {cat.tools.map((tool) => (
-                        <li key={tool} className="text-foreground/80 text-sm">{tool}</li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {cat.description}
+                    </p>
                   </motion.div>
                 ))}
               </div>
