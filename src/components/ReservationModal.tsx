@@ -13,6 +13,22 @@ const reservationSchema = z.object({
   message: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+const webAddons = [
+  { id: "sprava", label: "Správa webu", price: "75 € / mes." },
+  { id: "podpora", label: "Technická podpora", price: "od 49 € / mes." },
+  { id: "seo", label: "SEO optimalizácia", price: "od 150 € / mes." },
+  { id: "grafika", label: "Grafické práce", price: "od 30 €" },
+  { id: "zakaznicka", label: "Zákaznícka podpora", price: "od 29 € / mes." },
+  { id: "udrzba", label: "Údržba & aktualizácie", price: "od 39 € / mes." },
+];
+
+const cameraAddons = [
+  { id: "servis", label: "Servisný výjazd", price: "od 45 €" },
+  { id: "rozsirenie", label: "Rozšírenie systému", price: "od 120 € / kamera" },
+  { id: "monitoring", label: "Mesačný monitoring", price: "od 29 € / mes." },
+  { id: "zmluva", label: "Servisná zmluva", price: "od 19 € / mes." },
+];
+
 interface ReservationModalProps {
   open: boolean;
   onClose: () => void;
@@ -25,7 +41,16 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const { honeypot, setHoneypot, cooldown, startCooldown, canSubmit } = useFormSecurity();
+
+  const addons = packageCategory === "web" ? webAddons : cameraAddons;
+
+  const toggleAddon = (id: string) => {
+    setSelectedAddons((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
+  };
 
   const handleClose = () => {
     onClose();
@@ -33,6 +58,7 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
       setSent(false);
       setForm({ name: "", email: "", phone: "", message: "" });
       setErrors({});
+      setSelectedAddons([]);
     }, 300);
   };
 
@@ -55,12 +81,21 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
       return;
     }
 
+    const addonLabels = selectedAddons
+      .map((id) => addons.find((a) => a.id === id)?.label)
+      .filter(Boolean);
+
+    const fullMessage = [
+      result.data.message,
+      addonLabels.length > 0 ? `Doplnkové služby: ${addonLabels.join(", ")}` : "",
+    ].filter(Boolean).join("\n\n");
+
     setSending(true);
     const { error } = await supabase.from("reservations").insert({
       name: result.data.name,
       email: result.data.email,
       phone: result.data.phone || null,
-      message: result.data.message || null,
+      message: fullMessage || null,
       package_category: packageCategory,
       package_name: packageName,
     });
@@ -156,6 +191,44 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Reser
                     onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   />
+
+                  {/* Doplnkové služby */}
+                  <div className="pt-2">
+                    <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
+                      Doplnkové služby (voliteľné)
+                    </p>
+                    <div className="space-y-2">
+                      {addons.map((addon) => (
+                        <label
+                          key={addon.id}
+                          className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border cursor-pointer transition-all duration-200 ${
+                            selectedAddons.includes(addon.id)
+                              ? "border-primary/50 bg-primary/5"
+                              : "border-border hover:border-primary/20"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
+                                selectedAddons.includes(addon.id)
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground/40"
+                              }`}
+                            >
+                              {selectedAddons.includes(addon.id) && (
+                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                  <path d="M1 4L3.5 6.5L9 1" stroke="hsl(var(--primary-foreground))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </div>
+                            <span className="text-sm text-foreground">{addon.label}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{addon.price}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Honeypot */}
                   <div style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true" tabIndex={-1}>
                     <label htmlFor="res_website">Website</label>
