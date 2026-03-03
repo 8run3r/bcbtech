@@ -12,47 +12,44 @@ const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
 const webPackages = [
 {
   name: "Starter",
-  price: "od 490 €",
+  price: "od 390 €",
   desc: "Pre živnostníkov a podnikateľov, ktorí potrebujú web stránku.",
   features: [
-  "Jednoduchá prezentačná webstránka (1–3 podstránky)",
-  "Plne responzívny dizajn optimalizovaný pre mobilné zariadenia",
-  "Kontaktný formulár s doručovaním na e-mail",
-  "Základná SEO optimalizácia + registrácia do Google indexu",
-  "Prepojenie na sociálne siete",
-  "Dodanie projektu do 5 dní"]
-
+    "Jednoduchá prezentačná webstránka (1–3 podstránky)",
+    "Plne responzívny dizajn optimalizovaný pre mobilné zariadenia",
+    "Kontaktný formulár s doručovaním na e-mail",
+    "Základná SEO optimalizácia + registrácia do Google indexu",
+    "Prepojenie na sociálne siete",
+    "Dodanie projektu do 5 dní",
+  ],
 },
 {
   name: "Business",
-  price: "od 990 €",
+  price: "od 890 €",
   desc: "Pre malé firmy, ktoré chcú rásť online.",
   popular: true,
   features: [
-  "Všetko zo Starter",
-  "Viacstránkový web (5–10 podstránok)",
-  "Redakčný systém (CMS) pre jednoduchú správu obsahu",
-  "Integrácia Google Analytics a merania návštevnosti",
-  "Moderné animácie a prémiový dizajn",
-  "SSL certifikát",
-  "3 mesiace technickej podpory",
-  "Dodanie projektu do 5 dní"]
-
+    "Všetko zo Starter",
+    "Viacstránkový web (5–10 podstránok)",
+    "Redakčný systém (CMS) pre jednoduchú správu obsahu",
+    "Integrácia Google Analytics a merania návštevnosti",
+    "Moderné animácie a prémiový dizajn",
+    "SSL certifikát",
+    "Dodanie projektu do 7 dní",
+  ],
 },
 {
   name: "Premium",
-  price: "od 2 500 €",
+  price: "od 2 200 €",
   desc: "Komplexné riešenie pre ambiciózne firmy.",
   features: [
-  "Všetko z Business",
-  "Kompletné riešenie na mieru (e-shop alebo rezervačný systém)",
-  "Prepojenie na fakturačný alebo účtovný systém",
-  "Vlastný backend a API riešenie",
-  "Pokročilá SEO optimalizácia na mieru",
-  "6 mesiacov podpory a údržby",
-  "Prioritná zákaznícka podpora",
-  "Dodanie projektu do 14 dní"]
-
+    "Všetko z Business",
+    "Kompletné riešenie na mieru (e-shop alebo rezervačný systém)",
+    "Prepojenie na fakturačný alebo účtovný systém",
+    "Vlastný backend a API riešenie",
+    "Pokročilá SEO optimalizácia na mieru",
+    "Dodanie projektu do 14 dní",
+  ],
 }];
 
 
@@ -279,11 +276,16 @@ const Packages = () => {
                   className="p-8 rounded-2xl border border-border bg-card/50">
 
                   <h3 className="text-lg font-bold mb-6">Doplnkové služby</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
                     <div>
                       <p className="font-semibold text-foreground mb-1">Správa webu</p>
                       <p className="text-primary font-bold">75 € / mes.</p>
-                      <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring+Technicka podpora</p>
+                      <p className="text-muted-foreground text-xs mt-1">Aktualizácie obsahu, zálohy, monitoring</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Technická podpora</p>
+                      <p className="text-primary font-bold">od 49 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Bug fixy, úpravy, prioritná pomoc</p>
                     </div>
                     <div>
                       <p className="font-semibold text-foreground mb-1">SEO optimalizácia</p>
@@ -292,13 +294,18 @@ const Packages = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-foreground mb-1">Grafické práce</p>
-                      <p className="text-primary font-bold">od 30 € </p>
+                      <p className="text-primary font-bold">od 30 €</p>
                       <p className="text-muted-foreground text-xs mt-1">Bannery, logá, vizuálny obsah</p>
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground mb-1">Technická podpora</p>
-                      <p className="text-primary font-bold">od 49 € / mes.</p>
-                      <p className="text-muted-foreground text-xs mt-1">Bug fixy, úpravy, prioritná pomoc</p>
+                      <p className="font-semibold text-foreground mb-1">Zákaznícka podpora</p>
+                      <p className="text-primary font-bold">od 29 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Prioritná podpora a rýchla reakcia</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground mb-1">Údržba & aktualizácie</p>
+                      <p className="text-primary font-bold">od 39 € / mes.</p>
+                      <p className="text-muted-foreground text-xs mt-1">Pravidelná údržba, bezpečnostné záplaty</p>
                     </div>
                   </div>
                 </motion.div>
