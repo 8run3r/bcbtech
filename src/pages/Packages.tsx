@@ -105,7 +105,7 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
   whileInView={{ opacity: 1, y: 0 }}
   viewport={{ once: true }}
   transition={{ delay: 0.1 + i * 0.12, duration: 0.7 }}
-  className={`relative p-6 sm:p-8 rounded-2xl border transition-all duration-500 ${
+  className={`relative flex flex-col p-6 sm:p-8 rounded-2xl border transition-all duration-500 ${
   pkg.popular ?
   "bg-card border-primary/40 glow-primary" :
   "bg-card border-border hover:border-primary/20"}`
@@ -119,7 +119,7 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
     <h3 className="text-xl font-bold mb-1">{pkg.name}</h3>
     <p className="text-2xl font-bold text-primary mb-2">{pkg.price}</p>
     <p className="text-sm text-muted-foreground mb-8">{pkg.desc}</p>
-    <ul className="space-y-3 mb-8">
+    <ul className="space-y-3 mb-8 flex-1">
       {pkg.features.map((f: string) =>
     <li key={f} className="flex items-start gap-2.5 text-sm">
         <Check size={15} className="mt-0.5 shrink-0 text-primary" />
@@ -127,16 +127,18 @@ const PackageCard = ({ pkg, i, cta, onReserve }: {pkg: any;i: number;cta: string
       </li>
     )}
     </ul>
-    <RippleButton
-    onClick={onReserve}
-    rippleColor={pkg.popular ? "hsl(160 100% 50% / 0.3)" : "hsl(0 0% 100% / 0.2)"}
-    className={`block w-full text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
-    pkg.popular ?
-    "bg-primary text-primary-foreground hover:brightness-110" :
-    "border border-border text-foreground hover:bg-foreground hover:text-background"}`
-    }>
-      {cta}
-    </RippleButton>
+    <div className="flex justify-center mt-auto">
+      <RippleButton
+      onClick={onReserve}
+      rippleColor={pkg.popular ? "hsl(160 100% 50% / 0.3)" : "hsl(0 0% 100% / 0.2)"}
+      className={`block w-full max-w-[280px] text-center text-sm font-semibold py-3 rounded-full transition-all duration-300 cursor-pointer ${
+      pkg.popular ?
+      "bg-primary text-primary-foreground hover:brightness-110" :
+      "border border-border text-foreground hover:bg-foreground hover:text-background"}`
+      }>
+        {cta}
+      </RippleButton>
+    </div>
   </motion.div>;
 
 
