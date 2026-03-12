@@ -2,14 +2,14 @@ import { useState, useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, MessageSquare, Bot, FolderKanban,
-  FileText, BarChart2, Settings, LogOut, Camera, Menu, X, Bell
+  BarChart2, Settings, LogOut, Camera, Menu, Bell
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 
 export type AdminPage =
   | "dashboard" | "messages" | "marketing" | "projects"
-  | "cameras" | "blog" | "analytics" | "settings";
+  | "cameras" | "analytics" | "settings";
 
 interface NavItem {
   id: AdminPage;
@@ -23,7 +23,6 @@ const navItems: NavItem[] = [
   { id: "marketing",  label: "AI Marketing",  icon: <Bot size={18} /> },
   { id: "cameras",    label: "Kamery",        icon: <Camera size={18} /> },
   { id: "projects",   label: "Projekty",      icon: <FolderKanban size={18} /> },
-  { id: "blog",       label: "Blog",          icon: <FileText size={18} /> },
   { id: "analytics",  label: "Analytika",     icon: <BarChart2 size={18} /> },
   { id: "settings",   label: "Nastavenia",    icon: <Settings size={18} /> },
 ];
@@ -34,7 +33,6 @@ const pageTitles: Record<AdminPage, string> = {
   marketing: "AI Marketing",
   cameras: "Kamery",
   projects: "Projekty",
-  blog: "Blog",
   analytics: "Analytika",
   settings: "Nastavenia",
 };

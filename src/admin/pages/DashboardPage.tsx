@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, FolderKanban, FileText, TrendingUp, ArrowRight, Plus } from "lucide-react";
+import { MessageSquare, FolderKanban, Camera, TrendingUp, ArrowRight, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -42,13 +42,11 @@ export const DashboardPage = ({ setActivePage }: Props) => {
   const unread = messages.filter((m) => m.status === "new").length;
   const recentMessages = messages.slice(0, 5);
 
-  const blogPosts = (() => { try { return JSON.parse(localStorage.getItem("coktech_blog_posts") || "[]"); } catch { return []; } })();
-
   const stats: StatCard[] = [
     { label: "Nové správy", value: unread, icon: <MessageSquare size={20} />, color: "#00FF94", trend: `${messages.length} celkom` },
     { label: "Projekty", value: projects, icon: <FolderKanban size={20} />, color: "#60a5fa", trend: "v portfóliu" },
-    { label: "Kamery", value: cameras, icon: <TrendingUp size={20} />, color: "#f59e0b", trend: "produktov" },
-    { label: "Články", value: blogPosts.length, icon: <FileText size={20} />, color: "#a78bfa", trend: "na blogu" },
+    { label: "Kamery", value: cameras, icon: <Camera size={20} />, color: "#f59e0b", trend: "produktov" },
+    { label: "Koncepty AI", value: (() => { try { return JSON.parse(localStorage.getItem("coktech_marketing_drafts") || "[]").length; } catch { return 0; } })(), icon: <TrendingUp size={20} />, color: "#a78bfa", trend: "uložených" },
   ];
 
   const cardClass = "rounded-xl border border-white/5 p-6" ;
@@ -135,9 +133,9 @@ export const DashboardPage = ({ setActivePage }: Props) => {
             <div className="space-y-2">
               {[
                 { label: "Nový projekt", page: "projects" as AdminPage },
-                { label: "Nový článok", page: "blog" as AdminPage },
                 { label: "Generovať obsah AI", page: "marketing" as AdminPage },
                 { label: "Pridať kameru", page: "cameras" as AdminPage },
+                { label: "Analytika", page: "analytics" as AdminPage },
               ].map((a) => (
                 <button
                   key={a.label}

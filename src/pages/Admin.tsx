@@ -9,10 +9,10 @@ import { MessagesPage } from "@/admin/pages/MessagesPage";
 import { MarketingPage } from "@/admin/pages/MarketingPage";
 import { ProjectsPage } from "@/admin/pages/ProjectsPage";
 import { CamerasPage } from "@/admin/pages/CamerasPage";
-import { BlogPage } from "@/admin/pages/BlogPage";
 import { AnalyticsPage } from "@/admin/pages/AnalyticsPage";
 import { SettingsPage } from "@/admin/pages/SettingsPage";
 
+// localStorage (not localStorage) so lockout persists across tabs/refreshes
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
 const MAX_ATTEMPTS = 5;
@@ -81,7 +81,7 @@ const Admin = () => {
   }, [isAdmin]);
 
   useEffect(() => {
-    const lockUntil = Number(sessionStorage.getItem(LOCKOUT_TIME_KEY) || 0);
+    const lockUntil = Number(localStorage.getItem(LOCKOUT_TIME_KEY) || 0);
     if (lockUntil > Date.now()) startLockoutTimer(lockUntil);
   }, []);
 
@@ -92,8 +92,8 @@ const Admin = () => {
       const rem = Math.ceil((until - Date.now()) / 1000);
       if (rem <= 0) {
         setLockoutRemaining(0);
-        sessionStorage.removeItem(LOCKOUT_KEY);
-        sessionStorage.removeItem(LOCKOUT_TIME_KEY);
+        localStorage.removeItem(LOCKOUT_KEY);
+        localStorage.removeItem(LOCKOUT_TIME_KEY);
         if (lockoutTimerRef.current) clearInterval(lockoutTimerRef.current);
       } else {
         setLockoutRemaining(rem);
@@ -103,7 +103,7 @@ const Admin = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const lockUntil = Number(sessionStorage.getItem(LOCKOUT_TIME_KEY) || 0);
+    const lockUntil = Number(localStorage.getItem(LOCKOUT_TIME_KEY) || 0);
     if (lockUntil > Date.now()) {
       toast.error(`Prihlásenie zablokované. Skúste o ${Math.ceil((lockUntil - Date.now()) / 1000)}s.`);
       return;
@@ -116,19 +116,19 @@ const Admin = () => {
     if (error) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      const attempts = Number(sessionStorage.getItem(LOCKOUT_KEY) || 0) + 1;
-      sessionStorage.setItem(LOCKOUT_KEY, String(attempts));
+      const attempts = Number(localStorage.getItem(LOCKOUT_KEY) || 0) + 1;
+      localStorage.setItem(LOCKOUT_KEY, String(attempts));
       if (attempts >= MAX_ATTEMPTS) {
         const until = Date.now() + LOCKOUT_DURATION_MS;
-        sessionStorage.setItem(LOCKOUT_TIME_KEY, String(until));
+        localStorage.setItem(LOCKOUT_TIME_KEY, String(until));
         startLockoutTimer(until);
         toast.error("Príliš veľa pokusov. Zablokované na 5 minút.");
       } else {
         toast.error(`Nesprávne heslo (${MAX_ATTEMPTS - attempts} pokusov zostáva)`);
       }
     } else {
-      sessionStorage.removeItem(LOCKOUT_KEY);
-      sessionStorage.removeItem(LOCKOUT_TIME_KEY);
+      localStorage.removeItem(LOCKOUT_KEY);
+      localStorage.removeItem(LOCKOUT_TIME_KEY);
     }
   };
 
@@ -223,7 +223,6 @@ const Admin = () => {
     marketing: <MarketingPage />,
     cameras: <CamerasPage />,
     projects: <ProjectsPage />,
-    blog: <BlogPage />,
     analytics: <AnalyticsPage />,
     settings: <SettingsPage />,
   };
