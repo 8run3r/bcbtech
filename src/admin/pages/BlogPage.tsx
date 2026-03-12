@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Bot, Loader2, X, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, EyeOff, Bot, Loader2, X, Check, Globe, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface BlogPost {
@@ -14,8 +14,56 @@ interface BlogPost {
   updatedAt: string;
 }
 
+interface Topic {
+  label: string;
+  category: string;
+  rss: string;
+  prompt: string;
+}
+
 const STORAGE_KEY = "coktech_blog_posts";
-const CATEGORIES = ["Security", "Digital", "Novinky", "Návod"];
+const CATEGORIES = ["Security", "Digital", "Novinky", "Návod", "AI", "Biznis"];
+
+const TOPICS: Topic[] = [
+  {
+    label: "🤖 AI & Tech",
+    category: "AI",
+    rss: "https://techcrunch.com/category/artificial-intelligence/feed/",
+    prompt: "umelá inteligencia, AI nástroje a technológie pre firmy",
+  },
+  {
+    label: "🔐 Kyber-bezpečnosť",
+    category: "Security",
+    rss: "https://feeds.feedburner.com/TheHackersNews",
+    prompt: "kybernetická bezpečnosť, hacky, bezpečnostné hrozby a ochrana firemných dát",
+  },
+  {
+    label: "💻 Web & Dev",
+    category: "Digital",
+    rss: "https://dev.to/feed/",
+    prompt: "webový vývoj, nové technológie, frameworky a trendy v programovaní",
+  },
+  {
+    label: "📷 IP Kamery",
+    category: "Security",
+    rss: "https://www.securityinfowatch.com/rss/topic/10878741",
+    prompt: "kamerové bezpečnostné systémy, CCTV, IP kamery a fyzická bezpečnosť",
+  },
+  {
+    label: "🚀 Startupy",
+    category: "Biznis",
+    rss: "https://techcrunch.com/category/startups/feed/",
+    prompt: "startupy, podnikanie, venture capital a nové technologické firmy",
+  },
+  {
+    label: "📊 Biznis & SK",
+    category: "Novinky",
+    rss: "https://spectator.sme.sk/rss/",
+    prompt: "slovenský biznis, podnikanie na Slovensku a stredoeurópske trhy",
+  },
+];
+
+const RSS_API = "https://api.rss2json.com/v1/api.json";
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -37,10 +85,13 @@ export const BlogPage = () => {
   });
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [showWorldGen, setShowWorldGen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [worldGenLoading, setWorldGenLoading] = useState(false);
 
-  const save = (posts: BlogPost[]) => {
-    setPosts(posts);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  const save = (updated: BlogPost[]) => {
+    setPosts(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
   const openNew = () => setEditing(emptyPost());
@@ -51,11 +102,7 @@ export const BlogPage = () => {
     if (!editing.title.trim()) { toast.error("Nadpis je povinný"); return; }
     const post = { ...editing, status: statusOverride ?? editing.status, updatedAt: new Date().toISOString() };
     const existing = posts.find(p => p.id === post.id);
-    if (existing) {
-      save(posts.map(p => p.id === post.id ? post : p));
-    } else {
-      save([post, ...posts]);
-    }
+    save(existing ? posts.map(p => p.id === post.id ? post : p) : [post, ...posts]);
     toast.success(post.status === "published" ? "Článok publikovaný" : "Koncept uložený");
     setEditing(null);
   };
@@ -67,11 +114,11 @@ export const BlogPage = () => {
     if (editing?.id === id) setEditing(null);
   };
 
+  // AI assist — continue existing post
   const aiAssist = async () => {
     if (!editing?.title) { toast.error("Najprv zadaj nadpis"); return; }
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) { toast.error("VITE_ANTHROPIC_API_KEY nie je nastavený"); return; }
-
     setAiLoading(true);
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -87,7 +134,7 @@ export const BlogPage = () => {
           max_tokens: 1000,
           messages: [{
             role: "user",
-            content: `Napíš pokračovanie tohto blog článku pre COK Tech (slovenská tech firma).
+            content: `Napíš pokračovanie tohto blog článku pre COK Tech (slovenská tech firma — web aplikácie & kamerové systémy).
 Nadpis: "${editing.title}"
 Kategória: ${editing.category}
 ${editing.content ? `Existujúci obsah:\n${editing.content.slice(0, 300)}...\n\nPokračuj od tohto miesta.` : "Napíš úvod a rozviň tému."}
@@ -109,14 +156,114 @@ Píš po slovensky. Min 3 odseky. Markdown formátovanie.`,
     }
   };
 
+  // Generate from world news
+  const generateFromWorld = async () => {
+    if (!selectedTopic) { toast.error("Vyber tému"); return; }
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) { toast.error("VITE_ANTHROPIC_API_KEY nie je nastavený"); return; }
+
+    setWorldGenLoading(true);
+    try {
+      // 1. Fetch recent headlines from RSS
+      let headlines = "";
+      try {
+        const rssRes = await fetch(
+          `${RSS_API}?rss_url=${encodeURIComponent(selectedTopic.rss)}&count=6`
+        );
+        const rssData = await rssRes.json();
+        if (rssData?.items?.length) {
+          headlines = rssData.items
+            .slice(0, 6)
+            .map((item: any, i: number) => `${i + 1}. ${item.title}${item.description ? " — " + item.description.replace(/<[^>]*>/g, "").slice(0, 120) : ""}`)
+            .join("\n");
+        }
+      } catch {
+        // RSS fetch failed — Claude will write based on general knowledge
+        headlines = "";
+      }
+
+      // 2. Send to Claude with news context
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1500,
+          messages: [{
+            role: "user",
+            content: `Si redaktor pre COK Tech — slovenská tech firma (web aplikácie & kamerové bezpečnostné systémy).
+Píšeš blog pre firemných klientov a majiteľov firiem na Slovensku.
+
+Téma príspevku: ${selectedTopic.prompt}
+
+${headlines ? `Najnovšie správy zo sveta (použi ako inšpiráciu a kontext):\n${headlines}\n` : ""}
+Napíš kompletný blog článok v slovenčine:
+- Nadpis (prvý riadok, začínajúci ###)
+- Úvodný odsek ktorý zaujme
+- 3–4 hlavné odseky s konkrétnou hodnotou pre podnikateľov
+- Záver s výzvou na akciu (odkaz na COK Tech)
+- Celá dĺžka: 400–600 slov
+- Formát: Markdown
+- Tón: odborný ale zrozumiteľný, nie reklamný`,
+          }],
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+      const text = data?.content?.[0]?.text;
+      if (!text) throw new Error("Prázdna odpoveď od API");
+
+      // 3. Parse title from first ### line
+      const lines = text.trim().split("\n");
+      const titleLine = lines.find((l: string) => l.startsWith("###") || l.startsWith("##") || l.startsWith("#"));
+      const generatedTitle = titleLine
+        ? titleLine.replace(/^#+\s*/, "").trim()
+        : `${selectedTopic.label.replace(/^[^\w]+/, "")} — ${new Date().toLocaleDateString("sk-SK")}`;
+      const contentWithoutTitle = titleLine
+        ? lines.filter((l: string) => l !== titleLine).join("\n").trim()
+        : text;
+
+      // 4. Open editor pre-filled
+      setEditing({
+        id: Date.now().toString(),
+        title: generatedTitle,
+        slug: slugify(generatedTitle),
+        category: selectedTopic.category,
+        content: contentWithoutTitle,
+        status: "draft",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      setShowWorldGen(false);
+      setSelectedTopic(null);
+      toast.success("Článok vygenerovaný — skontroluj a publikuj");
+    } catch (e: any) {
+      toast.error("Chyba: " + e.message);
+    } finally {
+      setWorldGenLoading(false);
+    }
+  };
+
   const cardStyle = { background: "#141414" };
 
+  // ── EDITOR VIEW ──────────────────────────────────────────────
   if (editing) {
     return (
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white font-semibold">{editing.createdAt === editing.updatedAt && !posts.find(p => p.id === editing.id) ? "Nový článok" : "Upraviť článok"}</h2>
-          <button onClick={() => setEditing(null)} className="text-zinc-500 hover:text-white transition-colors"><X size={18} /></button>
+          <h2 className="text-white font-semibold">
+            {posts.find(p => p.id === editing.id) ? "Upraviť článok" : "Nový článok"}
+          </h2>
+          <button onClick={() => setEditing(null)} className="text-zinc-500 hover:text-white transition-colors">
+            <X size={18} />
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -163,7 +310,7 @@ Píš po slovensky. Min 3 odseky. Markdown formátovanie.`,
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-all"
             >
               {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
-              {aiLoading ? "Píše AI..." : "✨ Dopísať s AI"}
+              {aiLoading ? "Píše AI..." : "Dopísať s AI"}
             </button>
 
             <div className="ml-auto flex gap-2">
@@ -186,19 +333,95 @@ Píš po slovensky. Min 3 odseky. Markdown formátovanie.`,
     );
   }
 
+  // ── LIST VIEW ─────────────────────────────────────────────────
   return (
     <div className="max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <p className="text-zinc-500 text-sm">{posts.length} článkov</p>
-        <button onClick={openNew} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 transition-all">
-          <Plus size={16} /> Nový článok
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowWorldGen(v => !v)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/5 transition-all"
+          >
+            <Globe size={14} />
+            Z diania vo svete
+          </button>
+          <button
+            onClick={openNew}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 transition-all"
+          >
+            <Plus size={16} /> Nový článok
+          </button>
+        </div>
       </div>
 
+      {/* World news generator panel */}
+      <AnimatePresence>
+        {showWorldGen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="rounded-xl border border-white/8 p-5" style={{ background: "#111" }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles size={14} className="text-[#00FF94]" />
+                <span className="text-sm font-medium text-white">Generovať článok z diania vo svete</span>
+                <span className="text-xs text-zinc-600 ml-1">— AI načíta aktuálne správy a napíše post pre teba</span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-5">
+                {TOPICS.map(topic => (
+                  <button
+                    key={topic.label}
+                    onClick={() => setSelectedTopic(t => t?.label === topic.label ? null : topic)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-all border"
+                    style={{
+                      background: selectedTopic?.label === topic.label ? "rgba(0,255,148,0.12)" : "rgba(255,255,255,0.04)",
+                      borderColor: selectedTopic?.label === topic.label ? "rgba(0,255,148,0.4)" : "rgba(255,255,255,0.08)",
+                      color: selectedTopic?.label === topic.label ? "#00FF94" : "#71717a",
+                    }}
+                  >
+                    {topic.label}
+                  </button>
+                ))}
+              </div>
+
+              {selectedTopic && (
+                <p className="text-xs text-zinc-500 mb-4">
+                  Téma: <span className="text-zinc-300">{selectedTopic.prompt}</span>
+                </p>
+              )}
+
+              <button
+                onClick={generateFromWorld}
+                disabled={!selectedTopic || worldGenLoading}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  background: selectedTopic ? "rgba(0,255,148,0.12)" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${selectedTopic ? "rgba(0,255,148,0.3)" : "rgba(255,255,255,0.06)"}`,
+                  color: selectedTopic ? "#00FF94" : "#52525b",
+                }}
+              >
+                {worldGenLoading
+                  ? <><Loader2 size={14} className="animate-spin" /> Generujem — načítavam správy…</>
+                  : <><Sparkles size={14} /> Generovať článok</>
+                }
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Posts table */}
       {posts.length === 0 ? (
         <div className="text-center py-16 rounded-xl border border-white/5" style={cardStyle}>
           <p className="text-zinc-500 mb-4">Zatiaľ žiadne články.</p>
-          <button onClick={openNew} className="text-sm text-[#00FF94] hover:underline">Napíš prvý článok</button>
+          <button onClick={() => setShowWorldGen(true)} className="text-sm text-[#00FF94] hover:underline">
+            Generovať prvý článok z diania vo svete
+          </button>
         </div>
       ) : (
         <div className="rounded-xl border border-white/5 overflow-hidden" style={cardStyle}>
@@ -238,8 +461,12 @@ Píš po slovensky. Min 3 odseky. Markdown formátovanie.`,
                   </td>
                   <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-1 justify-end">
-                      <button onClick={() => openEdit(post)} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"><Pencil size={13} /></button>
-                      <button onClick={() => remove(post.id)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"><Trash2 size={13} /></button>
+                      <button onClick={() => openEdit(post)} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => remove(post.id)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </td>
                 </motion.tr>

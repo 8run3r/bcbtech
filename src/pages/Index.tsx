@@ -11,6 +11,7 @@ import Testimonials from "@/components/landing/Testimonials";
 import ContactCTA from "@/components/landing/ContactCTA";
 import Footer from "@/components/landing/Footer";
 import FluidCursor from "@/components/landing/FluidCursor";
+import SocialLinks from "@/components/SocialLinks";
 import ExitIntentPopup from "@/components/landing/ExitIntentPopup";
 
 // Lazy-load the heavy 3D ScrollStory component
@@ -68,6 +69,10 @@ const Index = () => {
         <ServicesOverview />
         <BeforeAfter />
         <PortfolioPreview />
+        {/* Social links — above testimonials */}
+        <div className="flex justify-center pb-4">
+          <SocialLinks />
+        </div>
         <Testimonials />
         <ContactCTA />
         <Footer />

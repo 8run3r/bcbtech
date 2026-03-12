@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
+import SocialLinks from "@/components/SocialLinks";
 
 
 const Footer = () => {
@@ -89,6 +90,7 @@ const Footer = () => {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Cok Tech. Všetky práva vyhradené.
           </p>
+          <SocialLinks />
           <p className="text-xs text-muted-foreground">
             Levice, Slovensko · IČO: 12345678
           </p>
