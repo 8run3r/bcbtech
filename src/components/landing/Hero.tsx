@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import EncryptedText from "@/components/ui/encrypted-text";
 import { RippleButton } from "@/components/ui/ripple-button";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import SocialLinks from "@/components/SocialLinks";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -113,6 +114,16 @@ const Hero = () => {
             >
               Naše riešenia
             </RippleButton>
+          </motion.div>
+
+          {/* Social links */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            className="flex justify-center mt-8"
+          >
+            <SocialLinks />
           </motion.div>
         </motion.div>
       </div>
