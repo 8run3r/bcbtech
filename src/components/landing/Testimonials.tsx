@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface TestimonialItem {
   quote: string;
@@ -36,135 +34,76 @@ const testimonials: TestimonialItem[] = [
   },
 ];
 
-const companies = testimonials.map((t) => t.company);
+const row1 = [...testimonials, ...testimonials, ...testimonials];
+const row2 = [...testimonials, ...testimonials, ...testimonials];
+
+const TestimonialCard = ({ item }: { item: TestimonialItem }) => (
+  <motion.div
+    whileHover={{ y: -4 }}
+    transition={{ duration: 0.2, ease: "easeOut" }}
+    className="flex-shrink-0 w-[380px] bg-zinc-900/80 border border-white/5 rounded-2xl p-6 px-7 hover:border-white/10 transition-colors duration-200"
+  >
+    <div className="mb-4">
+      <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-zinc-400">
+        {item.company}
+      </span>
+    </div>
+    <p className="mb-5 text-white/90" style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.6 }}>
+      "{item.quote}"
+    </p>
+    <div>
+      <p className="text-sm font-bold text-white">{item.author}</p>
+      <p className="text-xs text-zinc-500 mt-0.5">{item.role}</p>
+    </div>
+  </motion.div>
+);
+
+const maskStyle: React.CSSProperties = {
+  maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+  WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+};
 
 const Testimonials = () => {
-  const [active, setActive] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const goTo = useCallback(
-    (index: number) => {
-      setDirection(index > active ? 1 : -1);
-      setActive(index);
-    },
-    [active]
-  );
-
-  // Auto-cycle
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setDirection(1);
-      setActive((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
-
-  const current = testimonials[active];
-  const words = current.quote.split(" ");
-
   return (
-    <section className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6 text-center">
-          <span className="text-xs uppercase tracking-[0.2em] text-primary mb-4 block font-mono">
-            [ Testimonials ]
-          </span>
+    <section className="relative py-20 sm:py-32 overflow-hidden">
+      <style>{`
+        @keyframes scrollLeft {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-33.333%); }
+        }
+        @keyframes scrollRight {
+          from { transform: translateX(-33.333%); }
+          to   { transform: translateX(0); }
+        }
+      `}</style>
+
+      <div className="mb-12 text-center">
+        <span className="text-xs uppercase tracking-[0.2em] text-primary block font-mono">
+          [ Testimonials ]
+        </span>
+      </div>
+
+      {/* Row 1 — scrolls left */}
+      <div className="relative overflow-hidden mb-6 group" style={maskStyle}>
+        <div
+          className="flex gap-6 group-hover:[animation-play-state:paused]"
+          style={{ animation: "scrollLeft 35s linear infinite" }}
+        >
+          {row1.map((item, i) => (
+            <TestimonialCard key={`r1-${i}`} item={item} />
+          ))}
         </div>
+      </div>
 
-        <div>
-          <div className="max-w-3xl mx-auto">
-            {/* Company badge + counter */}
-            <div className="flex items-center justify-between mb-8 sm:mb-12 max-w-3xl mx-auto">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={current.company}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-border bg-card/50 text-[11px] sm:text-xs font-medium text-muted-foreground"
-                >
-                  {current.company}
-                </motion.div>
-              </AnimatePresence>
-              <span className="text-xs sm:text-sm font-mono text-muted-foreground">
-                <span className="text-primary">
-                  {String(active + 1).padStart(2, "0")}
-                </span>
-                /{String(testimonials.length).padStart(2, "0")}
-              </span>
-            </div>
-
-            {/* Quote with word-by-word animation */}
-            <div className="mb-8 sm:mb-12 min-h-[120px] sm:min-h-[140px]">
-              <AnimatePresence mode="wait">
-                <motion.blockquote
-                  key={active}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-[1.2] sm:leading-[1.15] break-words text-center"
-                >
-                  {words.map((word, i) => (
-                    <motion.span
-                      key={`${active}-${i}`}
-                      initial={{ opacity: 0, y: 15, filter: "blur(6px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                      transition={{
-                        delay: 0.1 + i * 0.04,
-                        duration: 0.4,
-                        ease: "easeOut",
-                      }}
-                      className="inline-block mr-[0.25em]"
-                    >
-                      {word}
-                    </motion.span>
-                  ))}
-                </motion.blockquote>
-              </AnimatePresence>
-            </div>
-
-            {/* Author */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-                className="mb-10 sm:mb-16 text-center"
-              >
-                <p className="text-sm font-semibold text-foreground">
-                  {current.author}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {current.role}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Navigation dots */}
-            <div className="flex gap-2 mb-8 sm:mb-10 justify-center">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  className={cn(
-                    "h-1 rounded-full transition-all duration-500",
-                    i === active
-                      ? "w-8 sm:w-10 bg-primary"
-                      : "w-3 sm:w-4 bg-border hover:bg-muted-foreground/40"
-                  )}
-                  aria-label={`Testimonial ${i + 1}`}
-                />
-              ))}
-            </div>
-
-          </div>
+      {/* Row 2 — scrolls right */}
+      <div className="relative overflow-hidden group" style={maskStyle}>
+        <div
+          className="flex gap-6 group-hover:[animation-play-state:paused]"
+          style={{ animation: "scrollRight 40s linear infinite" }}
+        >
+          {row2.map((item, i) => (
+            <TestimonialCard key={`r2-${i}`} item={item} />
+          ))}
         </div>
       </div>
     </section>
