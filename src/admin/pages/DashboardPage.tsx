@@ -42,7 +42,7 @@ export const DashboardPage = ({ setActivePage }: Props) => {
   const unread = messages.filter((m) => m.status === "new").length;
   const recentMessages = messages.slice(0, 5);
 
-  const blogPosts = JSON.parse(localStorage.getItem("coktech_blog_posts") || "[]");
+  const blogPosts = (() => { try { return JSON.parse(localStorage.getItem("coktech_blog_posts") || "[]"); } catch { return []; } })();
 
   const stats: StatCard[] = [
     { label: "Nové správy", value: unread, icon: <MessageSquare size={20} />, color: "#00FF94", trend: `${messages.length} celkom` },

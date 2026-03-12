@@ -101,8 +101,8 @@ export const AnalyticsPage = () => {
             <ResponsiveContainer width={140} height={140}>
               <PieChart>
                 <Pie data={sourcesData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" strokeWidth={0}>
-                  {sourcesData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
+                  {sourcesData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
               </PieChart>

@@ -21,10 +21,10 @@ const defaultSettings: Settings = {
 };
 
 export const SettingsPage = () => {
-  const [settings, setSettings] = useState<Settings>(() => ({
-    ...defaultSettings,
-    ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
-  }));
+  const [settings, setSettings] = useState<Settings>(() => {
+    try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }; }
+    catch { return defaultSettings; }
+  });
   const [passwords, setPasswords] = useState({ old: "", new1: "", new2: "" });
   const [showApiKey, setShowApiKey] = useState(false);
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";

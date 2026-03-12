@@ -52,9 +52,9 @@ export const MarketingPage = () => {
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState("");
   const [copied, setCopied] = useState(false);
-  const [drafts, setDrafts] = useState<Draft[]>(() =>
-    JSON.parse(localStorage.getItem("coktech_marketing_drafts") || "[]")
-  );
+  const [drafts, setDrafts] = useState<Draft[]>(() => {
+    try { return JSON.parse(localStorage.getItem("coktech_marketing_drafts") || "[]"); } catch { return []; }
+  });
 
   const divisionLabel = division === "security" ? "Security (kamery, alarmy)" :
     division === "digital" ? "Digital (web, aplikácie)" : "obe divízie";
@@ -91,13 +91,13 @@ ${platformGuidelines[contentType]}`,
         }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error?.message || "API chyba");
-      }
-
       const data = await res.json();
-      setGenerated(data.content[0]?.text || "");
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `HTTP ${res.status}`);
+      }
+      const text = data?.content?.[0]?.text;
+      if (!text) throw new Error("Prázdna odpoveď od API");
+      setGenerated(text);
     } catch (e: any) {
       toast.error("Chyba: " + e.message);
     } finally {

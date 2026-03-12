@@ -32,9 +32,9 @@ const emptyPost = (): BlogPost => ({
 });
 
 export const BlogPage = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(() =>
-    JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
-  );
+  const [posts, setPosts] = useState<BlogPost[]>(() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  });
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -97,7 +97,9 @@ Píš po slovensky. Min 3 odseky. Markdown formátovanie.`,
         }),
       });
       const data = await res.json();
-      const text = data.content[0]?.text || "";
+      if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+      const text = data?.content?.[0]?.text;
+      if (!text) throw new Error("Prázdna odpoveď od API");
       setEditing(p => p ? { ...p, content: p.content ? p.content + "\n\n" + text : text } : p);
       toast.success("AI obsah pridaný");
     } catch (e: any) {
