@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff, AlertTriangle } from "lucide-react";
 
@@ -29,13 +29,13 @@ export const SettingsPage = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
 
-  const saveSettings = (e: React.FormEvent) => {
+  const saveSettings = (e: FormEvent) => {
     e.preventDefault();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     toast.success("Nastavenia uložené");
   };
 
-  const changePassword = (e: React.FormEvent) => {
+  const changePassword = (e: FormEvent) => {
     e.preventDefault();
     if (passwords.new1 !== passwords.new2) { toast.error("Heslá sa nezhodujú"); return; }
     if (passwords.new1.length < 8) { toast.error("Heslo musí mať aspoň 8 znakov"); return; }

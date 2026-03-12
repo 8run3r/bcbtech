@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, FolderKanban, FileText, TrendingUp, ArrowRight, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,7 @@ interface Props {
 interface StatCard {
   label: string;
   value: number;
-  icon: React.ReactNode;
+  icon: ReactNode;
   color: string;
   trend?: string;
 }

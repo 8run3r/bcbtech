@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pencil, Trash2, ImagePlus, ExternalLink, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +55,7 @@ export const ProjectsPage = () => {
     return supabase.storage.from("portfolio-images").getPublicUrl(path).data.publicUrl;
   };
 
-  const save = async (e: React.FormEvent) => {
+  const save = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) { toast.error("Názov je povinný"); return; }
     setSaving(true);

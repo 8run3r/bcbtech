@@ -1,3 +1,4 @@
+import { type CSSProperties } from "react";
 import { motion } from "framer-motion";
 
 interface TestimonialItem {
@@ -58,7 +59,7 @@ const TestimonialCard = ({ item }: { item: TestimonialItem }) => (
   </motion.div>
 );
 
-const maskStyle: React.CSSProperties = {
+const maskStyle: CSSProperties = {
   maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
   WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, MessageSquare, Bot, FolderKanban,
@@ -14,7 +14,7 @@ export type AdminPage =
 interface NavItem {
   id: AdminPage;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 const navItems: NavItem[] = [
@@ -44,7 +44,7 @@ interface Props {
   setActivePage: (p: AdminPage) => void;
   unreadCount?: number;
   onLogout: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const AdminLayout = ({ activePage, setActivePage, unreadCount = 0, onLogout, children }: Props) => {
