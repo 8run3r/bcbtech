@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Code2, Camera, ArrowRight, Palette, Rocket, Shield, Eye, Wifi } from "lucide-react";
 import AnimatedModal from "@/components/ui/animated-modal";
 import { RippleButton } from "@/components/ui/ripple-button";
