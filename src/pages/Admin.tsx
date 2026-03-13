@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { AdminLayout, type AdminPage } from "@/admin/AdminLayout";
@@ -12,61 +13,22 @@ import { CamerasPage } from "@/admin/pages/CamerasPage";
 import { AnalyticsPage } from "@/admin/pages/AnalyticsPage";
 import { SettingsPage } from "@/admin/pages/SettingsPage";
 
-// localStorage (not localStorage) so lockout persists across tabs/refreshes
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 5 * 60 * 1000;
 
 const Admin = () => {
+  const { user, isAdmin, loading, signIn, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [lockoutRemaining, setLockoutRemaining] = useState(0);
   const [shake, setShake] = useState(false);
   const [activePage, setActivePage] = useState<AdminPage>("dashboard");
   const [unreadCount, setUnreadCount] = useState(0);
   const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkRole = async (userId: string) => {
-      try {
-        const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-        if (isMounted) setIsAdmin(!!data);
-      } catch {
-        if (isMounted) setIsAdmin(false);
-      }
-    };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (!isMounted) return;
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) setTimeout(() => checkRole(u.id), 0);
-      else setIsAdmin(false);
-    });
-
-    const init = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        const u = session?.user ?? null;
-        setUser(u);
-        if (u) await checkRole(u.id);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    init();
-    return () => { isMounted = false; subscription.unsubscribe(); };
-  }, []);
 
   // Load unread count
   useEffect(() => {
@@ -80,6 +42,7 @@ const Admin = () => {
     return () => clearInterval(interval);
   }, [isAdmin]);
 
+  // Restore lockout state on mount
   useEffect(() => {
     const lockUntil = Number(localStorage.getItem(LOCKOUT_TIME_KEY) || 0);
     if (lockUntil > Date.now()) startLockoutTimer(lockUntil);
@@ -110,7 +73,7 @@ const Admin = () => {
     }
 
     setLoginLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await signIn(email, password);
     setLoginLoading(false);
 
     if (error) {
@@ -130,12 +93,6 @@ const Admin = () => {
       localStorage.removeItem(LOCKOUT_KEY);
       localStorage.removeItem(LOCKOUT_TIME_KEY);
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setIsAdmin(false);
   };
 
   if (loading) {
@@ -169,7 +126,7 @@ const Admin = () => {
             {user && !isAdmin ? (
               <div className="text-center py-4">
                 <p className="text-zinc-400 text-sm mb-4">Nemáte admin prístup.</p>
-                <button onClick={handleLogout} className="text-sm text-red-400 hover:underline">Odhlásiť sa</button>
+                <button onClick={signOut} className="text-sm text-red-400 hover:underline">Odhlásiť sa</button>
               </div>
             ) : (
               <form onSubmit={handleLogin} className="space-y-3">
@@ -232,7 +189,7 @@ const Admin = () => {
       activePage={activePage}
       setActivePage={setActivePage}
       unreadCount={unreadCount}
-      onLogout={handleLogout}
+      onLogout={signOut}
     >
       {pages[activePage]}
     </AdminLayout>
