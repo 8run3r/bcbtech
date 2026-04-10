@@ -21,12 +21,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAdminRole = async (userId: string) => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
+      // If table doesn't exist or RLS blocks, treat as non-admin (no crash)
+      if (error) {
+        console.warn("[Auth] user_roles check failed:", error.message);
+        setIsAdmin(false);
+        return;
+      }
       setIsAdmin(!!data);
     } catch {
       setIsAdmin(false);

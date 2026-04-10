@@ -12,6 +12,7 @@ import { AnalyticsPage } from "@/admin/pages/AnalyticsPage";
 import { SettingsPage } from "@/admin/pages/SettingsPage";
 import { AgentsPage } from "@/admin/pages/AgentsPage";
 import { W98, raised, sunken, Win98Button, Win98Input } from "@/admin/win98";
+import RotatingCaptcha, { fetchIP, isKnownIP, addKnownIP } from "@/components/RotatingCaptcha";
 
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
@@ -29,6 +30,20 @@ const Admin = () => {
   const [activePage, setActivePage] = useState<AdminPage>("dashboard");
   const [unreadCount, setUnreadCount] = useState(0);
   const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // CAPTCHA state — required for unknown IP addresses
+  const [currentIP, setCurrentIP] = useState<string | null>(null);
+  const [needsCaptcha, setNeedsCaptcha] = useState(false);
+  const [captchaPassed, setCaptchaPassed] = useState(false);
+
+  useEffect(() => {
+    fetchIP().then(ip => {
+      setCurrentIP(ip);
+      if (ip && !isKnownIP(ip)) {
+        setNeedsCaptcha(true);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -90,6 +105,8 @@ const Admin = () => {
     } else {
       localStorage.removeItem(LOCKOUT_KEY);
       localStorage.removeItem(LOCKOUT_TIME_KEY);
+      // Mark IP as known after successful login
+      if (currentIP) addKnownIP(currentIP);
     }
   };
 
@@ -116,6 +133,19 @@ const Admin = () => {
   }
 
   if (!user || !isAdmin) {
+    // Show CAPTCHA gate for unknown IP addresses
+    if (needsCaptcha && !captchaPassed) {
+      return (
+        <div style={{
+          minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(160deg, #0d2a5e 0%, #1a4a8a 30%, #2060b0 55%, #162e60 100%)",
+          fontFamily: W98.font, padding: 16,
+        }}>
+          <RotatingCaptcha onPass={() => setCaptchaPassed(true)} />
+        </div>
+      );
+    }
+
     return (
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
