@@ -15,7 +15,7 @@ const StationOverlay = ({ station, index, onNavigate }: StationOverlayProps) => 
     animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
     exit={{ opacity: 0, x: 24, filter: "blur(4px)" }}
     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    className="absolute bottom-16 md:bottom-auto md:top-1/2 md:-translate-y-1/2 left-6 md:left-12 z-20 max-w-xs sm:max-w-sm"
+    className="absolute bottom-20 left-4 right-4 sm:right-auto sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-12 z-20 max-w-xs sm:max-w-sm"
   >
     <div
       className="px-5 py-4 sm:px-6 sm:py-5"

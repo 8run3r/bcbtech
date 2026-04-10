@@ -169,7 +169,7 @@ const Navbar = () => {
         </nav>
       </header>
 
-      {/* Mobile overlay */}
+      {/* Mobile overlay — fullscreen terminal-style menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -177,16 +177,122 @@ const Navbar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden fixed inset-0 z-[60] flex flex-col items-center justify-center gap-8"
-            style={{ background: "rgba(0,0,0,0.95)", backdropFilter: "blur(20px)" }}
+            className="md:hidden fixed inset-0 z-[60]"
+            style={{ background: "rgba(0,0,0,0.97)", backdropFilter: "blur(24px)" }}
+            onClick={() => setMenuOpen(false)}
           >
-            <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
-            <a href="/" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "24px", color: "var(--text-primary)", letterSpacing: "0.08em" }}>COKTECH</a>
-            {NAV_LINKS.map((link) => (
-              <Link key={link.label} to={link.to} style={{ fontFamily: "'VT323', monospace", fontSize: "28px", color: location.pathname === link.to ? accent : "var(--text-primary)", letterSpacing: "0.05em" }}>
-                {link.label}
-              </Link>
-            ))}
+            {/* Grid overlay */}
+            <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+
+            {/* Scanlines */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(transparent,transparent 1px,rgba(0,0,0,0.04) 1px,rgba(0,0,0,0.04) 2px)" }} />
+
+            {/* Close button */}
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="absolute top-5 right-5 z-10 p-2"
+              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: accent, letterSpacing: "0.1em", background: "transparent", border: `1px solid rgba(${accentRaw},0.2)`, transition: "color 0.5s, border-color 0.5s" }}
+            >
+              [ ESC ]
+            </button>
+
+            {/* Content */}
+            <div className="flex flex-col justify-center h-full px-8" onClick={(e) => e.stopPropagation()}>
+              {/* Logo */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 }}
+                className="mb-10"
+              >
+                <Link to="/" onClick={() => setMenuOpen(false)} style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: 20, color: "var(--text-primary)", letterSpacing: "0.08em", textDecoration: "none" }}>
+                  COK<span style={{ color: accent, transition: "color 0.5s" }}>TECH</span>
+                </Link>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: accent, opacity: 0.3, display: "block", marginTop: 4, letterSpacing: "0.2em", transition: "color 0.5s" }}>
+                  NAVIGATION // MAIN MENU
+                </span>
+              </motion.div>
+
+              {/* Nav links — stacked with code prefix */}
+              <div className="flex flex-col gap-1">
+                {NAV_LINKS.map((link, i) => {
+                  const active = location.pathname === link.to;
+                  return (
+                    <motion.div
+                      key={link.label}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.08 + i * 0.06 }}
+                    >
+                      <Link
+                        to={link.to}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-4 py-4 group"
+                        style={{ textDecoration: "none", borderBottom: `1px solid rgba(${accentRaw},0.06)` }}
+                      >
+                        <span style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: 9,
+                          color: accent,
+                          opacity: active ? 0.8 : 0.25,
+                          letterSpacing: "0.1em",
+                          width: 28,
+                          transition: "color 0.5s",
+                        }}>
+                          {link.code}
+                        </span>
+                        {active && (
+                          <motion.div
+                            layoutId="mobile-nav-dot"
+                            style={{ width: 4, height: 4, background: accent, boxShadow: `0 0 8px ${accent}`, flexShrink: 0, transition: "background 0.5s, box-shadow 0.5s" }}
+                          />
+                        )}
+                        <span style={{
+                          fontFamily: "'VT323', monospace",
+                          fontSize: 26,
+                          color: active ? accent : "var(--text-primary)",
+                          letterSpacing: "0.04em",
+                          transition: "color 0.5s",
+                        }}>
+                          {link.label}
+                        </span>
+                        <span style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: 8,
+                          color: accent,
+                          opacity: 0,
+                          marginLeft: "auto",
+                          letterSpacing: "0.1em",
+                          transition: "opacity 0.3s, color 0.5s",
+                        }}
+                        className="group-hover:!opacity-40"
+                        >
+                          ENTER →
+                        </span>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom info */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-auto pb-8 pt-10"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div style={{ width: 4, height: 4, background: accent, boxShadow: `0 0 6px ${accent}`, transition: "background 0.5s, box-shadow 0.5s" }} />
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: accent, opacity: 0.4, letterSpacing: "0.15em", transition: "color 0.5s" }}>
+                    SYSTEM READY
+                  </span>
+                </div>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--text-ghost)", letterSpacing: "0.1em" }}>
+                  studio@coktech.tech
+                </span>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

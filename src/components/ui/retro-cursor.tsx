@@ -21,20 +21,22 @@ const ARROW_PIXELS = [
   [0,0,0,0,0,1,1,0],
 ];
 
-// 8x12 pixel art hand/pointer cursor
+// 10x14 pixel art open hand cursor — realistic proportions, 8-bit style
 const HAND_PIXELS = [
-  [0,0,0,1,1,0,0,0],
-  [0,0,1,2,2,1,0,0],
-  [0,0,1,2,2,1,0,0],
-  [0,0,1,2,2,1,0,0],
-  [0,1,1,2,2,1,1,0],
-  [1,2,1,2,2,1,2,1],
-  [1,2,2,2,2,2,2,1],
-  [1,2,2,2,2,2,2,1],
-  [0,1,2,2,2,2,1,0],
-  [0,1,2,2,2,2,1,0],
-  [0,0,1,2,2,1,0,0],
-  [0,0,1,1,1,1,0,0],
+  [0,0,0,1,1,0,1,1,0,0],
+  [0,0,1,2,2,1,2,2,1,0],
+  [0,0,1,2,2,1,2,2,1,0],
+  [0,0,1,2,2,2,2,2,1,0],
+  [1,1,1,2,2,2,2,2,1,0],
+  [1,2,2,2,2,2,2,2,2,1],
+  [1,2,2,2,2,2,2,2,2,1],
+  [0,1,2,2,2,2,2,2,2,1],
+  [0,1,2,2,2,2,2,2,1,0],
+  [0,0,1,2,2,2,2,2,1,0],
+  [0,0,1,2,2,2,2,1,0,0],
+  [0,0,0,1,2,2,2,1,0,0],
+  [0,0,0,1,2,2,1,0,0,0],
+  [0,0,0,0,1,1,0,0,0,0],
 ];
 
 const PIXEL_SIZE = 2;
@@ -86,6 +88,10 @@ const RetroCursor = () => {
   }, []);
 
   useEffect(() => {
+    // Skip on touch devices — don't hide cursor on mobile
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouchDevice) return;
+
     // Hide native cursor
     const style = document.createElement("style");
     style.id = "retro-cursor-hide";

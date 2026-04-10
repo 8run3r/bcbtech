@@ -12,7 +12,7 @@ interface ScrollCameraRigProps {
  * Camera descends from above, orbiting slightly around each station.
  */
 const ScrollCameraRig = ({ progress }: ScrollCameraRigProps) => {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const targetPos = useRef(new THREE.Vector3());
   const targetLook = useRef(new THREE.Vector3());
 
@@ -28,9 +28,14 @@ const ScrollCameraRig = ({ progress }: ScrollCameraRigProps) => {
     const from = STATIONS[idx];
     const to = STATIONS[Math.min(idx + 1, count - 1)];
 
-    // Subtle orbit around station — camera spirals slightly as it descends
+    // Responsive camera — tighter on mobile
+    const isMobile = size.width < 768;
+    const orbitRadius = isMobile ? 3 : 6;
+    const camHeight = isMobile ? 4.5 : 3.5;
+    const camDepth = isMobile ? 6 : 4;
+
+    // Subtle orbit around station
     const time = clock.elapsedTime;
-    const orbitRadius = 6;
     const orbitAngle = progress * Math.PI * 1.5 + time * 0.05;
     const orbitX = Math.sin(orbitAngle) * orbitRadius;
     const orbitZ = Math.cos(orbitAngle) * orbitRadius;
@@ -41,9 +46,9 @@ const ScrollCameraRig = ({ progress }: ScrollCameraRigProps) => {
     const stationZ = from.pos[2] + (to.pos[2] - from.pos[2]) * ease;
 
     targetPos.current.set(
-      stationX + orbitX * 0.5,
-      stationY + 3.5,
-      stationZ + orbitZ * 0.5 + 4
+      stationX + orbitX * (isMobile ? 0.3 : 0.5),
+      stationY + camHeight,
+      stationZ + orbitZ * (isMobile ? 0.3 : 0.5) + camDepth
     );
 
     // Look at station center

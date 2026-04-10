@@ -172,11 +172,12 @@ const HeroSection = () => {
                 <span style={{
                   fontFamily: "'Syne', sans-serif",
                   fontWeight: 900,
-                  fontSize: "clamp(3rem, 8vw, 5.5rem)",
+                  fontSize: "clamp(2.4rem, 10vw, 5.5rem)",
                   color: "var(--text-primary)",
                   display: "block",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
+                  whiteSpace: "nowrap",
                 }}>
                   COK<span style={{
                     color: "var(--neon-primary)",
@@ -186,7 +187,7 @@ const HeroSection = () => {
                 <span style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontWeight: 500,
-                  fontSize: "clamp(1.5rem, 3.5vw, 2.8rem)",
+                  fontSize: "clamp(1.2rem, 3.5vw, 2.8rem)",
                   color: "var(--neon-primary)",
                   opacity: 0.75,
                   letterSpacing: "0.04em",

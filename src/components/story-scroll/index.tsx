@@ -341,7 +341,7 @@ const ScrollHint = () => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
+    className="absolute bottom-12 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"
   >
     <span style={{ fontSize: 8, color: "var(--text-ghost)", letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
       SCROLL TO DESCEND
@@ -358,31 +358,31 @@ const ScrollHint = () => (
 const PixelHUD = ({ station, index }: { station: (typeof STATIONS)[0]; index: number }) => (
   <>
     {/* Top left — zone label */}
-    <div className="absolute top-6 left-6 z-30 pointer-events-none">
+    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 pointer-events-none">
       <span style={{ fontFamily: "'VT323', monospace", fontSize: 11, color: station.color, opacity: 0.5, letterSpacing: "0.2em", display: "block" }}>
         {station.label} {station.subtitle}
       </span>
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: station.color, opacity: 0.2, letterSpacing: "0.1em", display: "block", marginTop: 2 }}>
+      <span className="hidden sm:block" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: station.color, opacity: 0.2, letterSpacing: "0.1em", marginTop: 2 }}>
         {'>'} {station.modelHint}
       </span>
     </div>
 
     {/* Top right — counter */}
-    <div className="absolute top-6 right-6 z-30" style={{ fontFamily: "'VT323', monospace", fontSize: 18, color: station.color, opacity: 0.3, letterSpacing: "0.05em" }}>
+    <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30" style={{ fontFamily: "'VT323', monospace", fontSize: 18, color: station.color, opacity: 0.3, letterSpacing: "0.05em" }}>
       {String(index + 1).padStart(2, "0")} / {String(STATIONS.length).padStart(2, "0")}
     </div>
 
     {/* Bottom — pixel HP bar */}
-    <div className="absolute bottom-6 left-6 z-30 pointer-events-none">
-      <div className="flex items-center gap-2">
+    <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-30 pointer-events-none">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <span style={{ fontFamily: "'VT323', monospace", fontSize: 10, color: station.color, opacity: 0.4 }}>HP</span>
         <div className="flex gap-px">
           {STATIONS.map((_, i) => (
             <div
               key={i}
               style={{
-                width: 12,
-                height: 4,
+                width: 8,
+                height: 3,
                 background: i <= index ? station.color : "rgba(255,255,255,0.06)",
                 transition: "background 0.5s",
                 boxShadow: i === index ? `0 0 6px ${station.color}40` : "none",
@@ -396,8 +396,8 @@ const PixelHUD = ({ station, index }: { station: (typeof STATIONS)[0]; index: nu
       </div>
     </div>
 
-    {/* Bottom right — interaction hint */}
-    <div className="absolute bottom-6 right-6 z-30 pointer-events-none">
+    {/* Bottom right — interaction hint (hidden on mobile) */}
+    <div className="absolute bottom-6 right-6 z-30 pointer-events-none hidden sm:block">
       <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: station.color, opacity: 0.15, letterSpacing: "0.1em" }}>
         CLICK · DRAG · SCROLL
       </span>
@@ -500,7 +500,7 @@ const StoryScroll3D = () => {
 
         {/* Three.js canvas */}
         <Canvas
-          camera={{ position: [0, 3.5, 10], fov: 50 }}
+          camera={{ position: [0, 3.5, 10], fov: window.innerWidth < 768 ? 65 : 50 }}
           dpr={[1, 1.5]}
           gl={{ antialias: true, alpha: true }}
           style={{ position: "absolute", inset: 0 }}
