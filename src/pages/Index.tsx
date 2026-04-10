@@ -1,84 +1,46 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
-import Header from "@/components/landing/Header";
-import Hero from "@/components/landing/Hero";
-import PageLoader from "@/components/landing/PageLoader";
+import { useState, lazy, Suspense } from "react";
+import Navbar from "@/components/landing/Navbar";
+import HeroSection from "@/components/landing/HeroSection";
+import FooterCTA from "@/components/landing/FooterCTA";
+import BootSequence from "@/components/landing/BootSequence";
+import Scanlines from "@/components/ui/scanlines";
+import SystemMessages from "@/components/ui/system-messages";
+import HiddenInteractions from "@/components/ui/hidden-interactions";
+import DataRain from "@/components/ui/data-rain";
 
-import ServicesOverview from "@/components/landing/ServicesOverview";
-import BeforeAfter from "@/components/landing/BeforeAfter";
-import PortfolioPreview from "@/components/landing/PortfolioPreview";
-import Testimonials from "@/components/landing/Testimonials";
-import ContactCTA from "@/components/landing/ContactCTA";
-import Footer from "@/components/landing/Footer";
-import FluidCursor from "@/components/landing/FluidCursor";
-import SocialLinks from "@/components/SocialLinks";
-import ExitIntentPopup from "@/components/landing/ExitIntentPopup";
-
-// Lazy-load the heavy 3D ScrollStory component
-const ScrollStory = lazy(() => import("@/components/landing/ScrollStory"));
-
-// Preload ScrollStory immediately when module loads (before component mounts)
-const preloadPromise = import("@/components/landing/ScrollStory");
+const SubworldContainer = lazy(() => import("@/components/subworlds/SubworldContainer"));
 
 const Index = () => {
-  const [sceneReady, setSceneReady] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    // Simulate progress while the chunk loads
-    let frame: number;
-    let current = 0;
-
-    const tick = () => {
-      if (current < 85) {
-        current += (85 - current) * 0.04;
-        setProgress(current);
-        frame = requestAnimationFrame(tick);
-      }
-    };
-    frame = requestAnimationFrame(tick);
-
-    preloadPromise.then(() => {
-      // Chunk loaded — animate to 100% then hide loader
-      setProgress(100);
-      setTimeout(() => setSceneReady(true), 400);
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, []);
+  const [bootDone, setBootDone] = useState(false);
 
   return (
-    <main className="relative min-h-screen bg-background text-foreground">
-      {/* Loading screen */}
-      <AnimatePresence>
-        {!sceneReady && <PageLoader progress={progress} />}
-      </AnimatePresence>
+    <>
+      {!bootDone && <BootSequence onComplete={() => setBootDone(true)} />}
 
-      {/* Fluid cursor background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <FluidCursor />
-      </div>
+      {bootDone && (
+        <>
+          <Scanlines />
+          <SystemMessages />
+          <HiddenInteractions />
+          <DataRain opacity={0.025} color="#00ffaa" />
 
-      <div className="relative z-10">
-        <Header />
-        <Hero />
-        
-        <Suspense fallback={null}>
-          <ScrollStory />
-        </Suspense>
-        <ServicesOverview />
-        <BeforeAfter />
-        <PortfolioPreview />
-        {/* Social links — above testimonials */}
-        <div className="flex justify-center pb-4">
-          <SocialLinks />
-        </div>
-        <Testimonials />
-        <ContactCTA />
-        <Footer />
-        <ExitIntentPopup />
-      </div>
-    </main>
+          <main style={{ background: "#000", minHeight: "100vh" }}>
+            <Navbar />
+            <HeroSection />
+            <Suspense fallback={
+              <div style={{ height: "100vh", background: "#000" }} className="flex items-center justify-center">
+                <span className="blink-cursor" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "10px", color: "var(--neon-primary)", opacity: 0.3 }}>
+                  LOADING WORLDS
+                </span>
+              </div>
+            }>
+              <SubworldContainer />
+            </Suspense>
+            <FooterCTA />
+          </main>
+        </>
+      )}
+    </>
   );
 };
 

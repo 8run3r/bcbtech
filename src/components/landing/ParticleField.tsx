@@ -11,7 +11,23 @@ interface Particle {
   maxLife: number;
 }
 
-const ParticleField = ({ className = "", density = 2500, particleSize = 2.5 }: { className?: string; density?: number; particleSize?: number }) => {
+const ParticleField = ({
+  className = "",
+  density = 2500,
+  particleSize = 2.5,
+  color = "255,255,255",
+  particleOpacityScale = 1,
+  connectionDistance = 100,
+  connectionOpacity = 0.08,
+}: {
+  className?: string;
+  density?: number;
+  particleSize?: number;
+  color?: string;
+  particleOpacityScale?: number;
+  connectionDistance?: number;
+  connectionOpacity?: number;
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particles = useRef<Particle[]>([]);
   const mouse = useRef({ x: -1000, y: -1000 });
@@ -93,37 +109,48 @@ const ParticleField = ({ className = "", density = 2500, particleSize = 2.5 }: {
 
         const lifeRatio = p.life / p.maxLife;
         const fade = lifeRatio < 0.1 ? lifeRatio / 0.1 : lifeRatio > 0.8 ? (1 - lifeRatio) / 0.2 : 1;
-        const alpha = p.opacity * Math.max(0, fade);
+        const alpha = p.opacity * Math.max(0, fade) * particleOpacityScale;
 
-        // Glow effect
+        // Glow halo
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.05})`;
+        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${color}, ${alpha * 0.08})`;
         ctx.fill();
 
         // Core dot
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillStyle = `rgba(${color}, ${alpha})`;
         ctx.fill();
       }
 
-      // Connection lines
-      for (let i = 0; i < particles.current.length; i++) {
-        const a = particles.current[i];
-        for (let j = i + 1; j < particles.current.length; j++) {
-          const b = particles.current[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            const alpha = (1 - dist / 100) * 0.12;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(0, 255, 170, ${alpha})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
+      // Connecting lines between nearby particles
+      if (connectionDistance > 0) {
+        const pts = particles.current;
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i];
+          const aLife = a.life / a.maxLife;
+          const aFade = aLife < 0.1 ? aLife / 0.1 : aLife > 0.8 ? (1 - aLife) / 0.2 : 1;
+          if (aFade <= 0) continue;
+          for (let j = i + 1; j < pts.length; j++) {
+            const b = pts[j];
+            const ddx = a.x - b.x;
+            const ddy = a.y - b.y;
+            const d = ddx * ddx + ddy * ddy;
+            const maxD = connectionDistance * connectionDistance;
+            if (d < maxD) {
+              const bLife = b.life / b.maxLife;
+              const bFade = bLife < 0.1 ? bLife / 0.1 : bLife > 0.8 ? (1 - bLife) / 0.2 : 1;
+              if (bFade <= 0) continue;
+              const proximity = 1 - Math.sqrt(d) / connectionDistance;
+              const lineAlpha = proximity * connectionOpacity * Math.min(aFade, bFade) * particleOpacityScale;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = `rgba(${color}, ${lineAlpha})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
           }
         }
       }

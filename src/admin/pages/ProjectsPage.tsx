@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Pencil, Trash2, ImagePlus, ExternalLink, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  W98, raised, sunken,
+  Win98Button, Win98Panel, Win98Input, Win98Textarea, Win98Select, Win98Window, Win98Progress,
+} from "../win98";
 
 interface PortfolioItem {
   id: string;
@@ -17,7 +21,15 @@ interface PortfolioItem {
   sort_order: number;
 }
 
-const emptyForm = { title: "", category: "Web", type: "web", description: "", tech: "", year: new Date().getFullYear().toString(), link: "" };
+const TYPE_OPTIONS = [
+  { value: "web", label: "Web" },
+  { value: "appky", label: "Appka" },
+  { value: "vizualy", label: "Vizuál" },
+  { value: "produkty", label: "Produkt" },
+  { value: "automation", label: "Automatizácia" },
+];
+
+const emptyForm = { title: "", category: "", type: "web", description: "", tech: "", year: new Date().getFullYear().toString(), link: "" };
 
 export const ProjectsPage = () => {
   const [items, setItems] = useState<PortfolioItem[]>([]);
@@ -64,159 +76,186 @@ export const ProjectsPage = () => {
     if (file) { imageUrl = await uploadImage(file); }
 
     const payload = {
-      title: form.title,
-      category: form.category,
-      type: form.type,
-      description: form.description || null,
-      image_url: imageUrl,
+      title: form.title, category: form.category, type: form.type,
+      description: form.description || null, image_url: imageUrl,
       tech: form.tech ? form.tech.split(",").map(t => t.trim()).filter(Boolean) : null,
-      year: form.year || null,
-      link: form.link || null,
+      year: form.year || null, link: form.link || null,
     };
 
     if (editing) {
       const { error } = await supabase.from("portfolio_items").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); } else { toast.success("Projekt aktualizovaný"); }
+      if (error) toast.error(error.message); else toast.success("Aktualizované");
     } else {
       const { error } = await supabase.from("portfolio_items").insert(payload);
-      if (error) { toast.error(error.message); } else { toast.success("Projekt pridaný"); }
+      if (error) toast.error(error.message); else toast.success("Pridané");
     }
 
-    setSaving(false);
-    setShowModal(false);
-    loadData();
+    setSaving(false); setShowModal(false); loadData();
   };
 
   const remove = async (id: string) => {
     if (!confirm("Zmazať projekt?")) return;
     await supabase.from("portfolio_items").delete().eq("id", id);
-    toast.success("Zmazané");
-    loadData();
+    toast.success("Zmazané"); loadData();
   };
 
-  const cardStyle = { background: "#141414" };
-
   return (
-    <div className="max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-zinc-500 text-sm">{items.length} projektov</p>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 transition-all"
-        >
-          <Plus size={16} /> Nový projekt
-        </button>
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black }}>
+      {/* Header */}
+      <div style={{ boxShadow: raised, background: W98.bg, padding: "8px 12px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: "20px" }}>📁</span>
+          <span style={{ fontWeight: 700 }}>Projekty — Portfólio</span>
+          <span style={{ color: W98.grayText }}>({items.length} projektov)</span>
+        </div>
+        <Win98Button onClick={openAdd}>📄 Nový projekt</Win98Button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-40">
-          <div className="w-6 h-6 border-2 border-[#00FF94]/30 border-t-[#00FF94] rounded-full animate-spin" />
+        <div style={{ padding: 30, textAlign: "center" }}>
+          <Win98Progress value={50} style={{ width: 200, margin: "0 auto" }} />
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-16 rounded-xl border border-white/5" style={cardStyle}>
-          <p className="text-zinc-500 mb-4">Zatiaľ žiadne projekty.</p>
-          <button onClick={openAdd} className="text-sm text-[#00FF94] hover:underline">Pridaj prvý projekt</button>
+        <div style={{ boxShadow: raised, background: W98.bg, padding: 30, textAlign: "center" }}>
+          <p style={{ color: W98.grayText, marginBottom: 8 }}>Zatiaľ žiadne projekty.</p>
+          <Win98Button onClick={openAdd}>Pridaj prvý projekt</Win98Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item) => (
-            <motion.div key={item.id} layout className="rounded-xl border border-white/5 overflow-hidden group" style={cardStyle}>
-              <div className="aspect-video bg-zinc-800 relative overflow-hidden">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                    <ImagePlus size={24} />
-                  </div>
-                )}
-                <div className="absolute top-2 right-2">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
-                    item.type === "web" ? "bg-blue-500/20 text-blue-400" : "bg-amber-500/20 text-amber-400"
-                  }`}>{item.type}</span>
+        /* Table view */
+        <Win98Panel label="Zoznam projektov">
+          <div style={{ boxShadow: sunken, background: W98.fieldBg, overflow: "auto" }}>
+            {/* Header */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "60px 1fr 100px 80px 60px 80px",
+              gap: 4, padding: "4px 8px", borderBottom: "2px solid #808080",
+              background: W98.bg, fontWeight: 700, fontSize: "11px",
+            }}>
+              <span>Obr.</span>
+              <span>Názov</span>
+              <span>Kategória</span>
+              <span>Typ</span>
+              <span>Rok</span>
+              <span>Akcie</span>
+            </div>
+            {items.map((item) => (
+              <div key={item.id} style={{
+                display: "grid", gridTemplateColumns: "60px 1fr 100px 80px 60px 80px",
+                gap: 4, padding: "3px 8px", fontSize: "11px", alignItems: "center",
+                borderBottom: "1px solid #f0f0f0",
+              }}>
+                <div style={{ width: 48, height: 32, background: "#e0e0e0", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  {item.image_url ? (
+                    <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <ImagePlus size={14} color="#808080" />
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{item.title}</div>
+                  {item.tech && item.tech.length > 0 && (
+                    <div style={{ fontSize: "9px", color: W98.grayText }}>{item.tech.slice(0, 3).join(", ")}</div>
+                  )}
+                </div>
+                <span>{item.category}</span>
+                <span style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "10px" }}>{item.type}</span>
+                <span>{item.year}</span>
+                <div style={{ display: "flex", gap: 2 }}>
+                  {item.link && (
+                    <Win98Button small onClick={() => window.open(item.link!, "_blank")} style={{ minWidth: 0, padding: "2px 4px" }}>🔗</Win98Button>
+                  )}
+                  <Win98Button small onClick={() => openEdit(item)} style={{ minWidth: 0, padding: "2px 4px" }}>✏️</Win98Button>
+                  <Win98Button small onClick={() => remove(item.id)} style={{ minWidth: 0, padding: "2px 4px" }}>🗑️</Win98Button>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{item.title}</p>
-                    <p className="text-zinc-500 text-xs mt-0.5">{item.category} {item.year && `· ${item.year}`}</p>
-                  </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    {item.link && (
-                      <a href={item.link} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors">
-                        <ExternalLink size={14} />
-                      </a>
-                    )}
-                    <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors">
-                      <Pencil size={14} />
-                    </button>
-                    <button onClick={() => remove(item.id)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/5 transition-colors">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-                {item.tech && item.tech.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {item.tech.slice(0, 4).map((t) => (
-                      <span key={t} className="text-[10px] bg-white/5 text-zinc-500 px-1.5 py-0.5 rounded">{t}</span>
-                    ))}
-                    {item.tech.length > 4 && <span className="text-[10px] text-zinc-600">+{item.tech.length - 4}</span>}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </Win98Panel>
       )}
 
       {/* Modal */}
       <AnimatePresence>
         {showModal && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/70 z-50" onClick={() => setShowModal(false)} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 50 }}
+              onClick={() => setShowModal(false)}
+            />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              style={{
+                position: "fixed", inset: 0, zIndex: 50,
+                display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-full max-w-lg rounded-2xl border border-white/10 p-6 max-h-[90vh] overflow-y-auto" style={{ background: "#1a1a1a" }}>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-white font-semibold">{editing ? "Upraviť projekt" : "Nový projekt"}</h2>
-                  <button onClick={() => setShowModal(false)} className="text-zinc-500 hover:text-white transition-colors"><X size={18} /></button>
-                </div>
-                <form onSubmit={save} className="space-y-4">
-                  <input required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Názov projektu *" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} placeholder="Kategória" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors" />
-                    <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-white/20 transition-colors">
-                      <option value="web">Web projekt</option>
-                      <option value="camera">Kamerový projekt</option>
-                      <option value="app">Aplikácia</option>
-                      <option value="eshop">E-shop</option>
-                    </select>
+              <Win98Window
+                title={editing ? "Upraviť projekt" : "Nový projekt"}
+                onClose={() => setShowModal(false)}
+                style={{ width: 460, maxHeight: "80vh" }}
+              >
+                <form onSubmit={save}>
+                  <div style={{ marginBottom: 8 }}>
+                    <label style={{ display: "block", marginBottom: 2 }}>Názov projektu *</label>
+                    <Win98Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input value={form.year} onChange={e => setForm(p => ({ ...p, year: e.target.value }))} placeholder="Rok" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors" />
-                    <input value={form.link} onChange={e => setForm(p => ({ ...p, link: e.target.value }))} placeholder="URL (voliteľné)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors" />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                    <div>
+                      <label style={{ display: "block", marginBottom: 2 }}>Kategória</label>
+                      <Win98Input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", marginBottom: 2 }}>Typ</label>
+                      <Win98Select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} options={TYPE_OPTIONS} style={{ width: "100%" }} />
+                    </div>
                   </div>
-                  <input value={form.tech} onChange={e => setForm(p => ({ ...p, tech: e.target.value }))} placeholder="Technológie (oddelené čiarkou)" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors" />
-                  <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Popis" rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 resize-none transition-colors" />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                    <div>
+                      <label style={{ display: "block", marginBottom: 2 }}>Rok</label>
+                      <Win98Input value={form.year} onChange={e => setForm(p => ({ ...p, year: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", marginBottom: 2 }}>URL</label>
+                      <Win98Input value={form.link} onChange={e => setForm(p => ({ ...p, link: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <label style={{ display: "block", marginBottom: 2 }}>Technológie (čiarkou)</label>
+                    <Win98Input value={form.tech} onChange={e => setForm(p => ({ ...p, tech: e.target.value }))} />
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <label style={{ display: "block", marginBottom: 2 }}>Popis</label>
+                    <Win98Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3} />
+                  </div>
 
-                  {/* Image upload */}
-                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }} />
-                  <div onClick={() => fileRef.current?.click()} className="border border-dashed border-white/10 rounded-xl p-4 cursor-pointer hover:border-white/20 transition-colors flex items-center gap-4">
-                    {preview ? <img src={preview} alt="" className="w-14 h-14 rounded-lg object-cover" /> : <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center"><ImagePlus size={18} className="text-zinc-600" /></div>}
-                    <div><p className="text-sm text-zinc-400">{file ? file.name : "Klikni pre nahratie obrázku"}</p><p className="text-xs text-zinc-600">JPG, PNG, WebP</p></div>
+                  {/* Image */}
+                  <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) { setFile(f); setPreview(URL.createObjectURL(f)); } }}
+                  />
+                  <div onClick={() => fileRef.current?.click()} style={{
+                    boxShadow: sunken, background: W98.fieldBg, padding: 8, cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 8, marginBottom: 12,
+                  }}>
+                    {preview ? (
+                      <img src={preview} alt="" style={{ width: 48, height: 48, objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: 48, height: 48, background: "#e0e0e0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <ImagePlus size={16} color="#808080" />
+                      </div>
+                    )}
+                    <div>
+                      <div>{file ? file.name : "Klikni pre nahratie obrázku"}</div>
+                      <div style={{ fontSize: "10px", color: W98.grayText }}>JPG, PNG, WebP</div>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl text-sm text-zinc-400 bg-white/5 hover:bg-white/10 transition-all">Zrušiť</button>
-                    <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 disabled:opacity-60 transition-all">
-                      {saving ? "Ukladám..." : editing ? "Uložiť zmeny" : "Pridať projekt"}
-                    </button>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
+                    <Win98Button type="button" onClick={() => setShowModal(false)}>Zrušiť</Win98Button>
+                    <Win98Button type="submit" disabled={saving}>
+                      {saving ? "Ukladám..." : editing ? "💾 Uložiť zmeny" : "📄 Pridať"}
+                    </Win98Button>
                   </div>
                 </form>
-              </div>
+              </Win98Window>
             </motion.div>
           </>
         )}

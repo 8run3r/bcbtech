@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, HardDrive, Wifi, CheckCircle2, ArrowRight, ArrowLeft, Send } from "lucide-react";
 import { Link } from "react-router-dom";
-import Header from "@/components/landing/Header";
+import Navbar from '@/components/landing/Navbar';
 import Footer from "@/components/landing/Footer";
 
 type Step = 1 | 2 | 3 | 4;
@@ -55,7 +55,7 @@ const Konfigurator = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Navbar />
 
       <section className="pt-36 pb-20 px-6">
         <div className="max-w-4xl mx-auto">

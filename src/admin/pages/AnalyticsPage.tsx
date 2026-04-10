@@ -1,4 +1,5 @@
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { W98, raised, sunken, Win98Panel } from "../win98";
 
 const visitorsData = [
   { day: "Po", visitors: 84 },
@@ -11,10 +12,10 @@ const visitorsData = [
 ];
 
 const sourcesData = [
-  { name: "Direct", value: 40, color: "#00FF94" },
-  { name: "Google", value: 35, color: "#60a5fa" },
-  { name: "Social", value: 15, color: "#f59e0b" },
-  { name: "Iné", value: 10, color: "#a78bfa" },
+  { name: "Direct", value: 40, color: "#000080" },
+  { name: "Google", value: 35, color: "#008000" },
+  { name: "Social", value: 15, color: "#800080" },
+  { name: "Iné", value: 10, color: "#808080" },
 ];
 
 const pagesData = [
@@ -25,14 +26,12 @@ const pagesData = [
   { page: "/portfolio", visits: 74 },
 ];
 
-const cardStyle = { background: "#141414" };
-
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-xl border border-white/10 px-3 py-2" style={{ background: "#1a1a1a" }}>
-        <p className="text-xs text-zinc-500">{label}</p>
-        <p className="text-sm font-semibold text-white">{payload[0].value}</p>
+      <div style={{ boxShadow: raised, background: W98.bg, padding: "4px 8px", fontFamily: W98.font, fontSize: "11px" }}>
+        <div style={{ fontWeight: 700 }}>{label}</div>
+        <div>{payload[0].value}</div>
       </div>
     );
   }
@@ -41,85 +40,91 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export const AnalyticsPage = () => {
   return (
-    <div className="max-w-5xl space-y-6">
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black }}>
+      {/* Header */}
+      <div style={{ boxShadow: raised, background: W98.bg, padding: "8px 12px", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: "20px" }}>📊</span>
+        <span style={{ fontWeight: 700 }}>Analytika — Štatistiky návštevnosti</span>
+      </div>
+
       {/* Info banner */}
-      <div className="rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-3 flex items-start gap-3">
-        <span className="text-lg">📊</span>
-        <p className="text-xs text-amber-200/80 leading-relaxed">
-          Analytické dáta sú momentálne ukážkové. Pre reálne dáta prepoj Vercel Analytics alebo Google Analytics.
-        </p>
+      <div style={{
+        boxShadow: sunken, background: "#fffff0", padding: "6px 10px", marginBottom: 12,
+        display: "flex", alignItems: "center", gap: 8, fontSize: "11px",
+      }}>
+        <span style={{ fontSize: "16px" }}>ℹ️</span>
+        <span>Analytické dáta sú ukážkové. Pre reálne dáta prepoj Vercel Analytics.</span>
       </div>
 
       {/* Device stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
         {[
           { label: "Desktop", value: "58%", icon: "🖥️" },
           { label: "Mobile", value: "38%", icon: "📱" },
           { label: "Tablet", value: "4%", icon: "📟" },
         ].map((d) => (
-          <div key={d.label} className="rounded-xl border border-white/5 p-4 text-center" style={cardStyle}>
-            <p className="text-2xl mb-1">{d.icon}</p>
-            <p className="text-xl font-bold text-white">{d.value}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{d.label}</p>
+          <div key={d.label} style={{ boxShadow: raised, background: W98.bg, padding: 12, textAlign: "center" }}>
+            <div style={{ fontSize: "20px", marginBottom: 4 }}>{d.icon}</div>
+            <div style={{ fontSize: "18px", fontWeight: 700 }}>{d.value}</div>
+            <div style={{ fontSize: "11px", color: W98.grayText }}>{d.label}</div>
           </div>
         ))}
       </div>
 
       {/* Visitors chart */}
-      <div className="rounded-xl border border-white/5 p-6" style={cardStyle}>
-        <h2 className="text-white font-semibold mb-5">Návštevnosť (posledných 7 dní)</h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={visitorsData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="day" tick={{ fill: "#71717a", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "#71717a", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="visitors" stroke="#00FF94" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top pages */}
-        <div className="rounded-xl border border-white/5 p-6" style={cardStyle}>
-          <h2 className="text-white font-semibold mb-5">Najpopulárnejšie stránky</h2>
+      <Win98Panel label="Návštevnosť (posledných 7 dní)" style={{ marginBottom: 12 }}>
+        <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8 }}>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={pagesData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="page" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+            <LineChart data={visitorsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis dataKey="day" tick={{ fill: "#000", fontSize: 11, fontFamily: W98.font }} axisLine={{ stroke: "#808080" }} tickLine={false} />
+              <YAxis tick={{ fill: "#000", fontSize: 11, fontFamily: W98.font }} axisLine={{ stroke: "#808080" }} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="visits" fill="#00FF94" radius={[0, 4, 4, 0]} />
-            </BarChart>
+              <Line type="monotone" dataKey="visitors" stroke="#000080" strokeWidth={2} dot={{ fill: "#000080", r: 3 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
+      </Win98Panel>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {/* Top pages */}
+        <Win98Panel label="Najpopulárnejšie stránky">
+          <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8 }}>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={pagesData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#000", fontSize: 10, fontFamily: W98.font }} axisLine={{ stroke: "#808080" }} tickLine={false} />
+                <YAxis type="category" dataKey="page" tick={{ fill: "#000", fontSize: 10, fontFamily: W98.font }} axisLine={{ stroke: "#808080" }} tickLine={false} width={70} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="visits" fill="#000080" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Win98Panel>
 
         {/* Sources */}
-        <div className="rounded-xl border border-white/5 p-6" style={cardStyle}>
-          <h2 className="text-white font-semibold mb-5">Zdroje návštev</h2>
-          <div className="flex items-center gap-6">
-            <ResponsiveContainer width={140} height={140}>
+        <Win98Panel label="Zdroje návštev">
+          <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8, display: "flex", alignItems: "center", gap: 16 }}>
+            <ResponsiveContainer width={120} height={120}>
               <PieChart>
-                <Pie data={sourcesData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" strokeWidth={0}>
-                  {sourcesData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
+                <Pie data={sourcesData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
+                  {sourcesData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="space-y-2 flex-1">
+            <div style={{ flex: 1 }}>
               {sourcesData.map((s) => (
-                <div key={s.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: s.color }} />
-                    <span className="text-xs text-zinc-400">{s.name}</span>
+                <div key={s.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 10, height: 10, background: s.color }} />
+                    <span style={{ fontSize: "11px" }}>{s.name}</span>
                   </div>
-                  <span className="text-xs font-semibold text-white">{s.value}%</span>
+                  <span style={{ fontWeight: 700, fontSize: "11px" }}>{s.value}%</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </Win98Panel>
       </div>
     </div>
   );

@@ -1,12 +1,78 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Trash2, CheckCircle, ExternalLink, Search } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Mail, Trash2, CheckCircle, ExternalLink, Search, Bot, Copy, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { callAI } from "@/lib/ai-client";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { toast } from "sonner";
+import {
+  W98, raised, sunken,
+  Win98Button, Win98Panel, Win98Input, Win98Window, Win98Progress,
+} from "../win98";
 
 type FilterTab = "all" | "new" | "done" | "read";
+
+/** AI Reply helper */
+const AIReplyHelper = ({ item }: { item: any }) => {
+  const [draft, setDraft] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const generate = async () => {
+    setGenerating(true); setOpen(true); setDraft("");
+    try {
+      const context = [
+        item.package_category && `Zaujíma sa o: ${item.package_category === "automation" ? "AI Automatizáciu" : "Web/Digital"}`,
+        item.package_name && `Balíček: ${item.package_name}`,
+        item.message && `Správa: "${item.message}"`,
+      ].filter(Boolean).join("\n");
+
+      const data = await callAI({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        system: `Si Bruno Cok, zakladateľ COK Tech — slovenská tech firma (web development + AI automatizácia).
+Píš profesionálne, priamo, bez fráz. Odpovede v slovenčine. Stručné, max 5 viet.
+Vždy začni oslovením menom. Na konci pozvi na krátky hovor alebo ďalší krok.`,
+        messages: [{ role: "user", content: `Napíš stručnú email odpoveď pre potenciálneho klienta:\nMeno: ${item.name}\nEmail: ${item.email}\n${context}\n\nNapíš len telo emailu, bez predmetu.` }],
+      });
+      setDraft(data?.content?.[0]?.text || "");
+    } catch (e: any) {
+      toast.error("Chyba AI: " + e.message);
+      setOpen(false);
+    } finally { setGenerating(false); }
+  };
+
+  const copy = () => {
+    navigator.clipboard.writeText(draft);
+    setCopied(true);
+    toast.success("Skopírované!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <Win98Button small onClick={open ? () => setOpen(false) : generate} disabled={generating}>
+        {generating ? "⏳ AI generuje..." : open ? "Skryť návrh" : "🤖 Navrhnúť odpoveď (AI)"}
+      </Win98Button>
+
+      {open && !generating && draft && (
+        <div style={{ marginTop: 8 }}>
+          <Win98Panel label="AI návrh odpovede">
+            <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8, fontSize: "12px", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+              {draft}
+            </div>
+            <div style={{ marginTop: 6, display: "flex", gap: 4, justifyContent: "flex-end" }}>
+              <Win98Button small onClick={copy}>{copied ? "✅ OK" : "📋 Kopírovať"}</Win98Button>
+            </div>
+            <div style={{ fontSize: "10px", color: W98.grayText, marginTop: 4 }}>AI návrh — skontroluj pred odoslaním</div>
+          </Win98Panel>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const MessagesPage = () => {
   const [messages, setMessages] = useState<any[]>([]);
@@ -46,22 +112,16 @@ export const MessagesPage = () => {
   });
 
   const markRead = async (item: any) => {
-    if (item._type === "message") {
-      await supabase.from("contact_messages").update({ status: "read" }).eq("id", item.id);
-    } else {
-      await supabase.from("reservations").update({ status: "contacted" }).eq("id", item.id);
-    }
+    if (item._type === "message") await supabase.from("contact_messages").update({ status: "read" }).eq("id", item.id);
+    else await supabase.from("reservations").update({ status: "contacted" }).eq("id", item.id);
     toast.success("Označené ako prečítané");
     loadData();
     if (selected?.id === item.id) setSelected({ ...item, status: item._type === "message" ? "read" : "contacted" });
   };
 
   const markDone = async (item: any) => {
-    if (item._type === "message") {
-      await supabase.from("contact_messages").update({ status: "done" }).eq("id", item.id);
-    } else {
-      await supabase.from("reservations").update({ status: "completed" }).eq("id", item.id);
-    }
+    if (item._type === "message") await supabase.from("contact_messages").update({ status: "done" }).eq("id", item.id);
+    else await supabase.from("reservations").update({ status: "completed" }).eq("id", item.id);
     toast.success("Označené ako vybavené");
     loadData();
     if (selected?.id === item.id) setSelected({ ...item, status: "done" });
@@ -69,17 +129,13 @@ export const MessagesPage = () => {
 
   const deleteItem = async (item: any) => {
     if (!confirm("Naozaj chceš zmazať túto správu?")) return;
-    if (item._type === "message") {
-      await supabase.from("contact_messages").delete().eq("id", item.id);
-    } else {
-      await supabase.from("reservations").delete().eq("id", item.id);
-    }
+    if (item._type === "message") await supabase.from("contact_messages").delete().eq("id", item.id);
+    else await supabase.from("reservations").delete().eq("id", item.id);
     toast.success("Správa zmazaná");
     if (selected?.id === item.id) setSelected(null);
     loadData();
   };
 
-  const cardStyle = { background: "#141414" };
   const unreadCount = allLeads.filter((l) => l.status === "new").length;
 
   const tabs: { id: FilterTab; label: string }[] = [
@@ -90,31 +146,39 @@ export const MessagesPage = () => {
   ];
 
   return (
-    <div className="flex gap-4 h-[calc(100vh-8rem)] max-w-6xl">
-      {/* List */}
-      <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 flex flex-col" style={{ ...cardStyle, borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black, display: "flex", gap: 8, height: "calc(100vh - 12rem)" }}>
+      {/* ── Message list ── */}
+      <div style={{ width: 320, flexShrink: 0, display: "flex", flexDirection: "column", boxShadow: raised, background: W98.bg }}>
         {/* Search */}
-        <div className="p-3 border-b border-white/5">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+        <div style={{ padding: "4px 6px", borderBottom: "1px solid #808080" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <Search size={12} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Hľadať..."
-              className="w-full bg-white/5 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 outline-none border border-white/5 focus:border-white/10 transition-colors"
+              style={{
+                fontFamily: W98.font, fontSize: "11px", flex: 1,
+                boxShadow: sunken, background: W98.fieldBg, border: "none",
+                padding: "2px 4px", outline: "none",
+              }}
             />
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1 p-3 border-b border-white/5 overflow-x-auto">
+        <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #808080" }}>
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setFilter(t.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                filter === t.id ? "bg-[#00FF94]/10 text-[#00FF94]" : "text-zinc-500 hover:text-white"
-              }`}
+              style={{
+                fontFamily: W98.font, fontSize: "10px", flex: 1,
+                padding: "4px 2px", border: "none", cursor: "pointer",
+                background: filter === t.id ? "#000080" : W98.bg,
+                color: filter === t.id ? "#fff" : W98.black,
+                fontWeight: filter === t.id ? 700 : 400,
+              }}
             >
               {t.label}
             </button>
@@ -122,139 +186,142 @@ export const MessagesPage = () => {
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto">
+        <div style={{ flex: 1, overflow: "auto", boxShadow: sunken, background: W98.fieldBg }}>
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="w-5 h-5 border-2 border-[#00FF94]/30 border-t-[#00FF94] rounded-full animate-spin" />
+            <div style={{ padding: 20, textAlign: "center" }}>
+              <Win98Progress value={50} style={{ width: 150, margin: "0 auto" }} />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <Mail size={32} className="mx-auto text-zinc-700 mb-3" />
-              <p className="text-zinc-500 text-sm">Žiadne správy zatiaľ.</p>
+            <div style={{ padding: 20, textAlign: "center", color: W98.grayText }}>
+              <Mail size={24} style={{ margin: "0 auto 8px", display: "block" }} />
+              Žiadne správy.
             </div>
           ) : (
             filtered.map((item) => (
               <button
                 key={`${item._type}-${item.id}`}
                 onClick={() => { setSelected(item); if (item.status === "new") markRead(item); }}
-                className={`w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors ${
-                  selected?.id === item.id ? "bg-white/5" : ""
-                }`}
+                style={{
+                  fontFamily: W98.font, fontSize: "11px", width: "100%",
+                  textAlign: "left", padding: "4px 8px", border: "none", cursor: "pointer",
+                  borderBottom: "1px solid #f0f0f0",
+                  background: selected?.id === item.id ? "#000080" : "transparent",
+                  color: selected?.id === item.id ? "#fff" : W98.black,
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
               >
-                <div className="flex items-start gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${item.status === "new" ? "bg-[#00FF94]" : "bg-transparent border border-zinc-700"}`} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className={`text-sm truncate font-medium ${item.status === "new" ? "text-white" : "text-zinc-400"}`}>
-                        {item.name}
-                      </p>
-                      <span className="text-[10px] text-zinc-600 flex-shrink-0">
-                        {format(new Date(item.created_at), "d.M.", { locale: sk })}
-                      </span>
-                    </div>
-                    <p className="text-xs text-zinc-500 truncate">{item.email}</p>
-                    {item.message && (
-                      <p className="text-xs text-zinc-600 truncate mt-0.5">{item.message}</p>
-                    )}
+                <span style={{
+                  width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                  background: item.status === "new" ? "#ff0000" : "#808080",
+                }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{
+                    fontWeight: item.status === "new" ? 700 : 400,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {item.name}
+                  </div>
+                  <div style={{
+                    fontSize: "10px",
+                    color: selected?.id === item.id ? "#c0c0ff" : W98.grayText,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {item.email}
                   </div>
                 </div>
+                <span style={{ fontSize: "9px", color: selected?.id === item.id ? "#c0c0c0" : W98.grayText, flexShrink: 0 }}>
+                  {format(new Date(item.created_at), "d.M.", { locale: sk })}
+                </span>
               </button>
             ))
           )}
         </div>
       </div>
 
-      {/* Detail */}
-      <div className="flex-1 min-w-0 hidden lg:block">
-        <AnimatePresence mode="wait">
-          {selected ? (
-            <motion.div
-              key={selected.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="h-full rounded-xl border border-white/5 p-6 flex flex-col"
-              style={cardStyle}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between gap-4 mb-6">
+      {/* ── Detail ── */}
+      <div className="hidden lg:flex" style={{ flex: 1, minWidth: 0 }}>
+        {selected ? (
+          <Win98Window
+            title={`Správa od ${selected.name}`}
+            icon={<Mail size={14} />}
+            onClose={() => setSelected(null)}
+            style={{ flex: 1 }}
+            statusBar={
+              <div style={{ fontFamily: W98.font, fontSize: "11px", color: W98.black }}>
+                Prijaté: {format(new Date(selected.created_at), "d. MMMM yyyy 'o' HH:mm", { locale: sk })}
+              </div>
+            }
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* Header info */}
+              <div style={{
+                boxShadow: raised, background: W98.bg, padding: "8px 10px",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
                 <div>
-                  <h2 className="text-white text-lg font-semibold">{selected.name}</h2>
-                  <p className="text-zinc-400 text-sm">{selected.email}</p>
-                  {selected.phone && <p className="text-zinc-500 text-xs mt-1">{selected.phone}</p>}
+                  <div style={{ fontWeight: 700, fontSize: "14px" }}>{selected.name}</div>
+                  <div style={{ color: W98.grayText }}>{selected.email}</div>
+                  {selected.phone && <div style={{ color: W98.grayText, fontSize: "11px" }}>{selected.phone}</div>}
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                  selected.status === "new" ? "bg-[#00FF94]/10 text-[#00FF94]" :
-                  selected.status === "read" || selected.status === "contacted" ? "bg-zinc-800 text-zinc-400" :
-                  "bg-blue-500/10 text-blue-400"
-                }`}>
-                  {selected.status === "new" ? "Nová" :
-                   selected.status === "read" || selected.status === "contacted" ? "Prečítaná" : "Vybavená"}
-                </span>
+                <div style={{
+                  padding: "2px 8px", fontSize: "10px", fontWeight: 700,
+                  background: selected.status === "new" ? "#ff000020" : selected.status === "done" || selected.status === "completed" ? "#00800020" : W98.bg,
+                  color: selected.status === "new" ? "#ff0000" : selected.status === "done" || selected.status === "completed" ? "#008000" : W98.grayText,
+                  boxShadow: raised,
+                }}>
+                  {selected.status === "new" ? "NOVÁ" : selected.status === "read" || selected.status === "contacted" ? "PREČÍTANÁ" : "VYBAVENÁ"}
+                </div>
               </div>
 
+              {/* Package info */}
               {(selected.package_category || selected.package_name) && (
-                <div className="flex gap-2 mb-4 flex-wrap">
+                <div style={{ display: "flex", gap: 4 }}>
                   {selected.package_category && (
-                    <span className="text-xs bg-white/5 text-zinc-400 px-2.5 py-1 rounded-full border border-white/10">
-                      {selected.package_category === "cameras" ? "📷 Kamerový systém" : "🌐 Web"}
+                    <span style={{ boxShadow: raised, background: W98.bg, padding: "2px 8px", fontSize: "11px" }}>
+                      {selected.package_category === "automation" ? "⚡ Automatizácia" : "🌐 Web"}
                     </span>
                   )}
                   {selected.package_name && (
-                    <span className="text-xs bg-white/5 text-zinc-400 px-2.5 py-1 rounded-full border border-white/10">
+                    <span style={{ boxShadow: raised, background: W98.bg, padding: "2px 8px", fontSize: "11px" }}>
                       {selected.package_name}
                     </span>
                   )}
                 </div>
               )}
 
+              {/* Message body */}
               {selected.message && (
-                <div className="flex-1 bg-white/5 rounded-xl p-4 mb-6 overflow-y-auto">
-                  <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">{selected.message}</p>
-                </div>
+                <Win98Panel label="Správa">
+                  <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                    {selected.message}
+                  </div>
+                </Win98Panel>
               )}
 
-              <p className="text-xs text-zinc-600 mb-4">
-                Prijaté: {format(new Date(selected.created_at), "d. MMMM yyyy 'o' HH:mm", { locale: sk })}
-              </p>
+              {/* AI Reply */}
+              <AIReplyHelper item={selected} />
 
               {/* Actions */}
-              <div className="flex gap-2 flex-wrap">
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
                 {selected.status !== "done" && selected.status !== "completed" && (
-                  <button
-                    onClick={() => markDone(selected)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#00FF94]/10 text-[#00FF94] hover:bg-[#00FF94]/20 transition-colors"
-                  >
-                    <CheckCircle size={14} /> Označiť ako vybavené
-                  </button>
+                  <Win98Button onClick={() => markDone(selected)}>✅ Vybavené</Win98Button>
                 )}
-                <a
-                  href={`mailto:${selected.email}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/5 transition-colors"
-                >
-                  <ExternalLink size={14} /> Odpovedať emailom
-                </a>
-                <button
-                  onClick={() => deleteItem(selected)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/5 text-red-400 hover:bg-red-500/15 transition-colors ml-auto"
-                >
-                  <Trash2 size={14} /> Odstrániť
-                </button>
+                <Win98Button onClick={() => window.open(`mailto:${selected.email}`)}>📧 Odpovedať emailom</Win98Button>
+                <Win98Button onClick={() => deleteItem(selected)} style={{ color: "#ff0000" }}>🗑️ Odstrániť</Win98Button>
               </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="h-full rounded-xl border border-white/5 flex items-center justify-center"
-              style={cardStyle}
-            >
-              <div className="text-center">
-                <Mail size={40} className="mx-auto text-zinc-700 mb-3" />
-                <p className="text-zinc-500 text-sm">Vyber správu zo zoznamu</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </Win98Window>
+        ) : (
+          <div style={{
+            flex: 1, boxShadow: raised, background: W98.bg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <div style={{ textAlign: "center", color: W98.grayText }}>
+              <Mail size={32} style={{ margin: "0 auto 8px", display: "block" }} />
+              <p>Vyber správu zo zoznamu</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -9,14 +8,15 @@ import { DashboardPage } from "@/admin/pages/DashboardPage";
 import { MessagesPage } from "@/admin/pages/MessagesPage";
 import { MarketingPage } from "@/admin/pages/MarketingPage";
 import { ProjectsPage } from "@/admin/pages/ProjectsPage";
-import { CamerasPage } from "@/admin/pages/CamerasPage";
 import { AnalyticsPage } from "@/admin/pages/AnalyticsPage";
 import { SettingsPage } from "@/admin/pages/SettingsPage";
+import { AgentsPage } from "@/admin/pages/AgentsPage";
+import { W98, raised, sunken, Win98Button, Win98Input } from "@/admin/win98";
 
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 5 * 60 * 1000;
+const MAX_ATTEMPTS = 3;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
 const Admin = () => {
   const { user, isAdmin, loading, signIn, signOut } = useAuth();
@@ -30,7 +30,6 @@ const Admin = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const lockoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load unread count
   useEffect(() => {
     if (!isAdmin) return;
     const loadUnread = async () => {
@@ -42,7 +41,6 @@ const Admin = () => {
     return () => clearInterval(interval);
   }, [isAdmin]);
 
-  // Restore lockout state on mount
   useEffect(() => {
     const lockUntil = Number(localStorage.getItem(LOCKOUT_TIME_KEY) || 0);
     if (lockUntil > Date.now()) startLockoutTimer(lockUntil);
@@ -85,7 +83,7 @@ const Admin = () => {
         const until = Date.now() + LOCKOUT_DURATION_MS;
         localStorage.setItem(LOCKOUT_TIME_KEY, String(until));
         startLockoutTimer(until);
-        toast.error("Príliš veľa pokusov. Zablokované na 5 minút.");
+        toast.error("Príliš veľa pokusov. Zablokované na 15 minút.");
       } else {
         toast.error(`Nesprávne heslo (${MAX_ATTEMPTS - attempts} pokusov zostáva)`);
       }
@@ -97,79 +95,152 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
-        <div className="w-6 h-6 border-2 border-[#00FF94]/30 border-t-[#00FF94] rounded-full animate-spin" />
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(160deg, #0d2a5e 0%, #1a4a8a 30%, #2060b0 55%, #162e60 100%)",
+        fontFamily: W98.font,
+      }}>
+        <div style={{
+          background: "rgba(240,244,252,0.97)", backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)", borderRadius: 6,
+          border: "1px solid rgba(80,140,220,0.5)", padding: 24, textAlign: "center",
+          boxShadow: "0 12px 40px rgba(0,0,60,0.3)",
+        }}>
+          <div style={{ marginBottom: 12, fontSize: "13px", color: W98.black }}>Načítavam CokTech Admin...</div>
+          <div style={{ border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, height: 16, overflow: "hidden", width: 200, background: "#e8e8e8" }}>
+            <div style={{ height: "100%", width: "60%", background: "linear-gradient(90deg, #0060c0, #5ab0f0)", borderRadius: 8 }} />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#0a0a0a" }}>
-        <motion.div
-          animate={shake ? { x: [0, -10, 10, -10, 10, -6, 6, -3, 3, 0] } : {}}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-sm"
-        >
-          <div className="rounded-2xl border border-white/10 p-8" style={{ background: "#141414" }}>
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-9 h-9 rounded-xl bg-[#00FF94]/10 border border-[#00FF94]/20 flex items-center justify-center">
-                <span className="text-[#00FF94] font-bold">C</span>
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(160deg, #0d2a5e 0%, #1a4a8a 30%, #2060b0 55%, #162e60 100%)",
+        fontFamily: W98.font, padding: 16,
+      }}>
+        {/* Win7 UAC-style login dialog */}
+        <div style={{
+          background: "rgba(240,244,252,0.97)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: "6px 6px 4px 4px",
+          border: "1px solid rgba(80,140,220,0.5)",
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.4) inset, 0 20px 60px rgba(0,0,60,0.4)",
+          width: 400,
+          maxWidth: "100%",
+          overflow: "hidden",
+        }}>
+          {/* Aero title bar */}
+          <div style={{
+            background: W98.titleActive,
+            padding: "0 10px",
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            position: "relative",
+          }}>
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, height: "55%",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.05) 100%)",
+              pointerEvents: "none", borderRadius: "6px 6px 0 0",
+            }} />
+            <span style={{ fontSize: "14px", zIndex: 1 }}>🔒</span>
+            <span style={{ fontFamily: W98.font, fontSize: "12px", fontWeight: 400, color: "#1a2a5a", textShadow: "0 1px 0 rgba(255,255,255,0.7)", zIndex: 1 }}>
+              Prihlásenie — CokTech Admin
+            </span>
+          </div>
+
+          {/* Blue header band */}
+          <div style={{
+            background: "linear-gradient(90deg, #1060c0, #0840a0)",
+            padding: "20px 24px",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            borderBottom: "1px solid rgba(0,0,0,0.15)",
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: "50%",
+              background: "linear-gradient(135deg, #5ab0f0, #0060c0)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 0 0 3px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.3)",
+              flexShrink: 0,
+            }}>
+              <span style={{ fontSize: "22px" }}>🧑‍💻</span>
+            </div>
+            <div>
+              <div style={{ fontFamily: W98.font, fontSize: "15px", fontWeight: 600, color: "#fff" }}>
+                CokTech Admin
               </div>
-              <div>
-                <p className="text-white font-bold leading-none">COK Tech</p>
-                <p className="text-zinc-500 text-xs mt-0.5">Admin Panel</p>
+              <div style={{ fontFamily: W98.font, fontSize: "11px", color: "rgba(255,255,255,0.65)", marginTop: 2 }}>
+                Zadajte prihlasovacie údaje
               </div>
             </div>
+          </div>
 
+          {/* Form */}
+          <div style={{ padding: "20px 24px" }}>
             {user && !isAdmin ? (
-              <div className="text-center py-4">
-                <p className="text-zinc-400 text-sm mb-4">Nemáte admin prístup.</p>
-                <button onClick={signOut} className="text-sm text-red-400 hover:underline">Odhlásiť sa</button>
+              <div style={{ textAlign: "center", padding: "12px 0" }}>
+                <p style={{ marginBottom: 14, fontSize: "13px", color: W98.black }}>Nemáte admin prístup.</p>
+                <Win98Button onClick={signOut}>Odhlásiť sa</Win98Button>
               </div>
             ) : (
-              <form onSubmit={handleLogin} className="space-y-3">
-                <div>
-                  <input
+              <form onSubmit={handleLogin}>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: "block", marginBottom: 4, fontSize: "12px", fontWeight: 600, color: W98.black }}>
+                    Email:
+                  </label>
+                  <Win98Input
                     type="email"
-                    placeholder="Email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     disabled={lockoutRemaining > 0}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                    placeholder="vas@email.com"
                   />
                 </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Heslo"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    disabled={lockoutRemaining > 0}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+                <div style={{ marginBottom: 18 }}>
+                  <label style={{ display: "block", marginBottom: 4, fontSize: "12px", fontWeight: 600, color: W98.black }}>
+                    Heslo:
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Win98Input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      disabled={lockoutRemaining > 0}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      style={{
+                        position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                        background: "transparent", border: "none", cursor: "pointer", padding: 2, color: W98.grayText,
+                        display: "flex", alignItems: "center",
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loginLoading || lockoutRemaining > 0}
-                  className="w-full py-3 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 disabled:opacity-60 transition-all flex items-center justify-center gap-2 mt-1"
-                >
-                  {loginLoading ? <Loader2 size={16} className="animate-spin" /> :
-                    lockoutRemaining > 0 ? `Zablokované (${Math.floor(lockoutRemaining / 60)}:${String(lockoutRemaining % 60).padStart(2, "0")})` :
-                    "Prihlásiť sa"}
-                </button>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+                  <Win98Button type="submit" disabled={loginLoading || lockoutRemaining > 0} style={{ minWidth: 100 }}>
+                    {loginLoading ? "Prihlasujem..." :
+                      lockoutRemaining > 0 ? `Blokovanie (${Math.floor(lockoutRemaining / 60)}:${String(lockoutRemaining % 60).padStart(2, "0")})` :
+                      "Prihlásiť sa"}
+                  </Win98Button>
+                </div>
               </form>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -177,8 +248,8 @@ const Admin = () => {
   const pages: Record<AdminPage, React.ReactNode> = {
     dashboard: <DashboardPage setActivePage={setActivePage} />,
     messages: <MessagesPage />,
+    agents: <AgentsPage />,
     marketing: <MarketingPage />,
-    cameras: <CamerasPage />,
     projects: <ProjectsPage />,
     analytics: <AnalyticsPage />,
     settings: <SettingsPage />,

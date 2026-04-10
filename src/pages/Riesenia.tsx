@@ -1,4 +1,4 @@
-import Header from "@/components/landing/Header";
+import Navbar from '@/components/landing/Navbar';
 import CameraServices from "@/components/landing/CameraServices";
 import { Camera, Home, Network, Move3d, Shield, Package, BatteryCharging, LayoutGrid } from "lucide-react";
 import Footer from "@/components/landing/Footer";
@@ -87,7 +87,7 @@ const Riesenia = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Navbar />
 
       {/* Hero */}
       <section className="relative min-h-[60vh] flex items-center overflow-hidden pt-20">

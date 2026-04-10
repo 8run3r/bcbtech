@@ -1,39 +1,28 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { motion } from "framer-motion";
-import { MessageSquare, FolderKanban, Camera, TrendingUp, ArrowRight, Plus } from "lucide-react";
+import { MessageSquare, FolderKanban, TrendingUp, Cpu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import type { AdminPage } from "../AdminLayout";
+import { W98, raised, sunken, Win98Button, Win98Panel, Win98Progress, Win98StatusSegment } from "../win98";
 
 interface Props {
   setActivePage: (p: AdminPage) => void;
 }
 
-interface StatCard {
-  label: string;
-  value: number;
-  icon: ReactNode;
-  color: string;
-  trend?: string;
-}
-
 export const DashboardPage = ({ setActivePage }: Props) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [projects, setProjects] = useState<number>(0);
-  const [cameras, setCameras] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const [msgs, projs, cams] = await Promise.all([
+      const [msgs, projs] = await Promise.all([
         supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
         supabase.from("portfolio_items").select("id", { count: "exact" }),
-        supabase.from("camera_products").select("id", { count: "exact" }),
       ]);
       setMessages(msgs.data || []);
       setProjects(projs.count || 0);
-      setCameras(cams.count || 0);
       setLoading(false);
     };
     load();
@@ -41,133 +30,227 @@ export const DashboardPage = ({ setActivePage }: Props) => {
 
   const unread = messages.filter((m) => m.status === "new").length;
   const recentMessages = messages.slice(0, 5);
-
-  const stats: StatCard[] = [
-    { label: "Nové správy", value: unread, icon: <MessageSquare size={20} />, color: "#00FF94", trend: `${messages.length} celkom` },
-    { label: "Projekty", value: projects, icon: <FolderKanban size={20} />, color: "#60a5fa", trend: "v portfóliu" },
-    { label: "Kamery", value: cameras, icon: <Camera size={20} />, color: "#f59e0b", trend: "produktov" },
-    { label: "Koncepty AI", value: (() => { try { return JSON.parse(localStorage.getItem("coktech_marketing_drafts") || "[]").length; } catch { return 0; } })(), icon: <TrendingUp size={20} />, color: "#a78bfa", trend: "uložených" },
-  ];
-
-  const cardClass = "rounded-xl border border-white/5 p-6" ;
-  const cardStyle = { background: "#141414" };
+  const drafts = (() => { try { return JSON.parse(localStorage.getItem("coktech_marketing_drafts") || "[]").length; } catch { return 0; } })();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-6 h-6 border-2 border-[#00FF94]/30 border-t-[#00FF94] rounded-full animate-spin" />
+      <div style={{ padding: 20, textAlign: "center" }}>
+        <p style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black, marginBottom: 8 }}>
+          Načítavam dáta...
+        </p>
+        <Win98Progress value={65} style={{ width: 200, margin: "0 auto" }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            className={cardClass}
-            style={cardStyle}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-2 rounded-lg" style={{ background: s.color + "15" }}>
-                <span style={{ color: s.color }}>{s.icon}</span>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-white">{s.value}</p>
-            <p className="text-sm text-zinc-400 mt-1">{s.label}</p>
-            {s.trend && <p className="text-xs text-zinc-600 mt-0.5">{s.trend}</p>}
-          </motion.div>
-        ))}
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black }}>
+      {/* Welcome banner */}
+      <div style={{
+        boxShadow: raised,
+        background: W98.bg,
+        padding: "8px 12px",
+        marginBottom: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        <span style={{ fontSize: "20px" }}>💻</span>
+        <div>
+          <span style={{ fontWeight: 700 }}>Vitaj späť, Bruno!</span>
+          <span style={{ color: W98.grayText, marginLeft: 8 }}>
+            {format(new Date(), "EEEE, d. MMMM yyyy", { locale: sk })}
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Stats row */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, marginBottom: 12 }}>
+        <StatBox
+          icon={<MessageSquare size={16} />}
+          label="Nové správy"
+          value={unread}
+          sub={`${messages.length} celkom`}
+          color="#000080"
+          onClick={() => setActivePage("messages")}
+        />
+        <StatBox
+          icon={<FolderKanban size={16} />}
+          label="Projekty"
+          value={projects}
+          sub="v portfóliu"
+          color="#008000"
+          onClick={() => setActivePage("projects")}
+        />
+        <StatBox
+          icon={<TrendingUp size={16} />}
+          label="AI koncepty"
+          value={drafts}
+          sub="uložených"
+          color="#800080"
+          onClick={() => setActivePage("marketing")}
+        />
+        <StatBox
+          icon={<Cpu size={16} />}
+          label="AI Agenti"
+          value={7}
+          sub="aktívnych"
+          color="#008080"
+          onClick={() => setActivePage("agents")}
+        />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 8 }}>
         {/* Recent messages */}
-        <div className="lg:col-span-2">
-          <div className={cardClass} style={cardStyle}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">Posledné správy</h2>
-              <button
-                onClick={() => setActivePage("messages")}
-                className="text-xs text-zinc-500 hover:text-[#00FF94] flex items-center gap-1 transition-colors"
-              >
-                Zobraziť všetky <ArrowRight size={12} />
-              </button>
+        <Win98Panel label="Posledné správy">
+          <div style={{ boxShadow: sunken, background: W98.fieldBg }}>
+            {/* Header */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "8px 1fr 1fr auto",
+              gap: 8,
+              padding: "4px 8px",
+              borderBottom: "1px solid #c0c0c0",
+              background: W98.bg,
+              fontWeight: 700,
+              fontSize: "11px",
+            }}>
+              <span></span>
+              <span>Meno</span>
+              <span>Email</span>
+              <span>Dátum</span>
             </div>
             {recentMessages.length === 0 ? (
-              <p className="text-zinc-600 text-sm text-center py-8">Žiadne správy zatiaľ.</p>
+              <p style={{ padding: 16, textAlign: "center", color: W98.grayText }}>Žiadne správy zatiaľ.</p>
             ) : (
-              <div className="space-y-3">
-                {recentMessages.map((m) => (
-                  <div key={m.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setActivePage("messages")}>
-                    <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${m.status === "new" ? "bg-[#00FF94]" : "bg-zinc-700"}`} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className={`text-sm font-medium truncate ${m.status === "new" ? "text-white" : "text-zinc-400"}`}>
-                          {m.name}
-                        </p>
-                        <span className="text-xs text-zinc-600 flex-shrink-0">
-                          {format(new Date(m.created_at), "d.M.", { locale: sk })}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-500 truncate">{m.email}</p>
-                      {m.message && (
-                        <p className="text-xs text-zinc-600 truncate mt-0.5">{m.message}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              recentMessages.map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => setActivePage("messages")}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "8px 1fr 1fr auto",
+                    gap: 8,
+                    padding: "3px 8px",
+                    cursor: "pointer",
+                    borderBottom: "1px solid #f0f0f0",
+                    fontSize: "11px",
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#000080"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = W98.black; }}
+                >
+                  <span style={{
+                    width: 8, height: 8, borderRadius: "50%", marginTop: 3,
+                    background: m.status === "new" ? "#ff0000" : "#808080",
+                    display: "inline-block",
+                  }} />
+                  <span style={{ fontWeight: m.status === "new" ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {m.name}
+                  </span>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {m.email}
+                  </span>
+                  <span style={{ fontSize: "10px" }}>
+                    {format(new Date(m.created_at), "d.M.yy", { locale: sk })}
+                  </span>
+                </div>
+              ))
             )}
           </div>
-        </div>
-
-        {/* Quick actions */}
-        <div className="space-y-4">
-          <div className={cardClass} style={cardStyle}>
-            <h2 className="text-white font-semibold mb-4">Rýchle akcie</h2>
-            <div className="space-y-2">
-              {[
-                { label: "Nový projekt", page: "projects" as AdminPage },
-                { label: "Generovať obsah AI", page: "marketing" as AdminPage },
-                { label: "Pridať kameru", page: "cameras" as AdminPage },
-                { label: "Analytika", page: "analytics" as AdminPage },
-              ].map((a) => (
-                <button
-                  key={a.label}
-                  onClick={() => setActivePage(a.page)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-white/5 border border-white/5 hover:border-white/10 transition-all"
-                >
-                  <Plus size={14} className="text-[#00FF94]" />
-                  {a.label}
-                </button>
-              ))}
-            </div>
+          <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+            <Win98Button small onClick={() => setActivePage("messages")}>
+              Zobraziť všetky →
+            </Win98Button>
           </div>
+        </Win98Panel>
 
-          <div className={cardClass} style={cardStyle}>
-            <h2 className="text-white font-semibold mb-3 text-sm">Stav systému</h2>
-            <div className="space-y-2">
+        {/* Right column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* Quick actions */}
+          <Win98Panel label="Rýchle akcie">
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Win98Button onClick={() => setActivePage("projects")} style={{ width: "100%", textAlign: "left" }}>
+                📁 Nový projekt
+              </Win98Button>
+              <Win98Button onClick={() => setActivePage("marketing")} style={{ width: "100%", textAlign: "left" }}>
+                🤖 Generovať obsah AI
+              </Win98Button>
+              <Win98Button onClick={() => setActivePage("agents")} style={{ width: "100%", textAlign: "left" }}>
+                🧠 AI Agenti
+              </Win98Button>
+              <Win98Button onClick={() => setActivePage("analytics")} style={{ width: "100%", textAlign: "left" }}>
+                📊 Analytika
+              </Win98Button>
+              <Win98Button onClick={() => window.open("/", "_blank")} style={{ width: "100%", textAlign: "left" }}>
+                🌐 Otvoriť web
+              </Win98Button>
+            </div>
+          </Win98Panel>
+
+          {/* System status */}
+          <Win98Panel label="Stav systému">
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {[
                 { label: "Supabase DB", ok: true },
-                { label: "Auth", ok: true },
+                { label: "Auth služba", ok: true },
                 { label: "Storage", ok: true },
+                { label: "AI Proxy", ok: true },
               ].map((s) => (
-                <div key={s.label} className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-500">{s.label}</span>
-                  <span className={`text-xs font-medium ${s.ok ? "text-[#00FF94]" : "text-red-400"}`}>
+                <div key={s.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "11px" }}>
+                  <span>{s.label}</span>
+                  <span style={{ color: s.ok ? "#008000" : "#ff0000", fontWeight: 700 }}>
                     {s.ok ? "● Online" : "● Offline"}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+          </Win98Panel>
+
+          {/* System info */}
+          <Win98Panel label="Systémové informácie">
+            <div style={{ display: "flex", flexDirection: "column", gap: 2, fontSize: "11px" }}>
+              <div><b>OS:</b> COK Tech 98 SE</div>
+              <div><b>Verzia:</b> 2.0.4.2026</div>
+              <div><b>Procesor:</b> CokChip AI-X1</div>
+              <div><b>RAM:</b> 640 KB (stačí všetkým)</div>
+              <div><b>Disk:</b> Supabase Cloud ∞</div>
+            </div>
+          </Win98Panel>
         </div>
       </div>
     </div>
   );
 };
+
+/* ── Stat box component ── */
+const StatBox = ({
+  icon, label, value, sub, color, onClick,
+}: {
+  icon: ReactNode; label: string; value: number; sub: string; color: string; onClick?: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    style={{
+      boxShadow: raised,
+      background: W98.bg,
+      padding: "10px 12px",
+      cursor: onClick ? "pointer" : "default",
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+    }}
+  >
+    <div style={{
+      width: 36, height: 36, background: color + "20",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      border: `1px solid ${color}40`,
+    }}>
+      <span style={{ color }}>{icon}</span>
+    </div>
+    <div>
+      <div style={{ fontSize: "20px", fontWeight: 700, lineHeight: 1, fontFamily: W98.font }}>{value}</div>
+      <div style={{ fontSize: "11px", color: W98.grayText }}>{label}</div>
+      <div style={{ fontSize: "10px", color: "#a0a0a0" }}>{sub}</div>
+    </div>
+  </div>
+);

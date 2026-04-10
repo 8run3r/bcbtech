@@ -1,105 +1,142 @@
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+
+const BOOT_FRAGMENTS = [
+  "INIT_SYS",
+  "LOAD_ENV",
+  "MAP_NODES",
+  "SYNC_DATA",
+  "RENDER_UI",
+  "COMPLETE",
+];
 
 const PageLoader = ({ progress = 0 }: { progress?: number }) => {
+  const [fragment, setFragment] = useState(0);
+
+  useEffect(() => {
+    const idx = Math.min(Math.floor(progress / 18), BOOT_FRAGMENTS.length - 1);
+    setFragment(idx);
+  }, [progress]);
+
   return (
     <motion.div
-      className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center gap-8"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+      style={{ background: "#000" }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Animated grid lines */}
-      <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <motion.div
-            key={`h-${i}`}
-            className="absolute left-0 right-0 h-px bg-primary"
-            style={{ top: `${(i + 1) * 8}%` }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.2, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
-          />
-        ))}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <motion.div
-            key={`v-${i}`}
-            className="absolute top-0 bottom-0 w-px bg-primary"
-            style={{ left: `${(i + 1) * 8}%` }}
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 1.2, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
-          />
-        ))}
-      </div>
+      {/* Grid background */}
+      <div
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: "linear-gradient(rgba(0,255,170,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,170,0.5) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
 
-      {/* Central loader */}
-      <div className="relative flex flex-col items-center gap-6">
-        {/* Spinning ring */}
-        <div className="relative w-16 h-16">
+      {/* Scanlines */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "repeating-linear-gradient(transparent, transparent 1px, rgba(0,0,0,0.06) 1px, rgba(0,0,0,0.06) 2px)",
+        }}
+      />
+
+      {/* Central content */}
+      <div className="relative flex flex-col items-center gap-8">
+        {/* Hex ring */}
+        <div className="relative w-20 h-20">
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-primary/20"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          />
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary"
+            className="absolute inset-0"
+            style={{
+              border: "1px solid rgba(0,255,170,0.15)",
+              borderTop: "1px solid rgba(0,255,170,0.6)",
+            }}
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           />
-          {/* Inner pulse dot */}
           <motion.div
-            className="absolute inset-0 m-auto w-3 h-3 rounded-full bg-primary"
-            animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+            className="absolute inset-2"
+            style={{
+              border: "1px solid rgba(0,255,170,0.08)",
+              borderBottom: "1px solid rgba(0,255,170,0.4)",
+            }}
+            animate={{ rotate: -360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          />
+          {/* Center pulse */}
+          <motion.div
+            className="absolute inset-0 m-auto w-2 h-2"
+            style={{ background: "var(--neon-primary)" }}
+            animate={{ scale: [1, 1.8, 1], opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
 
         {/* Progress bar */}
-        <div className="w-48 h-0.5 bg-foreground/5 rounded-full overflow-hidden">
+        <div className="w-56 h-px" style={{ background: "rgba(0,255,170,0.1)" }}>
           <motion.div
-            className="h-full bg-primary rounded-full"
+            className="h-full"
+            style={{ background: "var(--neon-primary)", boxShadow: "0 0 8px rgba(0,255,170,0.3)" }}
             initial={{ width: "0%" }}
-            animate={{ width: `${Math.max(progress, 5)}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            animate={{ width: `${Math.max(progress, 3)}%` }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           />
         </div>
 
-        {/* Text */}
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono"
-        >
-          Načítavam scénu
-        </motion.p>
+        {/* Boot fragment text */}
+        <div className="flex items-center gap-3">
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "9px",
+              color: "var(--neon-primary)",
+              letterSpacing: "0.15em",
+              opacity: 0.6,
+            }}
+          >
+            {BOOT_FRAGMENTS[fragment]}
+          </span>
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "9px",
+              color: "var(--text-dim)",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {Math.round(progress)}%
+          </span>
+        </div>
       </div>
 
       {/* Corner decorations */}
+      {["top-4 left-4 border-t border-l", "top-4 right-4 border-t border-r", "bottom-4 left-4 border-b border-l", "bottom-4 right-4 border-b border-r"].map((cls, i) => (
+        <motion.div
+          key={i}
+          className={`absolute w-5 h-5 ${cls}`}
+          style={{ borderColor: "rgba(0,255,170,0.12)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 * i }}
+        />
+      ))}
+
+      {/* Timestamp */}
       <motion.div
-        className="absolute top-6 left-6 w-8 h-8 border-l border-t border-primary/20"
+        className="absolute bottom-4 right-6"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      />
-      <motion.div
-        className="absolute top-6 right-6 w-8 h-8 border-r border-t border-primary/20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: 0.15 }}
         transition={{ delay: 0.3 }}
-      />
-      <motion.div
-        className="absolute bottom-6 left-6 w-8 h-8 border-l border-b border-primary/20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      />
-      <motion.div
-        className="absolute bottom-6 right-6 w-8 h-8 border-r border-b border-primary/20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      />
+        style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "8px",
+          color: "var(--text-dim)",
+          letterSpacing: "0.1em",
+        }}
+      >
+        CT-7X29 // {new Date().toISOString().replace("T", " ").split(".")[0]}
+      </motion.div>
     </motion.div>
   );
 };

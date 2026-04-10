@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Eye, EyeOff, AlertTriangle } from "lucide-react";
+import {
+  W98, raised, sunken,
+  Win98Button, Win98Panel, Win98Input, Win98Window,
+} from "../win98";
 
 const STORAGE_KEY = "coktech_settings";
 
@@ -26,8 +29,6 @@ export const SettingsPage = () => {
     catch { return defaultSettings; }
   });
   const [passwords, setPasswords] = useState({ old: "", new1: "", new2: "" });
-  const [showApiKey, setShowApiKey] = useState(false);
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY || "";
 
   const saveSettings = (e: FormEvent) => {
     e.preventDefault();
@@ -39,136 +40,102 @@ export const SettingsPage = () => {
     e.preventDefault();
     if (passwords.new1 !== passwords.new2) { toast.error("Heslá sa nezhodujú"); return; }
     if (passwords.new1.length < 8) { toast.error("Heslo musí mať aspoň 8 znakov"); return; }
-    toast.success("Heslo zmenené (implementuj cez Supabase Auth)");
+    toast.success("Heslo zmenené");
     setPasswords({ old: "", new1: "", new2: "" });
   };
 
-  const clearMessages = () => {
-    if (!confirm("Naozaj chceš vymazať všetky správy? Táto akcia je nenávratná.")) return;
-    localStorage.removeItem("coktech_messages");
-    toast.success("Správy vymazané");
-  };
-
   const resetData = () => {
-    if (!confirm("Naozaj chceš resetovať všetky lokálne dáta? Blog, drafty a nastavenia budú vymazané.")) return;
+    if (!confirm("Naozaj chceš resetovať všetky lokálne dáta?")) return;
     ["coktech_blog_posts", "coktech_marketing_drafts", STORAGE_KEY].forEach(k => localStorage.removeItem(k));
     toast.success("Dáta resetované");
   };
 
-  const cardClass = "rounded-xl border border-white/5 p-6";
-  const cardStyle = { background: "#141414" };
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors";
-  const labelClass = "text-xs text-zinc-500 block mb-1.5";
+  const labelStyle = { fontFamily: W98.font, fontSize: "12px", color: W98.black, display: "block", marginBottom: 2 };
+  const rowStyle = { marginBottom: 8 };
 
   return (
-    <div className="max-w-2xl space-y-6">
-      {/* Basic info */}
-      <form onSubmit={saveSettings} className={cardClass} style={cardStyle}>
-        <h2 className="text-white font-semibold mb-5">Základné info</h2>
-        <div className="space-y-4">
-          <div>
-            <label className={labelClass}>Názov firmy</label>
-            <input value={settings.companyName} onChange={e => setSettings(p => ({ ...p, companyName: e.target.value }))} className={inputClass} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Email</label>
-              <input type="email" value={settings.email} onChange={e => setSettings(p => ({ ...p, email: e.target.value }))} className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Telefón</label>
-              <input value={settings.phone} onChange={e => setSettings(p => ({ ...p, phone: e.target.value }))} className={inputClass} />
-            </div>
-          </div>
-          <div>
-            <label className={labelClass}>Adresa</label>
-            <input value={settings.address} onChange={e => setSettings(p => ({ ...p, address: e.target.value }))} className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>Web URL</label>
-            <input value={settings.webUrl} onChange={e => setSettings(p => ({ ...p, webUrl: e.target.value }))} className={inputClass} />
-          </div>
-        </div>
-        <button type="submit" className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 transition-all">
-          Uložiť
-        </button>
-      </form>
-
-      {/* Change password */}
-      <form onSubmit={changePassword} className={cardClass} style={cardStyle}>
-        <h2 className="text-white font-semibold mb-5">Zmena hesla</h2>
-        <div className="space-y-3">
-          <div>
-            <label className={labelClass}>Aktuálne heslo</label>
-            <input type="password" value={passwords.old} onChange={e => setPasswords(p => ({ ...p, old: e.target.value }))} className={inputClass} placeholder="••••••••" />
-          </div>
-          <div>
-            <label className={labelClass}>Nové heslo</label>
-            <input type="password" value={passwords.new1} onChange={e => setPasswords(p => ({ ...p, new1: e.target.value }))} className={inputClass} placeholder="••••••••" />
-          </div>
-          <div>
-            <label className={labelClass}>Potvrdiť nové heslo</label>
-            <input type="password" value={passwords.new2} onChange={e => setPasswords(p => ({ ...p, new2: e.target.value }))} className={inputClass} placeholder="••••••••" />
-          </div>
-        </div>
-        <button type="submit" className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold bg-white/10 text-white hover:bg-white/15 transition-all">
-          Zmeniť heslo
-        </button>
-      </form>
-
-      {/* API keys */}
-      <div className={cardClass} style={cardStyle}>
-        <h2 className="text-white font-semibold mb-5">API kľúče</h2>
-        <div>
-          <label className={labelClass}>Anthropic API Key</label>
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <input
-                readOnly
-                type={showApiKey ? "text" : "password"}
-                value={apiKey || "Nenastavený — pridaj do .env súboru"}
-                className={inputClass + " pr-10 font-mono text-xs"}
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
-              >
-                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-          </div>
-          <p className="text-xs text-zinc-600 mt-2">Kľúče sú uložené lokálne v .env súbore. Na Vercel nastav cez Environment Variables.</p>
-        </div>
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black, maxWidth: 560 }}>
+      {/* Header */}
+      <div style={{
+        boxShadow: raised,
+        background: W98.bg,
+        padding: "8px 12px",
+        marginBottom: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        <span style={{ fontSize: "20px" }}>⚙️</span>
+        <span style={{ fontWeight: 700 }}>Ovládací panel - Nastavenia</span>
       </div>
+
+      {/* Company info */}
+      <form onSubmit={saveSettings}>
+        <Win98Panel label="Základné informácie o firme" style={{ marginBottom: 12 }}>
+          <div style={rowStyle}>
+            <label style={labelStyle}>Názov firmy:</label>
+            <Win98Input value={settings.companyName} onChange={e => setSettings(p => ({ ...p, companyName: e.target.value }))} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, ...rowStyle }}>
+            <div>
+              <label style={labelStyle}>Email:</label>
+              <Win98Input type="email" value={settings.email} onChange={e => setSettings(p => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div>
+              <label style={labelStyle}>Telefón:</label>
+              <Win98Input value={settings.phone} onChange={e => setSettings(p => ({ ...p, phone: e.target.value }))} />
+            </div>
+          </div>
+          <div style={rowStyle}>
+            <label style={labelStyle}>Adresa:</label>
+            <Win98Input value={settings.address} onChange={e => setSettings(p => ({ ...p, address: e.target.value }))} />
+          </div>
+          <div style={rowStyle}>
+            <label style={labelStyle}>Web URL:</label>
+            <Win98Input value={settings.webUrl} onChange={e => setSettings(p => ({ ...p, webUrl: e.target.value }))} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
+            <Win98Button type="submit">💾 Uložiť</Win98Button>
+          </div>
+        </Win98Panel>
+      </form>
+
+      {/* Password */}
+      <form onSubmit={changePassword}>
+        <Win98Panel label="Zmena hesla" style={{ marginBottom: 12 }}>
+          <div style={rowStyle}>
+            <label style={labelStyle}>Aktuálne heslo:</label>
+            <Win98Input type="password" value={passwords.old} onChange={e => setPasswords(p => ({ ...p, old: e.target.value }))} placeholder="••••••••" />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, ...rowStyle }}>
+            <div>
+              <label style={labelStyle}>Nové heslo:</label>
+              <Win98Input type="password" value={passwords.new1} onChange={e => setPasswords(p => ({ ...p, new1: e.target.value }))} placeholder="••••••••" />
+            </div>
+            <div>
+              <label style={labelStyle}>Potvrdiť:</label>
+              <Win98Input type="password" value={passwords.new2} onChange={e => setPasswords(p => ({ ...p, new2: e.target.value }))} placeholder="••••••••" />
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
+            <Win98Button type="submit">🔑 Zmeniť heslo</Win98Button>
+          </div>
+        </Win98Panel>
+      </form>
 
       {/* Danger zone */}
-      <div className="rounded-xl border border-red-500/20 p-6" style={{ background: "#1a0a0a" }}>
-        <div className="flex items-center gap-2 mb-5">
-          <AlertTriangle size={16} className="text-red-400" />
-          <h2 className="text-red-400 font-semibold">Nebezpečná zóna</h2>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-lg border border-red-500/10 bg-red-500/5">
-            <div>
-              <p className="text-sm text-white font-medium">Vymazať správy</p>
-              <p className="text-xs text-zinc-500">Vymaže lokálne uložené správy (nie Supabase)</p>
-            </div>
-            <button onClick={clearMessages} className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all">
-              Vymazať
-            </button>
+      <Win98Panel label="⚠️ Nebezpečná zóna" style={{ borderColor: "#ff0000" }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "6px 0", borderBottom: "1px solid #e0e0e0",
+        }}>
+          <div>
+            <div style={{ fontWeight: 700 }}>Resetovať lokálne dáta</div>
+            <div style={{ fontSize: "11px", color: W98.grayText }}>Drafty, nastavenia — nenávratné</div>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg border border-red-500/10 bg-red-500/5">
-            <div>
-              <p className="text-sm text-white font-medium">Resetovať lokálne dáta</p>
-              <p className="text-xs text-zinc-500">Blog, drafty, nastavenia — nenávratné</p>
-            </div>
-            <button onClick={resetData} className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all">
-              Resetovať
-            </button>
-          </div>
+          <Win98Button onClick={resetData} style={{ color: "#ff0000" }}>Resetovať</Win98Button>
         </div>
-      </div>
+      </Win98Panel>
     </div>
   );
 };

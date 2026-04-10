@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ElementType } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Code2, Camera, ArrowRight, Palette, Rocket, Shield, Eye, Wifi } from "lucide-react";
@@ -18,7 +18,7 @@ const securityServices = [
 ];
 
 interface ServiceItem {
-  icon: React.ElementType;
+  icon: ElementType;
   title: string;
   desc: string;
   detail: string;

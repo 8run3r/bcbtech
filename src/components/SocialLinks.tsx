@@ -1,15 +1,14 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Linkedin, Github, Instagram, Twitter } from "lucide-react";
+import { useState, type ElementType } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Linkedin, Github, Instagram } from "lucide-react";
 
 interface Social {
-  icon: React.ElementType;
+  icon: ElementType;
   href: string;
   label: string;
-  hoverColor: string;
-  glowColor: string;
-  borderColor: string;
-  bgColor: string;
+  tag: string;
+  color: string;
+  glow: string;
 }
 
 const socials: Social[] = [
@@ -17,65 +16,36 @@ const socials: Social[] = [
     icon: Linkedin,
     href: "https://linkedin.com/in/brunocok",
     label: "LinkedIn",
-    hoverColor: "#0A66C2",
-    glowColor: "rgba(10,102,194,0.3)",
-    borderColor: "rgba(10,102,194,0.3)",
-    bgColor: "rgba(10,102,194,0.08)",
+    tag: "LI",
+    color: "#0A66C2",
+    glow: "rgba(10,102,194,0.5)",
   },
   {
     icon: Github,
     href: "https://github.com/8run3r",
     label: "GitHub",
-    hoverColor: "#ffffff",
-    glowColor: "rgba(255,255,255,0.15)",
-    borderColor: "rgba(255,255,255,0.2)",
-    bgColor: "rgba(255,255,255,0.06)",
+    tag: "GH",
+    color: "#00ffaa",
+    glow: "rgba(0,255,170,0.4)",
   },
   {
     icon: Instagram,
     href: "https://instagram.com/coktech.tech",
     label: "Instagram",
-    hoverColor: "#E1306C",
-    glowColor: "rgba(225,48,108,0.3)",
-    borderColor: "rgba(225,48,108,0.3)",
-    bgColor: "rgba(225,48,108,0.08)",
-  },
-  {
-    icon: Twitter,
-    href: "https://x.com/coktech",
-    label: "X",
-    hoverColor: "#ffffff",
-    glowColor: "rgba(255,255,255,0.15)",
-    borderColor: "rgba(255,255,255,0.2)",
-    bgColor: "rgba(255,255,255,0.06)",
+    tag: "IG",
+    color: "#E1306C",
+    glow: "rgba(225,48,108,0.5)",
   },
 ];
 
-interface SocialLinksProps {
-  className?: string;
-}
-
-const SocialLinks = ({ className = "" }: SocialLinksProps) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+const SocialLinks = ({ className = "" }: { className?: string }) => {
+  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`inline-flex items-center gap-1 ${className}`}
-      style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: "9999px",
-        padding: "8px 16px",
-        backdropFilter: "blur(12px)",
-        width: "fit-content",
-      }}
-    >
+    <div className={`flex items-center gap-2 ${className}`}>
       {socials.map((s, i) => {
         const Icon = s.icon;
-        const isHovered = hoveredIndex === i;
+        const isHovered = hovered === i;
 
         return (
           <motion.a
@@ -84,39 +54,98 @@ const SocialLinks = ({ className = "" }: SocialLinksProps) => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={s.label}
-            onHoverStart={() => setHoveredIndex(i)}
-            onHoverEnd={() => setHoveredIndex(null)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.92 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            onHoverStart={() => setHovered(i)}
+            onHoverEnd={() => setHovered(null)}
+            whileTap={{ scale: 0.93 }}
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: "9999px",
+              position: "relative",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              background: isHovered ? s.bgColor : "transparent",
-              border: `1px solid ${isHovered ? s.borderColor : "transparent"}`,
-              boxShadow: isHovered ? `0 0 12px ${s.glowColor}` : "none",
-              transition: "background 200ms ease, border-color 200ms ease, box-shadow 200ms ease",
+              gap: 6,
+              padding: "6px 10px",
+              background: isHovered ? `rgba(0,0,0,0.7)` : "rgba(0,0,0,0.4)",
+              border: `1px solid ${isHovered ? s.color : "rgba(255,255,255,0.08)"}`,
+              borderRadius: 2,
               cursor: "pointer",
-              minWidth: 44,
+              textDecoration: "none",
+              overflow: "hidden",
               minHeight: 44,
+              minWidth: 44,
+              justifyContent: "center",
+              transition: "border-color 0.2s, background 0.2s",
+              boxShadow: isHovered
+                ? `0 0 12px ${s.glow}, inset 0 0 8px rgba(0,0,0,0.5)`
+                : "none",
             }}
           >
+            {/* Scan line on hover */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ top: "-100%" }}
+                  animate={{ top: "200%" }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: "linear" }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: `linear-gradient(90deg, transparent, ${s.color}, transparent)`,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Corner brackets */}
+            {isHovered && (
+              <>
+                <span style={{
+                  position: "absolute", top: 2, left: 2,
+                  width: 5, height: 5,
+                  borderTop: `1px solid ${s.color}`,
+                  borderLeft: `1px solid ${s.color}`,
+                  pointerEvents: "none",
+                }} />
+                <span style={{
+                  position: "absolute", bottom: 2, right: 2,
+                  width: 5, height: 5,
+                  borderBottom: `1px solid ${s.color}`,
+                  borderRight: `1px solid ${s.color}`,
+                  pointerEvents: "none",
+                }} />
+              </>
+            )}
+
             <Icon
-              size={16}
+              size={14}
               style={{
-                color: isHovered ? s.hoverColor : "rgba(255,255,255,0.35)",
-                transition: "color 200ms ease",
+                color: isHovered ? s.color : "rgba(255,255,255,0.4)",
+                transition: "color 0.2s",
                 flexShrink: 0,
+                position: "relative",
+                zIndex: 2,
               }}
             />
+
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "10px",
+              letterSpacing: "0.1em",
+              color: isHovered ? s.color : "rgba(255,255,255,0.25)",
+              transition: "color 0.2s",
+              position: "relative",
+              zIndex: 2,
+              textTransform: "uppercase",
+            }}>
+              {s.tag}
+            </span>
           </motion.a>
         );
       })}
-    </motion.div>
+    </div>
   );
 };
 

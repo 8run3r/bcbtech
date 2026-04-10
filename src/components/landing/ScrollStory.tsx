@@ -313,7 +313,7 @@ const Laptop = ({ progress, isMobile }: { progress: number; isMobile: boolean })
 
   return (
     <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.4}>
-      <group ref={groupRef} position={isMobile ? [2, 0.5, 0] : [4, 0, 0]} scale={isMobile ? 0.55 : 1}>
+      <group ref={groupRef} position={[0, 0, 0]} scale={isMobile ? 0.55 : 1}>
         {/* Base — tapered like a real MacBook */}
         <RoundedBox args={[3.4, 0.06, 2.0]} radius={0.03} position={[0, -0.45, 0.9]}>
           <meshStandardMaterial color="#2d2d30" roughness={0.25} metalness={0.85} />
@@ -747,7 +747,7 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
 
   return (
     <Float speed={0.6} rotationIntensity={0.08} floatIntensity={0.3}>
-      <group ref={groupRef} position={isMobile ? [-2, 0, 0] : [-4, 0, 0]} scale={isMobile ? 0.6 : 1}>
+      <group ref={groupRef} position={[0, 0, 0]} scale={isMobile ? 0.6 : 1}>
 
         {/* ── Metal frame (4 vertical posts + top/bottom rails) ── */}
         {/* Vertical corner posts */}
@@ -929,58 +929,43 @@ const ServerRack = ({ isMobile }: { isMobile: boolean }) => {
 };
 
 /* ─────────────────────────────────────────
-   Camera Controller (scroll-driven)
+   World Group — stationary camera, objects orbit
+   Camera is fixed. The entire scene group
+   translates on X so each object slides into view.
    ───────────────────────────────────────── */
-const CameraController = ({ progress, isMobile }: { progress: number; isMobile: boolean }) => {
-  const { camera } = useThree();
-  const targetPos = useRef(new THREE.Vector3(0, 0, 5));
-  const targetLook = useRef(new THREE.Vector3(0, 0, 0));
-  const currentLook = useRef(new THREE.Vector3(0, 0, 0));
-
-  const getSlidePositions = (slide: StorySlide, idx: number) => {
-    if (!isMobile) return { pos: slide.cameraPos, look: slide.cameraLookAt };
-    const mobilePositions: [number, number, number][] = [
-      [0, 0.3, 5],
-      [2, 0.5, 5],
-      [-2, 0, 5],
-    ];
-    const mobileLookAts: [number, number, number][] = [
-      [0, 0, 0],
-      [2, 0, 0],
-      [-2, 0, 0],
-    ];
-    return { pos: mobilePositions[idx] || slide.cameraPos, look: mobileLookAts[idx] || slide.cameraLookAt };
-  };
+const WorldGroup = ({ progress, isMobile }: { progress: number; isMobile: boolean }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  // Spacing between objects (world units). Objects arranged left→right.
+  const spacing = isMobile ? 4.5 : 7;
+  const totalSlides = slides.length; // 3
 
   useFrame(() => {
-    const totalSlides = slides.length;
-    const raw = progress * (totalSlides - 1);
-    const idx = Math.min(Math.floor(raw), totalSlides - 2);
-    const t = raw - idx;
-
-    const fromData = getSlidePositions(slides[idx], idx);
-    const toData = getSlidePositions(slides[idx + 1] || slides[idx], idx + 1);
-
-    const ease = t * t * (3 - 2 * t);
-
-    targetPos.current.set(
-      THREE.MathUtils.lerp(fromData.pos[0], toData.pos[0], ease),
-      THREE.MathUtils.lerp(fromData.pos[1], toData.pos[1], ease),
-      THREE.MathUtils.lerp(fromData.pos[2], toData.pos[2], ease)
+    if (!groupRef.current) return;
+    // Target X: shifts group left so the correct object aligns with camera (x=0)
+    const targetX = -progress * spacing * (totalSlides - 1);
+    groupRef.current.position.x = THREE.MathUtils.lerp(
+      groupRef.current.position.x,
+      targetX,
+      0.055 // damping — higher = snappier, lower = more inertia
     );
-
-    targetLook.current.set(
-      THREE.MathUtils.lerp(fromData.look[0], toData.look[0], ease),
-      THREE.MathUtils.lerp(fromData.look[1], toData.look[1], ease),
-      THREE.MathUtils.lerp(fromData.look[2], toData.look[2], ease)
-    );
-
-    camera.position.lerp(targetPos.current, 0.06);
-    currentLook.current.lerp(targetLook.current, 0.06);
-    camera.lookAt(currentLook.current);
   });
 
-  return null;
+  return (
+    <group ref={groupRef}>
+      {/* Slide 0 — Surveillance (SecurityCamera) at origin */}
+      <group position={[0, 0, 0]}>
+        <SecurityCamera />
+      </group>
+      {/* Slide 1 — Web & Software (Laptop) */}
+      <group position={[spacing, 0, 0]}>
+        <Laptop progress={progress} isMobile={isMobile} />
+      </group>
+      {/* Slide 2 — Infrastructure (ServerRack) */}
+      <group position={[spacing * 2, 0, 0]}>
+        <ServerRack isMobile={isMobile} />
+      </group>
+    </group>
+  );
 };
 
 /* ─────────────────────────────────────────
@@ -1038,18 +1023,16 @@ const Scene3D = ({ progress }: { progress: number }) => {
 
   return (
     <>
-      <CameraController progress={progress} isMobile={isMobile} />
-
-      <ambientLight intensity={0.25} />
-      <directionalLight position={[5, 5, 5]} intensity={0.7} />
-      <directionalLight position={[-3, -2, 4]} intensity={0.2} color="#00ffaa" />
-      <fog attach="fog" args={["#0a0d10", 6, 16]} />
+      {/* Camera is STATIONARY — set in Canvas. WorldGroup moves instead. */}
+      <ambientLight intensity={0.3} />
+      <directionalLight position={[5, 5, 5]} intensity={0.8} />
+      <directionalLight position={[-3, -2, 4]} intensity={0.25} color="#00ffaa" />
+      {/* Subtle point lights that follow the active zone */}
+      <pointLight position={[0, 2, 3]} intensity={0.4} color="#4a9eff" distance={10} />
+      <fog attach="fog" args={["#0a0d10", 8, 18]} />
 
       <FloatingParticles />
-
-      <SecurityCamera />
-      <Laptop progress={progress} isMobile={isMobile} />
-      <ServerRack isMobile={isMobile} />
+      <WorldGroup progress={progress} isMobile={isMobile} />
     </>
   );
 };

@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Copy, Save, Loader2, Trash2, Check, Globe, Zap, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { callAI } from "@/lib/ai-client";
+import {
+  W98, raised, sunken,
+  Win98Button, Win98Panel, Win98Textarea, Win98Window, Win98Progress, Win98Select,
+} from "../win98";
 
 type ContentType = "instagram" | "linkedin" | "facebook" | "email" | "ad" | "web";
-type Division = "security" | "digital" | "both";
+type Division = "automation" | "digital" | "both";
 type Tone = "profesionálny" | "neformálny" | "dôrazný" | "príbehový";
 
 interface Draft {
@@ -18,56 +23,46 @@ interface Draft {
 const SYSTEM_PROMPT = `Si marketingový asistent pre COK Tech — slovenská tech firma vedená Brunom Cokom.
 
 Firma má dve divízie:
-1. Security Systems — montáž kamerových systémov, alarmy, sieťová infraštruktúra
-2. Digital — webové aplikácie, e-shopy, UI/UX dizajn, AI riešenia
+1. Digital — webové aplikácie, e-shopy, UI/UX dizajn
+2. Automation — AI automatizácia, n8n/Make workflow-y, custom AI agenti
 
 Štýl značky: sebavedomý, priamy, moderný slovenský startup. Žiadne firemné frázy. Žiadne buzzwordy.
 Píš po slovensky pokiaľ nie je povedané inak.`;
 
 const contentTypes: { id: ContentType; label: string; char: number | null; hint: string }[] = [
-  { id: "instagram", label: "Instagram",  char: 2200, hint: "5–10 hashtagov na konci, prvý riadok chytľavý" },
-  { id: "linkedin",  label: "LinkedIn",   char: 3000, hint: "Profesionálny, bez spamu hashtagov" },
-  { id: "facebook",  label: "Facebook",   char: 1000, hint: "Priateľský tón, jednoduchý jazyk" },
-  { id: "email",     label: "Email",      char: null,  hint: "Začni Subject:, jasná CTA na konci" },
-  { id: "ad",        label: "Reklama",    char: 150,   hint: "Krátko a výrazne, silná výzva" },
-  { id: "web",       label: "Web copy",   char: null,  hint: "Headline, podnadpis, 3 benefity, CTA" },
+  { id: "instagram", label: "Instagram", char: 2200, hint: "5–10 hashtagov, chytľavý hook" },
+  { id: "linkedin", label: "LinkedIn", char: 3000, hint: "Profesionálny, bez spam hashtagov" },
+  { id: "facebook", label: "Facebook", char: 1000, hint: "Priateľský tón" },
+  { id: "email", label: "Email", char: null, hint: "Subject: + telo + CTA" },
+  { id: "ad", label: "Reklama", char: 150, hint: "Krátko a výrazne" },
+  { id: "web", label: "Web copy", char: null, hint: "Headline, benefity, CTA" },
 ];
 
-// Quick brief templates per division
 const quickTemplates: Record<Division, { label: string; brief: string }[]> = {
-  security: [
-    { label: "Nová inštalácia", brief: "Práve sme dokončili montáž kamerového systému u klienta. Chcem sa pochváliť a ukázať výsledok." },
-    { label: "Tip: ochrana firmy", brief: "Tip pre podnikateľov — prečo je kamerový systém investícia, nie náklad." },
-    { label: "Pred & po", brief: "Príspevok o transformácii zabezpečenia skladu/prevádzkarne pred a po inštalácii." },
-    { label: "Nočné videnie", brief: "Ukážem schopnosti nočného videnia a AI detekcie pohybu našich IP kamier." },
+  automation: [
+    { label: "Nový workflow", brief: "Práve sme nasadili automatizáciu pre klienta — ušetrili sme mu hodiny denne." },
+    { label: "Tip: AI agent", brief: "Tip pre podnikateľov — ako AI agent dokáže nahradiť 3 manuálne procesy vo firme." },
+    { label: "Pred & po", brief: "Príspevok o transformácii procesov klienta pred a po nasadení automatizácie." },
   ],
   digital: [
-    { label: "Web projekt live", brief: "Spustili sme nový web pre klienta. Chcem ukázať výsledok a povedať čo sme riešili." },
+    { label: "Web projekt live", brief: "Spustili sme nový web pre klienta. Chcem ukázať výsledok." },
     { label: "Tip: rýchlosť webu", brief: "Tip pre podnikateľov — prečo rýchlosť webu priamo ovplyvňuje predaje." },
-    { label: "AI automatizácia", brief: "Ako sme klientovi ušetrili hodiny práce denne pomocou AI automatizácie." },
     { label: "UI/UX proces", brief: "Zákulisie nášho dizajnového procesu — od wireframe po hotový produkt." },
   ],
   both: [
     { label: "O firme", brief: "COK Tech — čo robíme a prečo sme iní ako ostatné agentúry." },
-    { label: "Príbeh zakladateľa", brief: "Príbeh ako som začal podnikať s kombináciou digitálu a bezpečnostných systémov." },
-    { label: "Klient: referencie", brief: "Spokojný klient hovorí o spolupráci — chcem to pretaviť do príspevku." },
-    { label: "Prečo nás vybrať", brief: "Dôvody prečo si firmy vyberajú COK Tech namiesto väčších agentúr." },
+    { label: "Príbeh zakladateľa", brief: "Príbeh ako som začal podnikať s kombináciou web developmentu a AI." },
+    { label: "Prečo nás vybrať", brief: "Dôvody prečo si firmy vyberajú COK Tech." },
   ],
 };
 
-const RSS_FEEDS: Record<Division, { url: string; label: string }> = {
-  security: { url: "https://feeds.feedburner.com/TheHackersNews", label: "Hacker News Security" },
-  digital:  { url: "https://techcrunch.com/feed/", label: "TechCrunch" },
-  both:     { url: "https://news.ycombinator.com/rss", label: "Hacker News" },
-};
-
 const platformGuidelines: Record<ContentType, string> = {
-  instagram: "Max 2200 znakov. Použi 5–10 relevantných hashtagov na konci. Prvý riadok musí byť chytľavý hook.",
-  linkedin:  "Profesionálny tón. Max 3000 znakov. Žiadny spam hashtagov. Structured storytelling.",
-  facebook:  "Priateľský tón. Max 1000 znakov. Jednoduchý jazyk. Emoji je OK.",
-  email:     "Prvý riadok: Subject: [text predmetu]\nPotom prázdny riadok a telo emailu. Jasná výzva na akciu na konci.",
-  ad:        "Krátko a výrazne. Max 150 znakov. Silná výzva na akciu. Môže byť viac verzií.",
-  web:       "Jasný headline (H1), podnadpis (max 2 vety), 3 benefity (odrážky), CTA tlačidlo text.",
+  instagram: "Max 2200 znakov. 5–10 hashtagov na konci. Prvý riadok hook.",
+  linkedin: "Max 3000 znakov. Profesionálny. Žiadny spam hashtagov.",
+  facebook: "Max 1000 znakov. Priateľský. Emoji OK.",
+  email: "Subject: [predmet]\\nTelo emailu. CTA na konci.",
+  ad: "Max 150 znakov. Silná výzva. Viac verzií.",
+  web: "Headline (H1), podnadpis, 3 benefity, CTA text.",
 };
 
 export const MarketingPage = () => {
@@ -88,105 +83,51 @@ export const MarketingPage = () => {
   const currentType = contentTypes.find(c => c.id === contentType)!;
   const generated = variations[activeVar] ?? "";
 
-  const fetchWorldContext = async (): Promise<string> => {
-    try {
-      const feed = RSS_FEEDS[division];
-      const res = await fetch(
-        `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=5`
-      );
-      const data = await res.json();
-      if (!data?.items?.length) return "";
-      const headlines = data.items
-        .slice(0, 5)
-        .map((item: any, i: number) => `${i + 1}. ${item.title}`)
-        .join("\n");
-      return `\n\nAktuálne správy zo sveta (${feed.label}) pre inšpiráciu:\n${headlines}`;
-    } catch {
-      return "";
-    }
-  };
-
   const generate = async () => {
-    if (!brief.trim()) { toast.error("Zadaj brief alebo vyber šablónu"); return; }
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-    if (!apiKey) { toast.error("VITE_ANTHROPIC_API_KEY nie je nastavený"); return; }
-
-    setGenerating(true);
-    setVariations([]);
-    setActiveVar(0);
+    if (!brief.trim()) { toast.error("Zadaj brief"); return; }
+    setGenerating(true); setVariations([]); setActiveVar(0);
 
     try {
-      const worldContext = useWorldContext ? await fetchWorldContext() : "";
-      const divisionLabel = division === "security" ? "Security (kamery, alarmy, sieťová infraštruktúra)" :
-        division === "digital" ? "Digital (web, aplikácie, AI, dizajn)" : "obe divízie COK Tech";
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 2000,
-          system: SYSTEM_PROMPT,
-          messages: [{
-            role: "user",
-            content: `Vytvor 3 rôzne verzie ${currentType.label} príspevku pre ${divisionLabel}.
+      const divisionLabel = division === "automation" ? "Automation" : division === "digital" ? "Digital" : "obe divízie";
+      const data = await callAI({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: "user",
+          content: `Vytvor 3 rôzne verzie ${currentType.label} príspevku pre ${divisionLabel}.
 Tón: ${tone}
 Brief: ${brief}
-${worldContext}
 
-Pokyny pre platformu: ${platformGuidelines[contentType]}
+Pokyny: ${platformGuidelines[contentType]}
 
-Oddeľ verzie presne takto:
+Oddeľ verzie:
 --- VERZIA 1 ---
 [text]
 --- VERZIA 2 ---
 [text]
 --- VERZIA 3 ---
 [text]`,
-          }],
-        }),
+        }],
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
       const text = data?.content?.[0]?.text;
-      if (!text) throw new Error("Prázdna odpoveď od API");
-
-      // Parse 3 variations
+      if (!text) throw new Error("Prázdna odpoveď");
       const parts = text.split(/---\s*VERZIA\s+\d+\s*---/).map((s: string) => s.trim()).filter(Boolean);
       setVariations(parts.length >= 2 ? parts : [text]);
-      setActiveVar(0);
     } catch (e: any) {
       toast.error("Chyba: " + e.message);
-    } finally {
-      setGenerating(false);
-    }
+    } finally { setGenerating(false); }
   };
 
-  const copy = () => {
-    navigator.clipboard.writeText(generated);
-    setCopied(true);
-    toast.success("Skopírované!");
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const copy = () => { navigator.clipboard.writeText(generated); setCopied(true); toast.success("Skopírované!"); setTimeout(() => setCopied(false), 2000); };
 
   const saveDraft = () => {
-    const draft: Draft = {
-      id: Date.now().toString(),
-      type: contentType,
-      division,
-      content: generated,
-      date: new Date().toISOString(),
-    };
+    const draft: Draft = { id: Date.now().toString(), type: contentType, division, content: generated, date: new Date().toISOString() };
     const updated = [draft, ...drafts];
     setDrafts(updated);
     localStorage.setItem("coktech_marketing_drafts", JSON.stringify(updated));
-    toast.success("Uložené ako koncept");
+    toast.success("Uložené");
   };
 
   const deleteDraft = (id: string) => {
@@ -195,254 +136,158 @@ Oddeľ verzie presne takto:
     localStorage.setItem("coktech_marketing_drafts", JSON.stringify(updated));
   };
 
-  const charCount = generated.length;
-  const charLimit = currentType.char;
-  const overLimit = charLimit ? charCount > charLimit : false;
-
-  const cardStyle = { background: "#141414" };
-
   return (
-    <div className="max-w-6xl space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div style={{ fontFamily: W98.font, fontSize: "12px", color: W98.black }}>
+      {/* Header */}
+      <div style={{ boxShadow: raised, background: W98.bg, padding: "8px 12px", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: "20px" }}>🤖</span>
+        <span style={{ fontWeight: 700 }}>AI Marketing Agent — Generátor obsahu</span>
+      </div>
 
-        {/* ── LEFT: Generator ── */}
-        <div className="rounded-xl border border-white/5 p-6 space-y-5" style={cardStyle}>
-          <h2 className="text-white font-semibold flex items-center gap-2">
-            <Bot size={18} className="text-[#00FF94]" /> AI Marketing Agent
-          </h2>
-
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {/* Left: Generator */}
+        <Win98Panel label="Generátor">
           {/* Platform */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Platforma</p>
-            <div className="flex flex-wrap gap-2">
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Platforma:</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {contentTypes.map((c) => (
-                <button
+                <Win98Button
                   key={c.id}
+                  small
+                  active={contentType === c.id}
                   onClick={() => setContentType(c.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    contentType === c.id
-                      ? "bg-[#00FF94]/10 text-[#00FF94] border-[#00FF94]/30"
-                      : "bg-white/5 text-zinc-400 border-white/5 hover:border-white/10"
-                  }`}
                 >
                   {c.label}
-                  {c.char && <span className="ml-1 opacity-40">{c.char}</span>}
-                </button>
+                </Win98Button>
               ))}
             </div>
-            <p className="text-[10px] text-zinc-600 mt-1.5">{currentType.hint}</p>
+            <div style={{ fontSize: "10px", color: W98.grayText, marginTop: 2 }}>{currentType.hint}</div>
           </div>
 
           {/* Division */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Divízia</p>
-            <div className="flex gap-2">
-              {(["security", "digital", "both"] as Division[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDivision(d)}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium border transition-all ${
-                    division === d
-                      ? "bg-[#00FF94]/10 text-[#00FF94] border-[#00FF94]/30"
-                      : "bg-white/5 text-zinc-400 border-white/5 hover:border-white/10"
-                  }`}
-                >
-                  {d === "security" ? "Kamery" : d === "digital" ? "Digital" : "Obe"}
-                </button>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Divízia:</div>
+            <div style={{ display: "flex", gap: 2 }}>
+              {(["automation", "digital", "both"] as Division[]).map((d) => (
+                <Win98Button key={d} small active={division === d} onClick={() => setDivision(d)}>
+                  {d === "automation" ? "Automatizácia" : d === "digital" ? "Digital" : "Obe"}
+                </Win98Button>
               ))}
             </div>
           </div>
 
           {/* Quick templates */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Rýchle šablóny</p>
-            <div className="flex flex-wrap gap-1.5">
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Šablóny:</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {quickTemplates[division].map((t) => (
-                <button
-                  key={t.label}
-                  onClick={() => setBrief(t.brief)}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-medium border border-white/8 bg-white/4 text-zinc-400 hover:text-white hover:border-white/15 transition-all"
-                >
+                <Win98Button key={t.label} small onClick={() => setBrief(t.brief)}>
                   {t.label}
-                </button>
+                </Win98Button>
               ))}
             </div>
           </div>
 
           {/* Brief */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Brief</p>
-            <textarea
-              value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-              rows={3}
-              placeholder="Čo chceš povedať? Popis situácie, cieľ príspevku..."
-              className="w-full bg-white/5 border border-white/5 focus:border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 outline-none transition-colors resize-none"
-            />
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Brief:</div>
+            <Win98Textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={3} placeholder="Čo chceš povedať?" />
           </div>
 
           {/* Tone */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Tón</p>
-            <div className="flex flex-wrap gap-2">
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Tón:</div>
+            <div style={{ display: "flex", gap: 2 }}>
               {tones.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTone(t)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-all ${
-                    tone === t
-                      ? "bg-[#00FF94]/10 text-[#00FF94] border-[#00FF94]/30"
-                      : "bg-white/5 text-zinc-400 border-white/5 hover:border-white/10"
-                  }`}
-                >
+                <Win98Button key={t} small active={tone === t} onClick={() => setTone(t)}>
                   {t}
-                </button>
+                </Win98Button>
               ))}
             </div>
           </div>
 
-          {/* World context toggle */}
-          <button
-            onClick={() => setUseWorldContext(v => !v)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border w-full transition-all ${
-              useWorldContext
-                ? "bg-blue-500/10 text-blue-400 border-blue-500/25"
-                : "bg-white/5 text-zinc-500 border-white/5 hover:border-white/10"
-            }`}
-          >
-            <Globe size={13} />
-            {useWorldContext ? "Kontext zo sveta zapnutý — agent načíta aktuálne správy" : "Pridať kontext z aktuálneho diania vo svete"}
-          </button>
+          <Win98Button onClick={generate} disabled={generating} style={{ width: "100%" }}>
+            {generating ? "⏳ Agent generuje 3 verzie..." : "▶ Generovať 3 verzie"}
+          </Win98Button>
+        </Win98Panel>
 
-          <button
-            onClick={generate}
-            disabled={generating}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-black bg-[#00FF94] hover:bg-[#00FF94]/90 disabled:opacity-60 transition-all"
-          >
-            {generating ? (
-              <><Loader2 size={16} className="animate-spin" /> Agent generuje 3 verzie...</>
-            ) : (
-              <><Zap size={16} /> Generovať 3 verzie</>
-            )}
-          </button>
-        </div>
+        {/* Right: Output */}
+        <Win98Panel label="Vygenerovaný obsah">
+          {/* Version tabs */}
+          {variations.length > 1 && (
+            <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
+              {variations.map((_, i) => (
+                <Win98Button key={i} small active={activeVar === i} onClick={() => setActiveVar(i)}>
+                  Verzia {i + 1}
+                </Win98Button>
+              ))}
+            </div>
+          )}
 
-        {/* ── RIGHT: Result ── */}
-        <div className="rounded-xl border border-white/5 p-6 flex flex-col min-h-[400px]" style={cardStyle}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold">Vygenerovaný obsah</h2>
-            {variations.length > 1 && (
-              <div className="flex gap-1">
-                {variations.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveVar(i)}
-                    className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all ${
-                      activeVar === i
-                        ? "bg-[#00FF94] text-black"
-                        : "bg-white/5 text-zinc-400 hover:bg-white/10"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+          {generating ? (
+            <div style={{ textAlign: "center", padding: 30 }}>
+              <Win98Progress value={55} style={{ width: 200, margin: "0 auto 8px" }} />
+              <p style={{ color: W98.grayText }}>Generujem 3 verzie...</p>
+            </div>
+          ) : generated ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: "10px", color: currentType.char && generated.length > currentType.char ? "#ff0000" : W98.grayText }}>
+                  {generated.length}{currentType.char ? ` / ${currentType.char}` : ""} znakov
+                </span>
+                <div style={{ display: "flex", gap: 2 }}>
+                  <Win98Button small onClick={generate}>🔄</Win98Button>
+                  <Win98Button small onClick={copy}>{copied ? "✅" : "📋"}</Win98Button>
+                  <Win98Button small onClick={saveDraft}>💾</Win98Button>
+                </div>
               </div>
-            )}
-          </div>
-
-          <AnimatePresence mode="wait">
-            {generating ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex-1 flex items-center justify-center"
-              >
-                <div className="text-center">
-                  <div className="w-10 h-10 border-2 border-[#00FF94]/20 border-t-[#00FF94] rounded-full animate-spin mx-auto mb-3" />
-                  <p className="text-zinc-500 text-sm">Generujem 3 verzie{useWorldContext ? " + načítavam správy" : ""}…</p>
-                </div>
-              </motion.div>
-            ) : generated ? (
-              <motion.div
-                key={`result-${activeVar}`}
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col flex-1"
-              >
-                {/* Actions row */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs ${overLimit ? "text-red-400" : "text-zinc-500"}`}>
-                      {charCount.toLocaleString()}{charLimit ? ` / ${charLimit.toLocaleString()}` : ""} znakov
-                    </span>
-                    {overLimit && <span className="text-[10px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Nad limit</span>}
-                  </div>
-                  <div className="flex gap-2">
-                    {variations.length > 1 && (
-                      <button onClick={generate} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-zinc-400 hover:bg-white/10 border border-white/5 transition-all">
-                        <RefreshCw size={11} /> Znova
-                      </button>
-                    )}
-                    <button onClick={copy} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/5 transition-all">
-                      {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "OK" : "Kopírovať"}
-                    </button>
-                    <button onClick={saveDraft} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#00FF94]/10 text-[#00FF94] hover:bg-[#00FF94]/20 border border-[#00FF94]/20 transition-all">
-                      <Save size={12} /> Uložiť
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1 bg-white/5 rounded-xl p-4 overflow-y-auto">
-                  <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">{generated}</p>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="flex-1 flex items-center justify-center"
-              >
-                <div className="text-center">
-                  <Bot size={40} className="mx-auto text-zinc-700 mb-3" />
-                  <p className="text-zinc-600 text-sm">Vyber platformu, zadaj brief a klikni Generovať</p>
-                  <p className="text-zinc-700 text-xs mt-1">Agent vytvorí 3 verzie naraz</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              <div style={{ boxShadow: sunken, background: W98.fieldBg, padding: 8, whiteSpace: "pre-wrap", lineHeight: 1.5, maxHeight: 300, overflow: "auto" }}>
+                {generated}
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: "center", padding: 40, color: W98.grayText }}>
+              <Bot size={32} style={{ margin: "0 auto 8px", display: "block" }} />
+              <p>Vyber platformu, zadaj brief</p>
+              <p>a klikni Generovať</p>
+            </div>
+          )}
+        </Win98Panel>
       </div>
 
-      {/* ── Drafts ── */}
+      {/* Drafts */}
       {drafts.length > 0 && (
-        <div>
-          <h2 className="text-white font-semibold mb-4">Uložené koncepty ({drafts.length})</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Win98Panel label={`Uložené koncepty (${drafts.length})`} style={{ marginTop: 12 }}>
+          <div style={{ boxShadow: sunken, background: W98.fieldBg }}>
+            {/* Header */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "80px 1fr 80px 60px",
+              gap: 8, padding: "4px 8px", borderBottom: "1px solid #c0c0c0",
+              background: W98.bg, fontWeight: 700, fontSize: "11px",
+            }}>
+              <span>Platforma</span>
+              <span>Obsah</span>
+              <span>Dátum</span>
+              <span></span>
+            </div>
             {drafts.map((d) => (
-              <div key={d.id} className="rounded-xl border border-white/5 p-4" style={cardStyle}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-[#00FF94] bg-[#00FF94]/10 px-2 py-0.5 rounded-full">
-                    {contentTypes.find(c => c.id === d.type)?.label}
-                  </span>
-                  <button onClick={() => deleteDraft(d.id)} className="text-zinc-600 hover:text-red-400 transition-colors">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <p className="text-zinc-400 text-xs line-clamp-4 mb-3 leading-relaxed">{d.content}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-600">
-                    {new Date(d.date).toLocaleDateString("sk-SK")}
-                  </span>
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(d.content); toast.success("Skopírované!"); }}
-                    className="text-xs text-zinc-500 hover:text-white flex items-center gap-1 transition-colors"
-                  >
-                    <Copy size={10} /> Kopírovať
-                  </button>
+              <div key={d.id} style={{
+                display: "grid", gridTemplateColumns: "80px 1fr 80px 60px",
+                gap: 8, padding: "3px 8px", fontSize: "11px",
+                borderBottom: "1px solid #f0f0f0",
+              }}>
+                <span style={{ fontWeight: 700 }}>{contentTypes.find(c => c.id === d.type)?.label}</span>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.content.slice(0, 60)}...</span>
+                <span style={{ color: W98.grayText }}>{new Date(d.date).toLocaleDateString("sk-SK")}</span>
+                <div style={{ display: "flex", gap: 2 }}>
+                  <Win98Button small onClick={() => { navigator.clipboard.writeText(d.content); toast.success("Skopírované!"); }}>📋</Win98Button>
+                  <Win98Button small onClick={() => deleteDraft(d.id)}>🗑️</Win98Button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Win98Panel>
       )}
     </div>
   );

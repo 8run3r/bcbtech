@@ -258,14 +258,7 @@ const Scene = () => {
         <NodeLabel key={`l-${i}`} position={pos} text={labels[i * 2]} />
       ))}
 
-      {/* Floating 3D blocks (igloo-style) */}
-      <FloatingBlock position={[-2.2, 0.8, -1.5]} scale={0.5} rotationSpeed={0.4} />
-      <FloatingBlock position={[2.0, -0.5, -2.0]} scale={0.7} rotationSpeed={0.3} />
-      <FloatingBlock position={[0, 1.5, -2.5]} scale={0.6} rotationSpeed={0.35} />
-      <FloatingBlock position={[-1.0, -1.5, -1.8]} scale={0.45} rotationSpeed={0.5} />
-      <FloatingBlock position={[1.5, 1.0, -1.2]} scale={0.35} rotationSpeed={0.45} />
-      <FloatingBlock position={[-0.5, 0.0, -2.8]} scale={0.8} rotationSpeed={0.25} />
-      <FloatingBlock position={[0.8, -1.2, -1.0]} scale={0.4} rotationSpeed={0.55} />
+      {/* Cubes removed — clean vertex network only */}
     </group>
   );
 };
