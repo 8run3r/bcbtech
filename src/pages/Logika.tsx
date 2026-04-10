@@ -1,10 +1,22 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/landing/Navbar";
+import { useNavAccent } from "@/components/landing/Navbar";
 import FooterCTA from "@/components/landing/FooterCTA";
 import Scanlines from "@/components/ui/scanlines";
 import PretextHeadline from "@/components/ui/pretext-headline";
 import FluidCursor from "@/components/landing/FluidCursor";
+
+/* ── Section color themes ── */
+const SECTION_THEMES = [
+  { id: "hero",      color: "#00ffaa", raw: "0,255,170",   label: "DISCOVER" },
+  { id: "stats",     color: "#00ffaa", raw: "0,255,170",   label: "METRICS" },
+  { id: "arguments", color: "#4A9EFF", raw: "74,158,255",  label: "LOGIKA" },
+  { id: "process",   color: "#FF8C00", raw: "255,140,0",   label: "PROCESS" },
+  { id: "roi",       color: "#FF8C00", raw: "255,140,0",   label: "ROI" },
+  { id: "compare",   color: "#FF3D71", raw: "255,61,113",  label: "VS" },
+  { id: "cta",       color: "#00ffaa", raw: "0,255,170",   label: "CONNECT" },
+];
 
 /* ── Glitch text effect ── */
 const GlitchText = ({ children, color = "var(--neon-primary)" }: { children: string; color?: string }) => {
@@ -379,10 +391,75 @@ const MarqueeBand = ({ text, color, speed = 30 }: { text: string; color: string;
   </div>
 );
 
+/* ── Floating color palette indicator ── */
+const ColorPalette = ({ activeIndex }: { activeIndex: number }) => (
+  <div className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2">
+    {SECTION_THEMES.map((theme, i) => (
+      <button
+        key={theme.id}
+        onClick={() => document.getElementById(theme.id)?.scrollIntoView({ behavior: "smooth" })}
+        className="group relative flex items-center"
+        style={{ cursor: "pointer", background: "transparent", border: "none", padding: "2px 0" }}
+      >
+        <motion.div
+          animate={{
+            width: i === activeIndex ? 16 : 4,
+            height: 4,
+            background: i === activeIndex ? theme.color : "rgba(255,255,255,0.12)",
+            boxShadow: i === activeIndex ? `0 0 8px ${theme.color}50` : "none",
+          }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          style={{ borderRadius: 1 }}
+        />
+        <span
+          className="absolute right-full mr-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 7,
+            color: theme.color,
+            letterSpacing: "0.15em",
+          }}
+        >
+          {theme.label}
+        </span>
+      </button>
+    ))}
+  </div>
+);
+
 /* ── Main ── */
 const Logika = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const heroInView = useInView(heroRef, { once: true });
+  const { setAccent } = useNavAccent();
+  const [activeSection, setActiveSection] = useState(0);
+
+  // Track which section is in view
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    SECTION_THEMES.forEach((theme, i) => {
+      const el = document.getElementById(theme.id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(i);
+        },
+        { threshold: 0.3 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  // Sync navbar accent with active section
+  useEffect(() => {
+    const theme = SECTION_THEMES[activeSection];
+    setAccent(theme.color, theme.raw);
+    return () => setAccent("var(--neon-primary)", "0,255,170");
+  }, [activeSection, setAccent]);
 
   return (
     <>
@@ -390,11 +467,12 @@ const Logika = () => {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <FluidCursor blobCount={6} intensity={1} />
       </div>
+      <ColorPalette activeIndex={activeSection} />
       <main style={{ background: "transparent", minHeight: "100vh", position: "relative", zIndex: 1 }}>
         <Navbar />
 
         {/* ── Hero — full viewport, dramatic ── */}
-        <div ref={heroRef} className="min-h-screen flex items-center justify-center px-6 relative">
+        <div ref={heroRef} id="hero" className="min-h-screen flex items-center justify-center px-6 relative">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
@@ -468,7 +546,7 @@ const Logika = () => {
         <MarqueeBand text="ZERO OVERHEAD · FULL RESULTS · ZERO OVERHEAD · FULL RESULTS ·" color="var(--neon-primary)" speed={40} />
 
         {/* ── Stats — big animated numbers ── */}
-        <Section>
+        <Section id="stats">
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
             {[
               { value: "3", suffix: "×", label: "Rýchlejšie dodanie", color: "var(--neon-primary)", delay: 0 },
@@ -485,7 +563,7 @@ const Logika = () => {
         </Section>
 
         {/* ── Arguments ── */}
-        <Section>
+        <Section id="arguments">
           <div className="max-w-2xl mx-auto">
             <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--neon-primary)", letterSpacing: "0.25em", opacity: 0.4, marginBottom: 12 }}>LOGIKA</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.6rem, 3vw, 2.2rem)", color: "var(--text-primary)", letterSpacing: "-0.03em", marginBottom: 32 }}>
@@ -503,7 +581,7 @@ const Logika = () => {
         <MarqueeBand text="WEB · AI · AUTOMATION · MARKETING · WEB · AI · AUTOMATION · MARKETING ·" color="var(--neon-secondary)" speed={35} />
 
         {/* ── Process Timeline ── */}
-        <Section>
+        <Section id="process">
           <div className="max-w-2xl mx-auto">
             <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--neon-primary)", letterSpacing: "0.25em", opacity: 0.4, marginBottom: 12 }}>PROCESS</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 2rem)", color: "var(--text-primary)", letterSpacing: "-0.03em", marginBottom: 40 }}>
@@ -514,12 +592,12 @@ const Logika = () => {
         </Section>
 
         {/* ── ROI Calculator ── */}
-        <Section>
+        <Section id="roi">
           <ROICalculator />
         </Section>
 
         {/* ── Comparison ── */}
-        <Section>
+        <Section id="compare">
           <div className="max-w-2xl mx-auto">
             <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--text-dim)", letterSpacing: "0.25em", opacity: 0.4, marginBottom: 12 }}>VS. TRADIČNÁ AGENTÚRA</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 2rem)", color: "var(--text-primary)", letterSpacing: "-0.03em", marginBottom: 32 }}>
@@ -540,7 +618,7 @@ const Logika = () => {
         </Section>
 
         {/* ── CTA ── */}
-        <Section>
+        <Section id="cta">
           <div className="max-w-2xl mx-auto text-center">
             <PretextHeadline
               text="Menej overhead. Viac výsledkov."
