@@ -1,18 +1,28 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { AdminLayout, type AdminPage } from "@/admin/AdminLayout";
-import { DashboardPage } from "@/admin/pages/DashboardPage";
-import { MessagesPage } from "@/admin/pages/MessagesPage";
-import { MarketingPage } from "@/admin/pages/MarketingPage";
-import { ProjectsPage } from "@/admin/pages/ProjectsPage";
-import { AnalyticsPage } from "@/admin/pages/AnalyticsPage";
-import { SettingsPage } from "@/admin/pages/SettingsPage";
-import { AgentsPage } from "@/admin/pages/AgentsPage";
 import { W98, raised, sunken, Win98Button, Win98Input } from "@/admin/win98";
 import RotatingCaptcha, { fetchIP, isKnownIP, addKnownIP } from "@/components/RotatingCaptcha";
+
+const DashboardPage = lazy(() => import("@/admin/pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const MessagesPage = lazy(() => import("@/admin/pages/MessagesPage").then(m => ({ default: m.MessagesPage })));
+const MarketingPage = lazy(() => import("@/admin/pages/MarketingPage").then(m => ({ default: m.MarketingPage })));
+const ProjectsPage = lazy(() => import("@/admin/pages/ProjectsPage").then(m => ({ default: m.ProjectsPage })));
+const AnalyticsPage = lazy(() => import("@/admin/pages/AnalyticsPage").then(m => ({ default: m.AnalyticsPage })));
+const SettingsPage = lazy(() => import("@/admin/pages/SettingsPage").then(m => ({ default: m.SettingsPage })));
+const AgentsPage = lazy(() => import("@/admin/pages/AgentsPage").then(m => ({ default: m.AgentsPage })));
+const DevToolsPage = lazy(() => import("@/admin/pages/DevToolsPage").then(m => ({ default: m.DevToolsPage })));
+const PromptBotPage = lazy(() => import("@/admin/pages/PromptBotPage").then(m => ({ default: m.PromptBotPage })));
+const CampaignToolPage = lazy(() => import("@/admin/pages/CampaignToolPage").then(m => ({ default: m.CampaignToolPage })));
+
+const AdminPageFallback = () => (
+  <div style={{ padding: 40, textAlign: "center", fontSize: "13px", color: W98.grayText, fontFamily: W98.font }}>
+    Načítavam...
+  </div>
+);
 
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
@@ -283,6 +293,9 @@ const Admin = () => {
     projects: <ProjectsPage />,
     analytics: <AnalyticsPage />,
     settings: <SettingsPage />,
+    devtools: <DevToolsPage />,
+    promptbot: <PromptBotPage />,
+    campaigns: <CampaignToolPage />,
   };
 
   return (
@@ -292,7 +305,9 @@ const Admin = () => {
       unreadCount={unreadCount}
       onLogout={signOut}
     >
-      {pages[activePage]}
+      <Suspense fallback={<AdminPageFallback />}>
+        {pages[activePage]}
+      </Suspense>
     </AdminLayout>
   );
 };

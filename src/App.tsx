@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import RetroCursor from "@/components/ui/retro-cursor";
 import SmoothScroll from "./components/SmoothScroll";
-import LandingTerminal from "@/components/landing/LandingTerminal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -15,6 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import RequireAdmin from "./components/RequireAdmin";
 import { AccentProvider } from "@/components/landing/Navbar";
 
+const LandingTerminal = lazy(() => import("@/components/landing/LandingTerminal"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Packages = lazy(() => import("./pages/Packages"));
 const Logika = lazy(() => import("./pages/Logika"));
@@ -24,6 +24,7 @@ const Archive = lazy(() => import("./pages/Archive"));
 const NodeMap = lazy(() => import("./pages/NodeMap"));
 const Memory = lazy(() => import("./pages/Memory"));
 const Void = lazy(() => import("./pages/Void"));
+const CampaignLanding = lazy(() => import("./pages/CampaignLanding"));
 
 const PageLoader = () => (
   <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -44,7 +45,9 @@ const App = () => (
           <Sonner />
           <RetroCursor />
           <BrowserRouter>
-          <LandingTerminal />
+          <Suspense fallback={null}>
+            <LandingTerminal />
+          </Suspense>
           <AccentProvider>
             <SmoothScroll>
             <ScrollToTop />
@@ -68,6 +71,7 @@ const App = () => (
                 <Route path="/konfigurator" element={<Navigate to="/balicky" replace />} />
                 {/* Old admin hash → redirect to clean path */}
                 <Route path="/a7x9k2m" element={<Navigate to="/admin" replace />} />
+                <Route path="/c/:slug" element={<CampaignLanding />} />
                 <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

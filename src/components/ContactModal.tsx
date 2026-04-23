@@ -95,7 +95,8 @@ const ContactModal = ({ open, onClose }: { open: boolean; onClose: () => void })
       name: form.name.trim(),
       email: form.email.trim(),
       message: fullMessage || null,
-      category: category,
+      package_category: category,
+      package_name: pkg || null,
     });
 
     setSending(false);
