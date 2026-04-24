@@ -14,27 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      agent_drafts: {
+      availability_overrides: {
         Row: {
-          agent_id: string
-          content: string | null
-          created_at: string | null
+          created_at: string
+          end_time: string | null
           id: string
-          metadata: Json | null
+          is_available: boolean
+          override_date: string
+          reason: string | null
+          slot_duration_minutes: number | null
+          start_time: string | null
         }
         Insert: {
-          agent_id: string
-          content?: string | null
-          created_at?: string | null
+          created_at?: string
+          end_time?: string | null
           id?: string
-          metadata?: Json | null
+          is_available?: boolean
+          override_date: string
+          reason?: string | null
+          slot_duration_minutes?: number | null
+          start_time?: string | null
         }
         Update: {
-          agent_id?: string
-          content?: string | null
-          created_at?: string | null
+          created_at?: string
+          end_time?: string | null
           id?: string
-          metadata?: Json | null
+          is_available?: boolean
+          override_date?: string
+          reason?: string | null
+          slot_duration_minutes?: number | null
+          start_time?: string | null
+        }
+        Relationships: []
+      }
+      availability_rules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          slot_duration_minutes: number
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          slot_duration_minutes?: number
+          start_time?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          slot_duration_minutes?: number
+          start_time?: string
         }
         Relationships: []
       }
@@ -128,47 +167,6 @@ export type Database = {
         }
         Relationships: []
       }
-      campaign_clicks: {
-        Row: {
-          campaign_id: string | null
-          clicked_at: string | null
-          country: string | null
-          device: string | null
-          id: string
-          ip: string | null
-          referrer: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          campaign_id?: string | null
-          clicked_at?: string | null
-          country?: string | null
-          device?: string | null
-          id?: string
-          ip?: string | null
-          referrer?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          campaign_id?: string | null
-          clicked_at?: string | null
-          country?: string | null
-          device?: string | null
-          id?: string
-          ip?: string | null
-          referrer?: string | null
-          user_agent?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "campaign_clicks_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "marketing_campaigns"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       contact_messages: {
         Row: {
           created_at: string
@@ -202,54 +200,6 @@ export type Database = {
           package_name?: string | null
           phone?: string | null
           status?: string
-        }
-        Relationships: []
-      }
-      marketing_campaigns: {
-        Row: {
-          accent_color: string | null
-          bg_color: string | null
-          created_at: string | null
-          cta_text: string | null
-          cta_url: string | null
-          description: string | null
-          id: string
-          media_type: string | null
-          media_url: string | null
-          slug: string
-          status: string | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          accent_color?: string | null
-          bg_color?: string | null
-          created_at?: string | null
-          cta_text?: string | null
-          cta_url?: string | null
-          description?: string | null
-          id?: string
-          media_type?: string | null
-          media_url?: string | null
-          slug: string
-          status?: string | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          accent_color?: string | null
-          bg_color?: string | null
-          created_at?: string | null
-          cta_text?: string | null
-          cta_url?: string | null
-          description?: string | null
-          id?: string
-          media_type?: string | null
-          media_url?: string | null
-          slug?: string
-          status?: string | null
-          title?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -295,27 +245,6 @@ export type Database = {
           type?: string
           updated_at?: string
           year?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          id: string
-          role: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email?: string | null
-          id: string
-          role?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          role?: string | null
         }
         Relationships: []
       }

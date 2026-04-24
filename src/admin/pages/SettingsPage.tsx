@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import {
   W98, raised, sunken,
   Win98Button, Win98Panel, Win98Input, Win98Window,
@@ -37,22 +36,11 @@ export const SettingsPage = () => {
     toast.success("Nastavenia uložené");
   };
 
-  const [pwLoading, setPwLoading] = useState(false);
-
-  const changePassword = async (e: FormEvent) => {
+  const changePassword = (e: FormEvent) => {
     e.preventDefault();
     if (passwords.new1 !== passwords.new2) { toast.error("Heslá sa nezhodujú"); return; }
     if (passwords.new1.length < 8) { toast.error("Heslo musí mať aspoň 8 znakov"); return; }
-
-    setPwLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: passwords.new1 });
-    setPwLoading(false);
-
-    if (error) {
-      toast.error(`Chyba: ${error.message}`);
-      return;
-    }
-    toast.success("Heslo úspešne zmenené");
+    toast.success("Heslo zmenené");
     setPasswords({ old: "", new1: "", new2: "" });
   };
 
@@ -130,7 +118,7 @@ export const SettingsPage = () => {
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 4 }}>
-            <Win98Button type="submit" disabled={pwLoading}>{pwLoading ? "Mením..." : "🔑 Zmeniť heslo"}</Win98Button>
+            <Win98Button type="submit">🔑 Zmeniť heslo</Win98Button>
           </div>
         </Win98Panel>
       </form>

@@ -17,18 +17,12 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
         manualChunks: {
           three: ["three", "@react-three/fiber", "@react-three/drei"],
           "framer-motion": ["framer-motion"],
           vendor: ["react", "react-dom", "react-router-dom"],
-          supabase: ["@supabase/supabase-js", "@supabase/ssr"],
-          query: ["@tanstack/react-query"],
-          icons: ["lucide-react"],
-          forms: ["react-hook-form", "@hookform/resolvers", "zod"],
-          charts: ["recharts"],
         },
       },
     },

@@ -182,7 +182,7 @@ const Navbar = () => {
             onClick={() => setMenuOpen(false)}
           >
             {/* Grid overlay */}
-            <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+            <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
 
             {/* Scanlines */}
             <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(transparent,transparent 1px,rgba(0,0,0,0.04) 1px,rgba(0,0,0,0.04) 2px)" }} />
@@ -197,7 +197,7 @@ const Navbar = () => {
             </button>
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col justify-center h-full px-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col justify-center h-full px-8" onClick={(e) => e.stopPropagation()}>
               {/* Logo */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}

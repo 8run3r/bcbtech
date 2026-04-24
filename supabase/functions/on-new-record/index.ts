@@ -71,6 +71,7 @@ function formatContact(r: Record<string, unknown>) {
   const email = r.email || "—";
   const pkg = r.package_name || r.package_category || "—";
   const msg = r.message || "—";
+  const budget = r.budget || "—";
 
   const html = `
     <div style="font-family:system-ui;max-width:500px;margin:0 auto;padding:20px;background:#f8f9fa;border-radius:8px">
@@ -79,13 +80,14 @@ function formatContact(r: Record<string, unknown>) {
         <tr><td style="padding:6px 0;color:#666;width:100px"><strong>Meno</strong></td><td>${name}</td></tr>
         <tr><td style="padding:6px 0;color:#666"><strong>Email</strong></td><td><a href="mailto:${email}">${email}</a></td></tr>
         <tr><td style="padding:6px 0;color:#666"><strong>Balíček</strong></td><td>${pkg}</td></tr>
+        <tr><td style="padding:6px 0;color:#666"><strong>Budget</strong></td><td>${budget}</td></tr>
         <tr><td style="padding:6px 0;color:#666"><strong>Správa</strong></td><td>${msg}</td></tr>
       </table>
       <hr style="margin:16px 0;border:none;border-top:1px solid #ddd">
       <small style="color:#999">CokTech Admin • ${new Date().toLocaleString("sk-SK")}</small>
     </div>`;
 
-  const tg = `📩 <b>Nová správa</b>\n\n👤 ${name}\n📧 ${email}\n📦 ${pkg}\n💬 ${msg}`;
+  const tg = `📩 <b>Nová správa</b>\n\n👤 ${name}\n📧 ${email}\n📦 ${pkg}\n💰 ${budget}\n💬 ${msg}`;
 
   return { subject: `Nová správa od ${name}`, html, tg };
 }

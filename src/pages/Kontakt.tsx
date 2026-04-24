@@ -364,7 +364,7 @@ const Kontakt = () => {
                 </p>
               </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 40 }} className="md:grid-cols-[1fr_1.5fr]">
 
                 {/* Left — contact info */}
                 <motion.div
@@ -438,7 +438,7 @@ const Kontakt = () => {
                   style={{ display: "flex", flexDirection: "column", gap: 18 }}
                 >
                   {/* Name + Email row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="grid-cols-1 sm:grid-cols-2">
                     <div>
                       <FieldLabel>Meno *</FieldLabel>
                       <NeonInput
@@ -474,7 +474,7 @@ const Kontakt = () => {
                   {/* Category */}
                   <div>
                     <FieldLabel>Typ projektu</FieldLabel>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-1.5">
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                       {[
                         { id: "web",        label: "Web / E-shop",      icon: Monitor,    color: "var(--neon-primary)" },
                         { id: "automation", label: "AI Automatizácia",   icon: Zap,        color: "var(--neon-secondary)" },

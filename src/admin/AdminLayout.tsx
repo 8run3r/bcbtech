@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, type ReactNode } from "react";
 import {
   LayoutDashboard, MessageSquare, Bot, FolderKanban,
   BarChart2, Settings, LogOut, Menu, Search, Monitor, Cpu,
-  Globe, ChevronRight, Terminal, Megaphone,
+  Globe, ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -11,7 +11,7 @@ import { W98, Win98Button, Win98TreeItem, aeroBorder } from "./win98";
 
 export type AdminPage =
   | "dashboard" | "messages" | "marketing" | "projects"
-  | "analytics" | "settings" | "agents" | "devtools" | "promptbot" | "campaigns";
+  | "analytics" | "settings" | "agents";
 
 interface NavItem {
   id: AdminPage;
@@ -25,9 +25,6 @@ const navItems: NavItem[] = [
   { id: "agents",     label: "AI Agenti",     icon: <Cpu size={14} /> },
   { id: "marketing",  label: "AI Marketing",  icon: <Bot size={14} /> },
   { id: "projects",   label: "Projekty",      icon: <FolderKanban size={14} /> },
-  { id: "devtools",   label: "Dev Tools",      icon: <Terminal size={14} /> },
-  { id: "promptbot",  label: "Prompt Bot",     icon: <Bot size={14} /> },
-  { id: "campaigns",  label: "Kampane",        icon: <Megaphone size={14} /> },
   { id: "analytics",  label: "Analytika",     icon: <BarChart2 size={14} /> },
   { id: "settings",   label: "Nastavenia",    icon: <Settings size={14} /> },
 ];
@@ -40,9 +37,6 @@ const pageTitles: Record<AdminPage, string> = {
   projects:  "Projekty",
   analytics: "Analytika",
   settings:  "Nastavenia",
-  devtools:  "Dev Tools",
-  promptbot: "Prompt Bot",
-  campaigns: "Kampane",
 };
 
 const pageIcons: Record<AdminPage, ReactNode> = {
@@ -53,9 +47,6 @@ const pageIcons: Record<AdminPage, ReactNode> = {
   projects:  <FolderKanban size={13} />,
   analytics: <BarChart2 size={13} />,
   settings:  <Settings size={13} />,
-  devtools:  <Terminal size={13} />,
-  promptbot: <Bot size={13} />,
-  campaigns: <Megaphone size={13} />,
 };
 
 interface Props {

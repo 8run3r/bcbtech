@@ -26,9 +26,6 @@ export default {
         mono: ['Inter', 'sans-serif'],
       },
       colors: {
-        violet: "#7B61FF",
-        mint: "#00F5C4",
-        coral: "#FF3D71",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
