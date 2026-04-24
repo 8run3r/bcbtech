@@ -24,6 +24,7 @@ const COMMANDS: Record<string, { action: (nav: ReturnType<typeof useNavigate>, c
   hybrid:     { action: (nav, close) => { nav("/balicky?tab=hybrid"); close(); return null; } },
   archive:    { action: (nav, close) => { nav("/archive"); close(); return null; } },
   void:       { action: (nav, close) => { nav("/void"); close(); return null; } },
+  doom:       { action: (nav, close) => { nav("/doom"); close(); return null; } },
   clear:      { action: () => null },
   exit:       { action: (_, close) => { close(); return null; } },
 };

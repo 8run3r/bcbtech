@@ -58,6 +58,7 @@ const COMMANDS: Record<string, (navigate: ReturnType<typeof useNavigate>, scroll
 
   // ── Secret ──
   void: (nav) => { nav("/void"); return "ENTERING THE VOID..."; },
+  doom: (nav) => { nav("/doom"); return "INITIALIZING SYSTEM BREACH..."; },
   archive: (nav) => { nav("/archive"); return "ACCESSING ARCHIVE..."; },
   nodes: (nav) => { nav("/node-map"); return "LOADING NODE MAP..."; },
   konfigurator: (nav) => { nav("/konfigurator"); return "→ /konfigurator"; },

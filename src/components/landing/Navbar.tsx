@@ -7,7 +7,6 @@ const NAV_LINKS = [
   { label: "BALÍČKY",   to: "/balicky",   code: "P02" },
   { label: "LOGIKA",    to: "/logika",    code: "P03" },
   { label: "KONTAKT",   to: "/kontakt",   code: "P04" },
-  { label: "DOOM",      to: "/doom",      code: "X66" },
 ];
 
 /* ── Accent color context — syncs navbar .digital color with active page/tab ── */
