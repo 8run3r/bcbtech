@@ -24,6 +24,7 @@ const Archive = lazy(() => import("./pages/Archive"));
 const NodeMap = lazy(() => import("./pages/NodeMap"));
 const Memory = lazy(() => import("./pages/Memory"));
 const Void = lazy(() => import("./pages/Void"));
+const Doom = lazy(() => import("./pages/Doom"));
 
 const PageLoader = () => (
   <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/node-map" element={<NodeMap />} />
                 <Route path="/memory" element={<Memory />} />
                 <Route path="/void" element={<Void />} />
+                <Route path="/doom" element={<Doom />} />
                 <Route path="/tsuki" element={<Void />} />
                 {/* Legacy redirects */}
                 <Route path="/kamery" element={<Navigate to="/balicky" replace />} />

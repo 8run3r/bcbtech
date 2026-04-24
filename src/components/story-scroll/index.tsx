@@ -5,9 +5,10 @@
  */
 import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { useScroll, useMotionValueEvent, AnimatePresence, motion } from "framer-motion";
+import { useScroll, useMotionValueEvent, AnimatePresence, motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useNavAccent } from "@/components/landing/Navbar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ContactModal from "@/components/ContactModal";
 import { STATIONS } from "./stations";
 import ZonePortals from "./GridFloor";
@@ -413,8 +414,345 @@ const COLOR_RAW: Record<string, string> = {
   "#4A9EFF": "74,158,255",
 };
 
-/* ── Main export ── */
-const StoryScroll3D = () => {
+/* ══════════════════════════════════════════
+   Mobile station card — InView animated
+═══════════════════════════════════════════ */
+const MobileStationCard = ({
+  station,
+  index,
+  onNavigate,
+}: {
+  station: (typeof STATIONS)[0];
+  index: number;
+  onNavigate: (route: string) => void;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: false, margin: "-20% 0px -20% 0px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.15, y: 20 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="relative mx-4 mb-6"
+    >
+      {/* Card */}
+      <div
+        className="relative px-5 py-5 overflow-hidden"
+        style={{
+          background: "rgba(5,5,8,0.85)",
+          backdropFilter: "blur(12px)",
+          border: `1px solid ${station.color}15`,
+        }}
+      >
+        {/* Corner accents */}
+        <span className="absolute top-0 left-0 w-3 h-3 border-t border-l" style={{ borderColor: `${station.color}40` }} />
+        <span className="absolute top-0 right-0 w-3 h-3 border-t border-r" style={{ borderColor: `${station.color}40` }} />
+        <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l" style={{ borderColor: `${station.color}40` }} />
+        <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r" style={{ borderColor: `${station.color}40` }} />
+
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div
+              style={{
+                width: 5,
+                height: 5,
+                background: station.color,
+                boxShadow: `0 0 8px ${station.color}60`,
+              }}
+            />
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 9,
+              color: station.color,
+              letterSpacing: "0.15em",
+              opacity: 0.8,
+            }}>
+              {station.subtitle}
+            </span>
+          </div>
+          <span style={{
+            fontFamily: "'VT323', monospace",
+            fontSize: 16,
+            color: station.color,
+            opacity: 0.25,
+          }}>
+            {String(index + 1).padStart(2, "0")}
+          </span>
+        </div>
+
+        {/* Label */}
+        <p style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: 13,
+          color: station.color,
+          opacity: 0.3,
+          letterSpacing: "0.05em",
+          marginBottom: 6,
+        }}>
+          {station.label}
+        </p>
+
+        {/* Title */}
+        <h3 style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: "1.4rem",
+          color: "var(--text-primary)",
+          letterSpacing: "0.02em",
+          marginBottom: 8,
+          textShadow: `0 0 20px ${station.color}15`,
+        }}>
+          {station.title}
+        </h3>
+
+        {/* Body */}
+        <p style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          color: "var(--text-dim)",
+          lineHeight: 1.8,
+          marginBottom: 12,
+          letterSpacing: "0.02em",
+        }}>
+          {station.body}
+        </p>
+
+        {/* CTA */}
+        <button
+          onClick={() => onNavigate(station.route)}
+          className="inline-flex items-center gap-1.5"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            padding: "7px 16px",
+            background: `${station.color}08`,
+            border: `1px solid ${station.color}30`,
+            color: station.color,
+            letterSpacing: "0.1em",
+          }}
+        >
+          [ {station.cta.toUpperCase()} ]
+        </button>
+
+        {/* Decorative scan line */}
+        <motion.div
+          animate={inView ? { scaleX: 1, opacity: 0.15 } : { scaleX: 0, opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background: `linear-gradient(90deg, transparent, ${station.color}, transparent)`,
+            transformOrigin: "left",
+          }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
+/* ══════════════════════════════════════════
+   Mobile progress indicator (left rail)
+═══════════════════════════════════════════ */
+const MobileProgressRail = ({ activeIndex }: { activeIndex: number }) => (
+  <div className="fixed left-3 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-1.5">
+    {STATIONS.map((s, i) => (
+      <div
+        key={i}
+        className="transition-all duration-500"
+        style={{
+          width: i === activeIndex ? 3 : 2,
+          height: i === activeIndex ? 16 : 6,
+          background: i <= activeIndex ? s.color : "rgba(255,255,255,0.1)",
+          boxShadow: i === activeIndex ? `0 0 6px ${s.color}60` : "none",
+        }}
+      />
+    ))}
+  </div>
+);
+
+/* ══════════════════════════════════════════
+   Mobile StoryScroll — card-based vertical scroll
+═══════════════════════════════════════════ */
+const MobileStoryScroll = () => {
+  const navigate = useNavigate();
+  const { setAccent } = useNavAccent();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [contactOpen, setContactOpen] = useState(false);
+
+  const handleNavigate = useCallback(
+    (route: string) => navigate(route),
+    [navigate]
+  );
+
+  // Track which station is in view via IntersectionObserver
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const cards = container.querySelectorAll("[data-station-idx]");
+    if (!cards.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLElement).dataset.stationIdx);
+            if (!isNaN(idx)) setActiveIndex(idx);
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -40% 0px", threshold: 0 }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, []);
+
+  // Sync navbar accent
+  useEffect(() => {
+    const color = STATIONS[activeIndex].color;
+    const raw = COLOR_RAW[color] || "0,255,170";
+    setAccent(color, raw);
+    return () => setAccent("var(--neon-primary)", "0,255,170");
+  }, [activeIndex, setAccent]);
+
+  return (
+    <section
+      ref={containerRef}
+      id="coktech-world"
+      className="relative"
+      style={{ background: "#000" }}
+    >
+      {/* Scanlines overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[45]"
+        style={{ background: "repeating-linear-gradient(transparent,transparent 1px,rgba(0,0,0,0.04) 1px,rgba(0,0,0,0.04) 2px)" }}
+      />
+
+      {/* Left progress rail */}
+      <MobileProgressRail activeIndex={activeIndex} />
+
+      {/* Header */}
+      <div className="pt-24 pb-8 px-6 text-center">
+        <p style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 8,
+          color: "var(--neon-primary)",
+          opacity: 0.35,
+          letterSpacing: "0.35em",
+          marginBottom: 12,
+        }}>
+          STORY MODE // 8 LEVELS
+        </p>
+        <h2 style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: "2rem",
+          color: "var(--text-primary)",
+          letterSpacing: "0.02em",
+          marginBottom: 4,
+        }}>
+          CokTech World
+        </h2>
+        <p style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: 14,
+          color: "var(--neon-primary)",
+          opacity: 0.35,
+        }}>
+          「冒険」 Adventure
+        </p>
+      </div>
+
+      {/* Station cards */}
+      <div className="pb-8">
+        {STATIONS.map((station, i) => (
+          <div key={i} data-station-idx={i}>
+            <MobileStationCard
+              station={station}
+              index={i}
+              onNavigate={handleNavigate}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Outro CTA */}
+      <div className="px-6 pb-20 text-center">
+        <p style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: 13,
+          color: "var(--neon-primary)",
+          opacity: 0.4,
+          letterSpacing: "0.15em",
+          marginBottom: 12,
+        }}>
+          「完了」 COMPLETE
+        </p>
+        <h2 style={{
+          fontFamily: "'Syne', sans-serif",
+          fontWeight: 800,
+          fontSize: "1.6rem",
+          color: "var(--text-primary)",
+          marginBottom: 10,
+        }}>
+          Ste pripravení?
+        </h2>
+        <p style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 13,
+          color: "rgba(200,196,208,0.35)",
+          lineHeight: 1.7,
+          maxWidth: 300,
+          margin: "0 auto 24px",
+        }}>
+          Všetkých 8 levelov preskúmaných. Poďme vytvoriť niečo výnimočné.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setContactOpen(true)}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              color: "#000",
+              background: "var(--neon-primary)",
+              border: "none",
+              padding: "10px 20px",
+              letterSpacing: "0.1em",
+            }}
+          >
+            [ KONTAKT ]
+          </button>
+          <button
+            onClick={() => navigate("/balicky")}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              color: "var(--neon-secondary)",
+              background: "transparent",
+              border: "1px solid rgba(255,140,0,0.3)",
+              padding: "10px 20px",
+              letterSpacing: "0.1em",
+            }}
+          >
+            [ BALÍČKY ]
+          </button>
+        </div>
+      </div>
+
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
+    </section>
+  );
+};
+
+/* ══════════════════════════════════════════
+   Desktop StoryScroll — full 3D experience
+═══════════════════════════════════════════ */
+const DesktopStoryScroll = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
@@ -500,7 +838,7 @@ const StoryScroll3D = () => {
 
         {/* Three.js canvas */}
         <Canvas
-          camera={{ position: [0, 3.5, 10], fov: window.innerWidth < 768 ? 65 : 50 }}
+          camera={{ position: [0, 3.5, 10], fov: 50 }}
           dpr={[1, 1.5]}
           gl={{ antialias: true, alpha: true }}
           style={{ position: "absolute", inset: 0 }}
@@ -539,6 +877,12 @@ const StoryScroll3D = () => {
       </div>
     </div>
   );
+};
+
+/* ── Main export — hybrid: 3D desktop / card-scroll mobile ── */
+const StoryScroll3D = () => {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileStoryScroll /> : <DesktopStoryScroll />;
 };
 
 export default StoryScroll3D;

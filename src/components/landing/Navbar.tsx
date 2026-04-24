@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { label: "BALÍČKY",   to: "/balicky",   code: "P02" },
   { label: "LOGIKA",    to: "/logika",    code: "P03" },
   { label: "KONTAKT",   to: "/kontakt",   code: "P04" },
+  { label: "DOOM",      to: "/doom",      code: "X66" },
 ];
 
 /* ── Accent color context — syncs navbar .digital color with active page/tab ── */
@@ -52,6 +53,21 @@ const Navbar = () => {
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [menuOpen]);
+
   useEffect(() => {
     const i = setInterval(() => setTickerIdx((prev) => (prev + 1) % TICKER_MESSAGES.length), 4000);
     return () => clearInterval(i);
@@ -70,6 +86,7 @@ const Navbar = () => {
           background: scrolled ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.4)",
           backdropFilter: scrolled ? "blur(16px)" : "none",
           borderBottom: `1px solid ${scrolled ? `rgba(${accentRaw},0.06)` : "transparent"}`,
+          paddingTop: "env(safe-area-inset-top, 0px)",
         }}
       >
         {/* Top ticker */}
@@ -190,14 +207,18 @@ const Navbar = () => {
             {/* Close button */}
             <button
               onClick={() => setMenuOpen(false)}
-              className="absolute top-5 right-5 z-10 p-2"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: accent, letterSpacing: "0.1em", background: "transparent", border: `1px solid rgba(${accentRaw},0.2)`, transition: "color 0.5s, border-color 0.5s" }}
+              className="absolute right-5 z-10 p-2"
+              style={{ top: "calc(env(safe-area-inset-top, 0px) + 20px)", fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: accent, letterSpacing: "0.1em", background: "transparent", border: `1px solid rgba(${accentRaw},0.2)`, transition: "color 0.5s, border-color 0.5s" }}
             >
               [ ESC ]
             </button>
 
             {/* Content */}
-            <div className="flex flex-col justify-center h-full px-8" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex flex-col justify-center h-full px-8"
+              style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Logo */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}

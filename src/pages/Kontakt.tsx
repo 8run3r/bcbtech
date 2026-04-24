@@ -364,7 +364,7 @@ const Kontakt = () => {
                 </p>
               </motion.div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 40 }} className="md:grid-cols-[1fr_1.5fr]">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10">
 
                 {/* Left — contact info */}
                 <motion.div
@@ -438,7 +438,7 @@ const Kontakt = () => {
                   style={{ display: "flex", flexDirection: "column", gap: 18 }}
                 >
                   {/* Name + Email row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="grid-cols-1 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <FieldLabel>Meno *</FieldLabel>
                       <NeonInput
