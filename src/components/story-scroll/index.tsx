@@ -30,11 +30,11 @@ interface ModelData {
 
 const MODEL_CONFIGS: ModelData[] = [
   { offset: [2.5, 0.8, 1.5],   color: "#00ffaa", variant: "webKnot",   scale: 1.1 },  // Web
-  { offset: [-3, 0.5, -2],     color: "#00ffaa", variant: "showcase",  scale: 1.2 },  // E-Commerce
+  { offset: [-3, 0.5, -2],     color: "#00e5ff", variant: "showcase",  scale: 1.2 },  // E-Commerce
   { offset: [3, 0.6, -2],      color: "#FF3D71", variant: "crystal",   scale: 1.1 },  // Marketing
-  { offset: [-2.5, 0.8, 1.5],  color: "#00ffaa", variant: "beacon",    scale: 1.2 },  // Full Stack
+  { offset: [-2.5, 0.8, 1.5],  color: "#a855f7", variant: "beacon",    scale: 1.2 },  // Full Stack
   { offset: [2, 0.5, 1],       color: "#FF8C00", variant: "autoLoops", scale: 1.2 },  // Workflow
-  { offset: [-3, 0.6, -1.5],   color: "#FF8C00", variant: "webKnot",   scale: 1.0 },  // AI
+  { offset: [-3, 0.6, -1.5],   color: "#ff4757", variant: "webKnot",   scale: 1.0 },  // AI
   { offset: [2.5, 0.8, 1],     color: "#4A9EFF", variant: "crystal",   scale: 1.1 },  // Why
   { offset: [2, 0.5, 1],       color: "#00ffaa", variant: "beacon",    scale: 1.2 },  // Connect
 ];
@@ -409,8 +409,11 @@ const PixelHUD = ({ station, index }: { station: (typeof STATIONS)[0]; index: nu
 /* ── Color hex → raw RGB for AccentProvider ── */
 const COLOR_RAW: Record<string, string> = {
   "#00ffaa": "0,255,170",
-  "#FF8C00": "255,140,0",
+  "#00e5ff": "0,229,255",
   "#FF3D71": "255,61,113",
+  "#a855f7": "168,85,247",
+  "#FF8C00": "255,140,0",
+  "#ff4757": "255,71,87",
   "#4A9EFF": "74,158,255",
 };
 
@@ -804,8 +807,11 @@ const DesktopStoryScroll = () => {
 
   const bgColor = useMemo(() => {
     const c = STATIONS[currentStation].color;
-    if (c === "#FF8C00") return "#030204";
+    if (c === "#00e5ff") return "#000304";
     if (c === "#FF3D71") return "#030002";
+    if (c === "#a855f7") return "#020004";
+    if (c === "#FF8C00") return "#030204";
+    if (c === "#ff4757") return "#040001";
     if (c === "#4A9EFF") return "#000204";
     return "#000000";
   }, [currentStation]);
