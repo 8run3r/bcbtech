@@ -56,14 +56,11 @@ const Navbar = () => {
   useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
     } else {
       document.body.style.overflow = "";
-      document.body.style.touchAction = "";
     }
     return () => {
       document.body.style.overflow = "";
-      document.body.style.touchAction = "";
     };
   }, [menuOpen]);
 
@@ -198,7 +195,7 @@ const Navbar = () => {
             onClick={() => setMenuOpen(false)}
           >
             {/* Grid overlay */}
-            <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+            <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(${accentRaw},0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(${accentRaw},0.5) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
 
             {/* Scanlines */}
             <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(transparent,transparent 1px,rgba(0,0,0,0.04) 1px,rgba(0,0,0,0.04) 2px)" }} />
@@ -206,7 +203,7 @@ const Navbar = () => {
             {/* Close button */}
             <button
               onClick={() => setMenuOpen(false)}
-              className="absolute right-5 z-10 p-2"
+              className="absolute right-5 z-20 p-2"
               style={{ top: "calc(env(safe-area-inset-top, 0px) + 20px)", fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: accent, letterSpacing: "0.1em", background: "transparent", border: `1px solid rgba(${accentRaw},0.2)`, transition: "color 0.5s, border-color 0.5s" }}
             >
               [ ESC ]
@@ -214,7 +211,7 @@ const Navbar = () => {
 
             {/* Content */}
             <div
-              className="flex flex-col justify-center h-full px-8"
+              className="relative z-10 flex flex-col justify-center h-full px-8"
               style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
               onClick={(e) => e.stopPropagation()}
             >
