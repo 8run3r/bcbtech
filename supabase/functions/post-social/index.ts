@@ -1,23 +1,12 @@
 /**
  * post-social Edge Function
- * Posts content to Instagram, LinkedIn, or Facebook.
+ * Posts content to Instagram, LinkedIn, or Facebook. Admin-only.
  *
- * ENV vars needed:
- *   INSTAGRAM_ACCESS_TOKEN  — Facebook/Instagram Graph API long-lived token
- *   INSTAGRAM_USER_ID       — Instagram Business Account ID
- *   LINKEDIN_ACCESS_TOKEN   — LinkedIn OAuth2 access token
- *   LINKEDIN_ORG_ID         — LinkedIn Organization/Person URN (urn:li:organization:XXXXX)
- *   FACEBOOK_PAGE_ID        — Facebook Page ID
- *   FACEBOOK_ACCESS_TOKEN   — Facebook Page Access Token
- *
- * Request body:
- *   platform: "instagram" | "linkedin" | "facebook"
- *   text: string        — post content
- *   imageUrl?: string   — optional image URL (for Instagram must be public)
- *   draftId?: string    — agent_drafts.id to update status
+ * ENV: INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_USER_ID,
+ *      LINKEDIN_ACCESS_TOKEN, LINKEDIN_ORG_ID,
+ *      FACEBOOK_PAGE_ID, FACEBOOK_ACCESS_TOKEN
  */
-
-import { corsHeaders, errRes, okRes, requireAdmin } from "../_shared/auth.ts";
+import { corsHeaders, errRes, okRes, parseBody, requireAdmin, z } from "../_shared/auth.ts";
 
 const IG_TOKEN = Deno.env.get("INSTAGRAM_ACCESS_TOKEN");
 const IG_USER_ID = Deno.env.get("INSTAGRAM_USER_ID");
@@ -26,37 +15,38 @@ const LI_ORG_ID = Deno.env.get("LINKEDIN_ORG_ID");
 const FB_PAGE_ID = Deno.env.get("FACEBOOK_PAGE_ID");
 const FB_TOKEN = Deno.env.get("FACEBOOK_ACCESS_TOKEN");
 
+const BodySchema = z.object({
+  platform: z.enum(["instagram", "linkedin", "facebook"]),
+  text: z.string().min(1).max(3000),
+  imageUrl: z.string().url().optional(),
+  draftId: z.string().uuid().optional(),
+});
+
 async function postInstagram(text: string, imageUrl?: string): Promise<string> {
   if (!IG_TOKEN || !IG_USER_ID) throw new Error("Instagram credentials not configured");
+  if (!imageUrl) throw new Error("Instagram vyžaduje obrázok pre feed príspevky. Pridaj imageUrl.");
 
-  if (imageUrl) {
-    // Photo post: first create container, then publish
-    const containerRes = await fetch(
-      `https://graph.facebook.com/v20.0/${IG_USER_ID}/media`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_url: imageUrl, caption: text, access_token: IG_TOKEN }),
-      }
-    );
-    const container = await containerRes.json();
-    if (!container.id) throw new Error(`IG container error: ${JSON.stringify(container)}`);
+  const containerRes = await fetch(
+    `https://graph.facebook.com/v20.0/${IG_USER_ID}/media`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_url: imageUrl, caption: text, access_token: IG_TOKEN }),
+    }
+  );
+  const container = await containerRes.json();
+  if (!container.id) throw new Error(`IG container error: ${JSON.stringify(container)}`);
 
-    const publishRes = await fetch(
-      `https://graph.facebook.com/v20.0/${IG_USER_ID}/media_publish`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creation_id: container.id, access_token: IG_TOKEN }),
-      }
-    );
-    const published = await publishRes.json();
-    return published.id;
-  } else {
-    // Text-only (requires carousel or reel — Instagram API doesn't support text-only posts)
-    // We create a text post via Stories or use a placeholder image approach
-    throw new Error("Instagram vyžaduje obrázok pre feed príspevky. Pridaj imageUrl.");
-  }
+  const publishRes = await fetch(
+    `https://graph.facebook.com/v20.0/${IG_USER_ID}/media_publish`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ creation_id: container.id, access_token: IG_TOKEN }),
+    }
+  );
+  const published = await publishRes.json();
+  return published.id;
 }
 
 async function postLinkedIn(text: string, imageUrl?: string): Promise<string> {
@@ -91,11 +81,7 @@ async function postLinkedIn(text: string, imageUrl?: string): Promise<string> {
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`LinkedIn error: ${err}`);
-  }
-
+  if (!res.ok) throw new Error(`LinkedIn error: ${await res.text()}`);
   const data = await res.json();
   return data.id || "posted";
 }
@@ -117,23 +103,17 @@ async function postFacebook(text: string, imageUrl?: string): Promise<string> {
     body: JSON.stringify(params),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Facebook error: ${err}`);
-  }
-
+  if (!res.ok) throw new Error(`Facebook error: ${await res.text()}`);
   const data = await res.json();
   return data.id || "posted";
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
 
   try {
     const { supabase } = await requireAdmin(req);
-    const { platform, text, imageUrl, draftId } = await req.json();
-
-    if (!platform || !text) return errRes("Missing required fields: platform, text");
+    const { platform, text, imageUrl, draftId } = await parseBody(req, BodySchema);
 
     let postId: string;
     let statusKey: string;
@@ -151,8 +131,6 @@ Deno.serve(async (req) => {
         postId = await postFacebook(text, imageUrl);
         statusKey = "posted_facebook";
         break;
-      default:
-        return errRes(`Unknown platform: ${platform}`);
     }
 
     if (draftId) {
@@ -162,9 +140,10 @@ Deno.serve(async (req) => {
         .eq("id", draftId);
     }
 
-    return okRes({ success: true, postId, platform, message: `Príspevok zverejnený na ${platform}` });
+    return okRes(req, { success: true, postId, platform, message: `Príspevok zverejnený na ${platform}` });
   } catch (e) {
     if (e instanceof Response) return e;
-    return errRes((e as Error).message || "Internal server error", 500);
+    console.error("post-social error:", e);
+    return errRes(req, (e as Error).message || "Internal server error", 500);
   }
 });

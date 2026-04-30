@@ -1,29 +1,31 @@
 /**
  * notify Edge Function
- * Sends notifications to Slack and/or Discord.
+ * Sends notifications to Slack and/or Discord. Admin-only.
  *
- * ENV vars needed:
- *   SLACK_WEBHOOK_URL    — Slack Incoming Webhook URL
- *   DISCORD_WEBHOOK_URL  — Discord Webhook URL
- *
- * Request body:
- *   channel: "slack" | "discord" | "both"
- *   title: string       — notification title
- *   message: string     — notification body
- *   color?: string      — hex color for embed (Discord) / accent (Slack)
- *   fields?: { name: string; value: string }[]  — extra fields
- *   draftId?: string    — agent_drafts.id to update
+ * ENV: SLACK_WEBHOOK_URL, DISCORD_WEBHOOK_URL
  */
-
-import { corsHeaders, errRes, okRes, requireAdmin } from "../_shared/auth.ts";
+import { corsHeaders, errRes, okRes, parseBody, requireAdmin, z } from "../_shared/auth.ts";
 
 const SLACK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
 const DISCORD_URL = Deno.env.get("DISCORD_WEBHOOK_URL");
 
+const FieldSchema = z.object({
+  name: z.string().min(1).max(200),
+  value: z.string().min(1).max(2000),
+});
+
+const BodySchema = z.object({
+  channel: z.enum(["slack", "discord", "both"]),
+  title: z.string().min(1).max(200),
+  message: z.string().min(1).max(4000),
+  color: z.union([z.string().regex(/^#?[0-9a-fA-F]{6}$/), z.number().int()]).optional(),
+  fields: z.array(FieldSchema).max(20).optional(),
+  draftId: z.string().uuid().optional(),
+});
+
 async function notifySlack(
   title: string,
   message: string,
-  color = "#00FF94",
   fields: { name: string; value: string }[] = []
 ) {
   if (!SLACK_URL) throw new Error("SLACK_WEBHOOK_URL not configured");
@@ -46,22 +48,18 @@ async function notifySlack(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ blocks, text: title }),
   });
-
   if (!res.ok) throw new Error(`Slack error: ${await res.text()}`);
 }
 
 async function notifyDiscord(
   title: string,
   message: string,
-  color = 0x00ff94,
+  color: string | number = 0x00ff94,
   fields: { name: string; value: string }[] = []
 ) {
   if (!DISCORD_URL) throw new Error("DISCORD_WEBHOOK_URL not configured");
 
-  // Convert hex string to decimal if needed
-  const colorInt = typeof color === "string"
-    ? parseInt(color.replace("#", ""), 16)
-    : color;
+  const colorInt = typeof color === "string" ? parseInt(color.replace("#", ""), 16) : color;
 
   const res = await fetch(DISCORD_URL, {
     method: "POST",
@@ -77,23 +75,20 @@ async function notifyDiscord(
       }],
     }),
   });
-
   if (!res.ok) throw new Error(`Discord error: ${await res.text()}`);
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
 
   try {
     const { supabase } = await requireAdmin(req);
-    const { channel, title, message, color, fields, draftId } = await req.json();
-
-    if (!channel || !title || !message) return errRes("Missing required fields: channel, title, message");
+    const { channel, title, message, color, fields, draftId } = await parseBody(req, BodySchema);
 
     const results: string[] = [];
 
     if (channel === "slack" || channel === "both") {
-      await notifySlack(title, message, color, fields);
+      await notifySlack(title, message, fields);
       results.push("slack");
     }
 
@@ -112,9 +107,10 @@ Deno.serve(async (req) => {
         .eq("id", draftId);
     }
 
-    return okRes({ success: true, sent: results, message: `Notifikácia odoslaná: ${results.join(", ")}` });
+    return okRes(req, { success: true, sent: results, message: `Notifikácia odoslaná: ${results.join(", ")}` });
   } catch (e) {
     if (e instanceof Response) return e;
-    return errRes((e as Error).message || "Internal server error", 500);
+    console.error("notify error:", e);
+    return errRes(req, "Internal server error", 500);
   }
 });

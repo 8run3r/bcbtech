@@ -1,36 +1,33 @@
 /**
  * trigger-n8n Edge Function
- * Triggers an n8n workflow via webhook.
+ * Triggers an n8n workflow via webhook. Admin-only.
  *
- * ENV vars needed:
- *   N8N_WEBHOOK_URL   — your n8n webhook URL (e.g. https://your-n8n.com/webhook/coktech-agent)
- *   N8N_API_KEY       — optional bearer token for secured webhooks
- *
- * Request body:
- *   workflowId?: string     — optional workflow identifier (passed to n8n as data)
- *   agentId: string         — which agent triggered this
- *   agentName: string       — agent display name
- *   input: string           — what was sent to the agent
- *   output: string          — what the agent produced
- *   metadata?: object       — extra data to pass to workflow
- *   draftId?: string        — agent_drafts.id to update
+ * ENV: N8N_WEBHOOK_URL, N8N_API_KEY (optional bearer)
  */
-
-import { corsHeaders, errRes, okRes, requireAdmin } from "../_shared/auth.ts";
+import { corsHeaders, errRes, okRes, parseBody, requireAdmin, z } from "../_shared/auth.ts";
 
 const N8N_URL = Deno.env.get("N8N_WEBHOOK_URL");
 const N8N_KEY = Deno.env.get("N8N_API_KEY");
 
+const BodySchema = z.object({
+  workflowId: z.string().max(200).optional(),
+  agentId: z.string().min(1).max(100),
+  agentName: z.string().min(1).max(200),
+  input: z.string().max(60_000),
+  output: z.string().min(1).max(60_000),
+  metadata: z.record(z.unknown()).optional(),
+  draftId: z.string().uuid().optional(),
+});
+
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
 
   try {
     const { supabase } = await requireAdmin(req);
+    if (!N8N_URL) return errRes(req, "N8N_WEBHOOK_URL not configured", 500);
 
-    if (!N8N_URL) return errRes("N8N_WEBHOOK_URL not configured", 500);
-
-    const { workflowId, agentId, agentName, input, output, metadata, draftId } = await req.json();
-    if (!agentId || !output) return errRes("Missing required fields: agentId, output");
+    const { workflowId, agentId, agentName, input, output, metadata, draftId } =
+      await parseBody(req, BodySchema);
 
     const payload = {
       source: "coktech-admin",
@@ -51,8 +48,8 @@ Deno.serve(async (req) => {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      return errRes(`n8n error (${res.status}): ${err}`, 502);
+      console.error(`n8n error ${res.status}:`, await res.text());
+      return errRes(req, "Workflow provider error", 502);
     }
 
     const n8nResponse = await res.text();
@@ -64,13 +61,14 @@ Deno.serve(async (req) => {
         .eq("id", draftId);
     }
 
-    return okRes({
+    return okRes(req, {
       success: true,
       message: "Workflow spustený v n8n",
       n8nResponse: n8nResponse.slice(0, 500),
     });
   } catch (e) {
     if (e instanceof Response) return e;
-    return errRes((e as Error).message || "Internal server error", 500);
+    console.error("trigger-n8n error:", e);
+    return errRes(req, "Internal server error", 500);
   }
 });
