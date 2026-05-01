@@ -8,6 +8,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import RetroCursor from "@/components/ui/retro-cursor";
 import SmoothScroll from "./components/SmoothScroll";
 import LandingTerminal from "@/components/landing/LandingTerminal";
+import TerminalOverlay from "@/features/terminal/TerminalOverlay";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,7 @@ const App = () => (
           <RetroCursor />
           <BrowserRouter>
           <LandingTerminal />
+          <TerminalOverlay />
           <AccentProvider>
             <SmoothScroll>
             <ScrollToTop />
