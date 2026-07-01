@@ -26,36 +26,6 @@ void main() {
 }
 `;
 
-export const COLLECTIBLE_VERT = /* glsl */ `
-uniform float uTime;
-uniform float uHover;
-varying vec3 vNormal;
-varying float vFresnel;
-void main() {
-  vec3 p = position;
-  p += normal * sin(uTime * 2.0 + position.y * 4.0) * 0.02 * uHover;
-  vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  vNormal = normalMatrix * normal;
-  vec3 viewDir = normalize(-mv.xyz);
-  vFresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.5);
-  gl_Position = projectionMatrix * mv;
-}
-`;
-
-export const COLLECTIBLE_FRAG = /* glsl */ `
-uniform vec3 uColor;
-uniform float uHover;
-uniform float uCollected;
-varying vec3 vNormal;
-varying float vFresnel;
-void main() {
-  float rim = vFresnel * (0.6 + uHover * 0.4);
-  vec3 col = uColor * (0.3 + rim * 1.2);
-  float alpha = mix(0.4, 0.85, rim) * (1.0 - uCollected * 0.7);
-  gl_FragColor = vec4(col, alpha);
-}
-`;
-
 /* ── Atmospheric dust particles (igloo-style depth haze) ── */
 export const ATMOSPHERE_VERT = /* glsl */ `
 uniform float uTime;
