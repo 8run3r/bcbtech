@@ -928,14 +928,14 @@ const Logika = () => {
               <Argument number="01" title="Žiadny overhead" body="Sme malý, fokusovaný tím. Neplatíte za projektového manažéra, account manažéra a 5 ľudí na meetingoch. Platíte za výsledok." color="var(--neon-primary)" raw="0,255,170" delay={0} />
               <Argument number="02" title="Enterprise kvalita, startup cena" body="Používame rovnaký stack a best practices ako top agentúry — React, TypeScript, CI/CD, monitoring. Rozdiel? Naša marža nie je 300%." color="var(--neon-primary)" raw="0,255,170" delay={0.08} />
               <Argument number="03" title="Transparentný proces" body="Každý týždeň vidíte progres. Staging link, live demo, changelog. Žiadne 'to bude hotové o mesiac a potom uvidíte'." color="var(--neon-cold)" raw="74,158,255" delay={0.16} />
-              <Argument number="04" title="Automation = ROI na steroidoch" body="Automatizujeme repetitívne procesy vášho tímu. n8n, Claude API, Make. Jeden workflow vám ušetrí 40+ hodín mesačne." color="var(--neon-secondary)" raw="255,140,0" delay={0.24} />
+              <Argument number="04" title="Agenti a automatizácie = ROI na steroidoch" body="AI agenti odpovedajú zákazníkom, faktúry sa párujú samé, workflow beží bez ľudí. n8n, Claude API, Make. Jeden workflow vám ušetrí 40+ hodín mesačne." color="var(--neon-secondary)" raw="255,140,0" delay={0.24} />
               <Argument number="05" title="Dlhodobý partner, nie vendor" body="Po spustení neodchádzame. Monitoring, údržba, iterácie. Keď rastie váš biznis, rastie váš produkt." color="var(--neon-accent)" raw="255,61,113" delay={0.32} wide />
             </div>
           </div>
         </Section>
 
         {/* ── Marquee band 2 ── */}
-        <MarqueeBand text="WEB · AI · AUTOMATION · MARKETING · WEB · AI · AUTOMATION · MARKETING ·" color="var(--neon-secondary)" speed={35} />
+        <MarqueeBand text="WEB · AGENTI · AUTOMATIZÁCIE · FAKTURÁCIA · WEB · AGENTI · AUTOMATIZÁCIE · FAKTURÁCIA ·" color="var(--neon-secondary)" speed={35} />
 
         {/* ── Process Timeline ── */}
         <Section id="process">

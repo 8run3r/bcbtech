@@ -22,9 +22,10 @@ interface PortfolioItem {
 const TYPE_META: Record<string, { label: string; color: string; colorRaw: string }> = {
   web: { label: "Web", color: "var(--neon-primary)", colorRaw: "0,255,170" },
   appky: { label: "Appka", color: "var(--neon-cold)", colorRaw: "74,158,255" },
+  agents: { label: "AI Agenti", color: "var(--neon-accent)", colorRaw: "255,61,113" },
+  automation: { label: "Automatizácia & Fakturácia", color: "var(--neon-secondary)", colorRaw: "255,140,0" },
   vizualy: { label: "Vizuál", color: "var(--neon-accent)", colorRaw: "255,61,113" },
   produkty: { label: "Produkt", color: "var(--neon-secondary)", colorRaw: "255,140,0" },
-  automation: { label: "Automatizácia", color: "var(--neon-secondary)", colorRaw: "255,140,0" },
 };
 
 const fallbackProjects: PortfolioItem[] = [
@@ -72,6 +73,28 @@ const fallbackProjects: PortfolioItem[] = [
     year: "2026",
     link: null,
   },
+  {
+    id: "5",
+    title: "SupportAgent",
+    category: "Customer Support",
+    type: "agents",
+    description: "AI agent pre zákaznícku podporu — odpovedá z firemných dát 24/7, zložité dopyty odovzdá človeku.",
+    image_url: null,
+    tech: ["Claude API", "RAG", "Supabase"],
+    year: "2026",
+    link: null,
+  },
+  {
+    id: "6",
+    title: "InvoicePilot",
+    category: "Fakturácia",
+    type: "automation",
+    description: "Fakturácia end-to-end — faktúra po dodaní, párovanie platieb, upomienky a mesačný export pre účtovníka.",
+    image_url: null,
+    tech: ["n8n", "Superfaktúra API", "Banka API"],
+    year: "2026",
+    link: null,
+  },
 ];
 
 const Portfolio = () => {
@@ -95,8 +118,8 @@ const Portfolio = () => {
     return acc;
   }, {});
 
-  // Order: web, appky, vizualy, produkty, automation, rest
-  const typeOrder = ["web", "appky", "vizualy", "produkty", "automation"];
+  // Order: web, appky, agents, automation, vizualy, produkty, rest
+  const typeOrder = ["web", "appky", "agents", "automation", "vizualy", "produkty"];
   const sortedTypes = [
     ...typeOrder.filter((t) => grouped[t]),
     ...Object.keys(grouped).filter((t) => !typeOrder.includes(t)),
@@ -149,7 +172,7 @@ const Portfolio = () => {
                 maxWidth: 400,
                 lineHeight: 1.6,
               }}>
-                Weby, appky, vizuály a automatizácie — všetko na jednom mieste.
+                Weby, appky, AI agenti a automatizácie — všetko na jednom mieste.
               </p>
             </motion.div>
           </div>
