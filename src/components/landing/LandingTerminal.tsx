@@ -1,67 +1,91 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
+import { REGISTRY, CANONICAL_NAMES } from "@/features/terminal/commands";
+import { triggerOverlay } from "@/features/terminal/events";
+import type { TerminalLine } from "@/features/terminal/types";
 
-// ── Commands ──────────────────────────────────────────────────────────────────
-const COMMANDS: Record<string, { action: (nav: ReturnType<typeof useNavigate>, close: () => void) => string[] | null }> = {
-  help: {
-    action: () => [
-      "── príkazy ──────────────────",
-      "/home  /balicky  /portfolio",
-      "/kontakt  /logika  /archive",
-      "/web  /auto  /marketing  /hybrid",
-      "/void  /clear  /exit",
-    ],
-  },
-  home:       { action: (nav, close) => { nav("/"); close(); return null; } },
-  balicky:    { action: (nav, close) => { nav("/balicky"); close(); return null; } },
-  portfolio:  { action: (nav, close) => { nav("/portfolio"); close(); return null; } },
-  kontakt:    { action: (nav, close) => { nav("/kontakt"); close(); return null; } },
-  logika:     { action: (nav, close) => { nav("/logika"); close(); return null; } },
-  web:        { action: (nav, close) => { nav("/balicky?tab=web"); close(); return null; } },
-  auto:       { action: (nav, close) => { nav("/balicky?tab=automation"); close(); return null; } },
-  marketing:  { action: (nav, close) => { nav("/balicky?tab=marketing"); close(); return null; } },
-  hybrid:     { action: (nav, close) => { nav("/balicky?tab=hybrid"); close(); return null; } },
-  archive:    { action: (nav, close) => { nav("/archive"); close(); return null; } },
-  void:       { action: (nav, close) => { nav("/void"); close(); return null; } },
-  doom:       { action: (nav, close) => { nav("/doom"); close(); return null; } },
-  clear:      { action: () => null },
-  exit:       { action: (_, close) => { close(); return null; } },
-};
+const HIST_KEY = "ct_terminal_history";
+const RECENT_KEY = "ct_recent_routes";
+const HIST_MAX = 80;
 
-const GREETING = [
-  "COKTECH_OS v2.4  //  /help pre príkazy",
+const GREETING: TerminalLine[] = [
+  { text: "COKTECH_OS v2.4   /help pre príkazy", kind: "accent" },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
 const LandingTerminal = () => {
   const [mode, setMode] = useState<"dot" | "mini">("dot");
   const [minimized, setMinimized] = useState(false);
-  const [lines, setLines] = useState<{ text: string; isCmd: boolean }[]>([]);
+  const [lines, setLines] = useState<TerminalLine[]>([]);
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIdx, setHistoryIdx] = useState(-1);
   const [dotHover, setDotHover] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (location.pathname.startsWith("/admin")) return null;
+  /* ── Hide on /admin ── */
+  // (early-return placement requires hooks above to come first; we render conditionally below)
 
-  // Auto-scroll
+  /* ── Load persisted history + theme/font on mount ── */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HIST_KEY);
+      if (raw) setHistory(JSON.parse(raw));
+
+      const themeOverride = localStorage.getItem("ct_theme_override");
+      if (themeOverride) {
+        const presets: Record<string, string> = {
+          mint: "#00ffaa", cyan: "#22e9ff", amber: "#FF8C00",
+          coral: "#FF3D71", blue: "#4A9EFF", violet: "#8B5CF6",
+        };
+        if (presets[themeOverride]) {
+          document.documentElement.style.setProperty("--neon-primary", presets[themeOverride]);
+        }
+      }
+      const fontOverride = localStorage.getItem("ct_terminal_font");
+      if (fontOverride) {
+        const fonts: Record<string, string> = {
+          mono: "'JetBrains Mono', monospace",
+          vt: "'VT323', monospace",
+          retro: "'Space Mono', monospace",
+          syne: "'Syne', sans-serif",
+        };
+        if (fonts[fontOverride]) {
+          document.documentElement.style.setProperty("--terminal-font", fonts[fontOverride]);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  /* ── Track recent routes in sessionStorage ── */
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(RECENT_KEY);
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const next = [location.pathname, ...list.filter((r) => r !== location.pathname)].slice(0, 12);
+      sessionStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    } catch { /* noop */ }
+  }, [location.pathname]);
+
+  /* ── Auto-scroll on output ── */
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [lines, minimized]);
 
-  // Focus input when opening
+  /* ── Focus input when opening ── */
   useEffect(() => {
     if (mode === "mini" && !minimized) setTimeout(() => inputRef.current?.focus(), 80);
   }, [mode, minimized]);
 
   const openTerminal = useCallback(() => {
     if (mode === "dot") {
-      setLines([...GREETING.map((t) => ({ text: t, isCmd: false }))]);
+      setLines(GREETING);
       setMode("mini");
       setMinimized(false);
     } else {
@@ -76,36 +100,65 @@ const LandingTerminal = () => {
     setInput("");
   }, []);
 
-  const closeNav = useCallback(() => {
-    // Used for navigation commands — don't close terminal, just navigate
+  const print = useCallback((line: string | TerminalLine | TerminalLine[]) => {
+    if (typeof line === "string") {
+      setLines((prev) => [...prev, { text: line, kind: "info" }]);
+    } else if (Array.isArray(line)) {
+      setLines((prev) => [...prev, ...line]);
+    } else {
+      setLines((prev) => [...prev, line]);
+    }
   }, []);
 
-  const runCommand = useCallback((raw: string) => {
+  const runCommand = useCallback(async (raw: string) => {
     const trimmed = raw.trim();
     if (!trimmed) return;
-    const cmd = (trimmed.startsWith("/") ? trimmed.slice(1) : trimmed).toLowerCase();
 
-    setLines((prev) => [...prev, { text: `$ ${trimmed}`, isCmd: true }]);
-    setHistory((prev) => [trimmed, ...prev].slice(0, 40));
+    setLines((prev) => [...prev, { text: `$ ${trimmed}`, kind: "cmd" }]);
+
+    const next = [trimmed, ...history.filter((h) => h !== trimmed)].slice(0, HIST_MAX);
+    setHistory(next);
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(next)); } catch { /* ignore */ }
     setHistoryIdx(-1);
     setInput("");
 
-    if (cmd === "clear") {
+    const stripped = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+    const tokens = stripped.split(/\s+/).filter(Boolean);
+    const name = (tokens[0] || "").toLowerCase();
+    const args = tokens.slice(1);
+
+    if (name === "clear" || name === "cls") {
       setLines([]);
       return;
     }
 
-    const handler = COMMANDS[cmd];
-    if (!handler) {
-      setLines((prev) => [...prev, { text: `neznámy príkaz: ${trimmed}`, isCmd: false }]);
+    const cmd = REGISTRY[name];
+    if (!cmd) {
+      setLines((prev) => [
+        ...prev,
+        { text: `neznámy príkaz: ${trimmed}`, kind: "error" },
+        { text: "skús /help", kind: "info" },
+      ]);
       return;
     }
 
-    const output = handler.action(navigate, closeTerminal);
-    if (output) {
-      setLines((prev) => [...prev, ...output.map((t) => ({ text: t, isCmd: false }))]);
+    try {
+      await cmd.run({
+        args,
+        raw: stripped,
+        navigate,
+        closeTerminal,
+        print,
+        clear: () => setLines([]),
+        overlay: (kind, durationMs) => triggerOverlay(kind, durationMs),
+        history: next,
+        pathname: location.pathname,
+        registry: REGISTRY,
+      });
+    } catch (e) {
+      setLines((prev) => [...prev, { text: `chyba: ${(e as Error).message}`, kind: "error" }]);
     }
-  }, [navigate, closeTerminal]);
+  }, [history, navigate, closeTerminal, print, location.pathname]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -124,11 +177,23 @@ const LandingTerminal = () => {
       setInput(idx === -1 ? "" : history[idx] ?? "");
     } else if (e.key === "Tab") {
       e.preventDefault();
-      const partial = (input.startsWith("/") ? input.slice(1) : input).toLowerCase();
-      const matches = Object.keys(COMMANDS).filter((k) => k.startsWith(partial));
-      if (matches.length === 1) setInput("/" + matches[0]);
+      const stripped = input.startsWith("/") ? input.slice(1) : input;
+      const tokens = stripped.split(/\s+/);
+      const partial = tokens[0]?.toLowerCase() ?? "";
+      const matches = CANONICAL_NAMES.filter((k) => k.startsWith(partial));
+      if (matches.length === 1) {
+        setInput("/" + matches[0]);
+      } else if (matches.length > 1) {
+        setLines((prev) => [
+          ...prev,
+          { text: `$ ${input}`, kind: "cmd" },
+          { text: matches.join("  "), kind: "info" },
+        ]);
+      }
     }
   };
+
+  if (location.pathname.startsWith("/admin")) return null;
 
   return (
     <>
@@ -181,26 +246,27 @@ const LandingTerminal = () => {
               position: "fixed",
               bottom: 52,
               left: 20,
-              width: minimized ? 220 : "min(400px, calc(100vw - 32px))",
+              width: minimized ? 220 : "min(440px, calc(100vw - 32px))",
               zIndex: 9998,
               background: "rgba(4, 6, 8, 0.96)",
               border: "1px solid rgba(0,255,170,0.2)",
               boxShadow: "0 0 32px rgba(0,255,170,0.06), 0 12px 40px rgba(0,0,0,0.5)",
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "var(--terminal-font, 'JetBrains Mono', monospace)",
               transition: "width 0.2s ease",
             }}
           >
             {/* Title bar */}
-            <div style={{
-              padding: "4px 8px",
-              background: "rgba(0,255,170,0.05)",
-              borderBottom: "1px solid rgba(0,255,170,0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
-              userSelect: "none",
-            }}
+            <div
+              style={{
+                padding: "4px 8px",
+                background: "rgba(0,255,170,0.05)",
+                borderBottom: "1px solid rgba(0,255,170,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
               onClick={() => setMinimized((m) => !m)}
             >
               <span style={{ color: "rgba(0,255,170,0.45)", fontSize: 9, letterSpacing: "0.2em" }}>
@@ -224,12 +290,11 @@ const LandingTerminal = () => {
               </div>
             </div>
 
-            {/* Output — hidden when minimized */}
             {!minimized && (
               <div
                 ref={scrollRef}
                 style={{
-                  maxHeight: 160,
+                  maxHeight: 220,
                   overflowY: "auto",
                   padding: "8px 10px 4px",
                   display: "flex",
@@ -237,20 +302,42 @@ const LandingTerminal = () => {
                   gap: 1,
                 }}
               >
-                {lines.map((line, i) => (
-                  <div key={i} style={{
-                    fontSize: 10,
-                    lineHeight: 1.55,
-                    color: line.isCmd ? "var(--neon-primary)" : "rgba(255,255,255,0.5)",
-                    whiteSpace: "pre-wrap",
-                  }}>
-                    {line.text}
-                  </div>
-                ))}
+                {lines.map((line, i) => {
+                  const color = lineColor(line.kind);
+                  const isLink = line.kind === "link" && line.to;
+                  const Tag = isLink ? "a" : "div";
+                  const props = isLink
+                    ? {
+                        href: line.to,
+                        onClick: (e: React.MouseEvent) => {
+                          e.preventDefault();
+                          if (line.to) {
+                            navigate(line.to);
+                            closeTerminal();
+                          }
+                        },
+                      }
+                    : {};
+                  return (
+                    <Tag
+                      key={i}
+                      style={{
+                        fontSize: 10.5,
+                        lineHeight: 1.55,
+                        color,
+                        whiteSpace: "pre-wrap",
+                        cursor: isLink ? "pointer" : undefined,
+                        textDecoration: isLink ? "none" : undefined,
+                      }}
+                      {...props}
+                    >
+                      {line.text}
+                    </Tag>
+                  );
+                })}
               </div>
             )}
 
-            {/* Input */}
             <div style={{
               borderTop: minimized ? "none" : "1px solid rgba(0,255,170,0.08)",
               padding: "5px 10px",
@@ -272,7 +359,7 @@ const LandingTerminal = () => {
                   border: "none",
                   outline: "none",
                   color: "var(--neon-primary)",
-                  fontFamily: "'JetBrains Mono', monospace",
+                  fontFamily: "var(--terminal-font, 'JetBrains Mono', monospace)",
                   fontSize: 11,
                   caretColor: "var(--neon-primary)",
                   minWidth: 0,
@@ -292,5 +379,18 @@ const LandingTerminal = () => {
     </>
   );
 };
+
+function lineColor(kind: TerminalLine["kind"]): string {
+  switch (kind) {
+    case "cmd":    return "var(--neon-primary)";
+    case "accent": return "var(--neon-primary)";
+    case "error":  return "#ff4466";
+    case "warn":   return "rgba(255,200,0,0.85)";
+    case "art":    return "rgba(0,255,170,0.65)";
+    case "link":   return "var(--neon-primary)";
+    case "info":
+    default:       return "rgba(255,255,255,0.55)";
+  }
+}
 
 export default LandingTerminal;

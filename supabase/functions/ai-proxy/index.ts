@@ -1,18 +1,30 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.3";
+import { corsHeaders, errRes, okRes, parseBody, requireAdmin, z } from "../_shared/auth.ts";
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_MODELS = [
+  "claude-haiku-4-5-20251001",
+  "claude-sonnet-4-6",
+  "claude-opus-4-6",
+] as const;
 
-// Rate limiting: max 20 requests per admin per hour
+const MessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(60_000),
+});
+
+const RequestSchema = z.object({
+  model: z.enum(ALLOWED_MODELS),
+  max_tokens: z.number().int().min(1).max(4000).optional(),
+  system: z.string().max(8000).optional(),
+  messages: z.array(MessageSchema).min(1).max(50),
+});
+
+// In-memory rate limit. Note: resets on cold start and is not shared across edge instances.
+// TODO(phase 2+): migrate to a Supabase table for durable per-user limits.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 20;
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_WINDOW_MS = 60 * 60 * 1000;
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
@@ -27,91 +39,24 @@ function checkRateLimit(userId: string): boolean {
 }
 
 Deno.serve(async (req) => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   try {
-    // Verify auth — only admins can use this
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { user } = await requireAdmin(req);
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check admin role
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (!roleData) {
-      return new Response(JSON.stringify({ error: "Forbidden — admin only" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Rate limit check
     if (!checkRateLimit(user.id)) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded. Max 20 requests per hour." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errRes(req, "Rate limit exceeded. Max 20 requests per hour.", 429);
     }
 
-    // Validate API key exists
     if (!ANTHROPIC_API_KEY) {
-      return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured on server" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errRes(req, "ANTHROPIC_API_KEY not configured on server", 500);
     }
 
-    // Parse and validate request body
-    const body = await req.json();
-    const { model, max_tokens, system, messages } = body;
+    const { model, max_tokens, system, messages } = await parseBody(req, RequestSchema);
+    const safeMaxTokens = Math.min(max_tokens ?? 1000, 4000);
 
-    if (!model || !messages || !Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: "Invalid request body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Restrict allowed models
-    const ALLOWED_MODELS = [
-      "claude-haiku-4-5-20251001",
-      "claude-sonnet-4-6",
-      "claude-opus-4-6",
-    ];
-    if (!ALLOWED_MODELS.includes(model)) {
-      return new Response(JSON.stringify({ error: `Model not allowed: ${model}` }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Cap max_tokens to prevent abuse
-    const safeMaxTokens = Math.min(max_tokens || 1000, 4000);
-
-    // Forward to Anthropic
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -128,15 +73,10 @@ Deno.serve(async (req) => {
     });
 
     const result = await anthropicRes.json();
-
-    return new Response(JSON.stringify(result), {
-      status: anthropicRes.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return okRes(req, result, anthropicRes.status);
+  } catch (e) {
+    if (e instanceof Response) return e;
+    console.error("ai-proxy error:", e);
+    return errRes(req, "Internal server error", 500);
   }
 });

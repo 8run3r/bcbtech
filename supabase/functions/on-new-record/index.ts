@@ -3,12 +3,11 @@
  * Triggered by Supabase Database Webhooks on INSERT to contact_messages / reservations.
  * Sends email notification via Resend + optional Telegram message.
  *
- * ENV vars (Supabase Dashboard → Edge Functions → Secrets):
- *   RESEND_API_KEY       — from resend.com (free tier = 100 emails/day)
- *   NOTIFY_EMAIL         — your email address to receive notifications
- *   TELEGRAM_BOT_TOKEN   — (optional) Telegram bot token
- *   TELEGRAM_CHAT_ID     — (optional) your Telegram chat ID
+ * Database webhooks come from Supabase server-to-server, so no CORS / no admin JWT.
+ *
+ * ENV: RESEND_API_KEY, NOTIFY_EMAIL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
  */
+import { escapeHtml } from "../_shared/auth.ts";
 
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
 const NOTIFY_EMAIL = Deno.env.get("NOTIFY_EMAIL") || "studio@coktech.tech";
@@ -23,7 +22,6 @@ interface WebhookPayload {
   old_record: Record<string, unknown> | null;
 }
 
-/* ── Email via Resend ── */
 async function sendEmail(subject: string, html: string) {
   if (!RESEND_KEY) {
     console.warn("RESEND_API_KEY not set, skipping email");
@@ -45,12 +43,10 @@ async function sendEmail(subject: string, html: string) {
   });
 
   if (!res.ok) {
-    const err = await res.text();
-    console.error("Resend error:", err);
+    console.error("Resend error:", await res.text());
   }
 }
 
-/* ── Telegram ── */
 async function sendTelegram(text: string) {
   if (!TG_TOKEN || !TG_CHAT) return;
 
@@ -65,13 +61,12 @@ async function sendTelegram(text: string) {
   });
 }
 
-/* ── Format contact message ── */
 function formatContact(r: Record<string, unknown>) {
-  const name = r.name || "—";
-  const email = r.email || "—";
-  const pkg = r.package_name || r.package_category || "—";
-  const msg = r.message || "—";
-  const budget = r.budget || "—";
+  const name = escapeHtml(r.name);
+  const email = escapeHtml(r.email);
+  const pkg = escapeHtml(r.package_name || r.package_category);
+  const msg = escapeHtml(r.message);
+  const budget = escapeHtml(r.budget);
 
   const html = `
     <div style="font-family:system-ui;max-width:500px;margin:0 auto;padding:20px;background:#f8f9fa;border-radius:8px">
@@ -92,14 +87,13 @@ function formatContact(r: Record<string, unknown>) {
   return { subject: `Nová správa od ${name}`, html, tg };
 }
 
-/* ── Format reservation ── */
 function formatReservation(r: Record<string, unknown>) {
-  const name = r.name || "—";
-  const email = r.email || "—";
-  const phone = r.phone || "—";
-  const service = r.service || "—";
-  const date = r.date || "—";
-  const note = r.note || "—";
+  const name = escapeHtml(r.name);
+  const email = escapeHtml(r.email);
+  const phone = escapeHtml(r.phone);
+  const service = escapeHtml(r.service);
+  const date = escapeHtml(r.date);
+  const note = escapeHtml(r.note);
 
   const html = `
     <div style="font-family:system-ui;max-width:500px;margin:0 auto;padding:20px;background:#f8f9fa;border-radius:8px">
@@ -121,9 +115,7 @@ function formatReservation(r: Record<string, unknown>) {
   return { subject: `Nová rezervácia — ${name}`, html, tg };
 }
 
-/* ── Main handler ── */
 Deno.serve(async (req) => {
-  // Database webhooks don't need CORS or auth — they come from Supabase internally
   try {
     const payload: WebhookPayload = await req.json();
     const { table, record } = payload;
@@ -141,7 +133,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send both in parallel
     await Promise.allSettled([
       sendEmail(formatted.subject, formatted.html),
       sendTelegram(formatted.tg),
@@ -153,7 +144,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("Webhook handler error:", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    return new Response(JSON.stringify({ error: "handler_error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

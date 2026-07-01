@@ -5,7 +5,7 @@
  */
 import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { useScroll, useMotionValueEvent, AnimatePresence, motion, useInView } from "framer-motion";
+import { useScroll, useMotionValueEvent, AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useNavAccent } from "@/components/landing/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,6 +19,8 @@ import DraggableModel, { type ModelVariant } from "./DraggableModel";
 import StationOverlay from "./StationOverlay";
 import ProgressBar from "./ProgressBar";
 import ZoneLighting from "./ZoneLighting";
+import Atmosphere from "./Atmosphere";
+import PostFX from "./PostFX";
 
 /* ── Model config per station (8 stations) ── */
 interface ModelData {
@@ -41,11 +43,13 @@ const MODEL_CONFIGS: ModelData[] = [
 
 /* ── 3D Scene ── */
 const Scene3D = ({
-  scrollProgress,
+  progressRef,
   onModelClick,
+  reducedMotion,
 }: {
-  scrollProgress: number;
+  progressRef: React.MutableRefObject<number>;
   onModelClick: (stationIndex: number) => void;
+  reducedMotion: boolean;
 }) => {
   const models = useMemo(
     () =>
@@ -62,11 +66,12 @@ const Scene3D = ({
 
   return (
     <>
-      <ZoneLighting progress={scrollProgress} />
-      <fog attach="fog" args={["#000000", 4, 24]} />
+      <ZoneLighting progressRef={progressRef} />
+      <fog attach="fog" args={["#000000", 4, 26]} />
 
       <ZonePortals />
       <Voxels />
+      <Atmosphere progressRef={progressRef} />
 
       {STATIONS.map((s, i) => (
         <StationTitle key={i} text={s.title} color={s.color} stationPos={s.pos} />
@@ -83,7 +88,8 @@ const Scene3D = ({
         />
       ))}
 
-      <ScrollCameraRig progress={scrollProgress} />
+      <ScrollCameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
+      <PostFX reducedMotion={reducedMotion} />
     </>
   );
 };
@@ -757,26 +763,30 @@ const MobileStoryScroll = () => {
 ═══════════════════════════════════════════ */
 const DesktopStoryScroll = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const progressRef = useRef(0);
+  const [currentStation, setCurrentStation] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
+  const [showOutro, setShowOutro] = useState(false);
+  const [showHint, setShowHint] = useState(true);
   const navigate = useNavigate();
   const { setAccent } = useNavAccent();
+  const reducedMotion = useReducedMotion() ?? false;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
+  // Continuous progress lives in a ref — the 3D scene reads it in useFrame.
+  // React state only changes on discrete station/phase transitions, so
+  // scrolling no longer re-renders the whole tree every frame.
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setScrollProgress(v);
+    progressRef.current = v;
+    setCurrentStation(Math.round(v * (STATIONS.length - 1)));
+    setShowOutro(v > 0.965);
+    setShowHint(v < 0.03);
+    if (v > 0.01) setShowIntro(false);
   });
-
-  const currentStation = useMemo(() => {
-    const t = scrollProgress * (STATIONS.length - 1);
-    return Math.round(t);
-  }, [scrollProgress]);
-
-  const showOutro = scrollProgress > 0.97;
 
   const handleNavigate = useCallback(
     (route: string) => navigate(route),
@@ -791,11 +801,6 @@ const DesktopStoryScroll = () => {
   const handleStart = useCallback(() => {
     setShowIntro(false);
   }, []);
-
-  // Auto-dismiss intro on first scroll
-  useEffect(() => {
-    if (scrollProgress > 0.01 && showIntro) setShowIntro(false);
-  }, [scrollProgress, showIntro]);
 
   // Sync navbar accent with current station color
   useEffect(() => {
@@ -844,13 +849,13 @@ const DesktopStoryScroll = () => {
 
         {/* Three.js canvas */}
         <Canvas
-          camera={{ position: [0, 3.5, 10], fov: 50 }}
+          camera={{ position: [4.6, 3.1, 5.6], fov: 50 }}
           dpr={[1, 1.5]}
-          gl={{ antialias: true, alpha: true }}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
           style={{ position: "absolute", inset: 0 }}
           eventSource={typeof document !== "undefined" ? document.body : undefined}
         >
-          <Scene3D scrollProgress={scrollProgress} onModelClick={handleModelClick} />
+          <Scene3D progressRef={progressRef} onModelClick={handleModelClick} reducedMotion={reducedMotion} />
         </Canvas>
 
         {/* Pixel HUD */}
@@ -868,7 +873,7 @@ const DesktopStoryScroll = () => {
         </AnimatePresence>
 
         {/* Right-side progress */}
-        <ProgressBar progress={scrollProgress} currentStation={currentStation} />
+        <ProgressBar progress={scrollYProgress} currentStation={currentStation} />
 
         {/* Intro */}
         <IntroOverlay visible={showIntro} onSkip={handleStart} />
@@ -878,7 +883,7 @@ const DesktopStoryScroll = () => {
 
         {/* Scroll hint */}
         <AnimatePresence>
-          {scrollProgress < 0.03 && !showIntro && <ScrollHint />}
+          {showHint && !showIntro && <ScrollHint />}
         </AnimatePresence>
       </div>
     </div>

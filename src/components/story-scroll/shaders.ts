@@ -26,33 +26,65 @@ void main() {
 }
 `;
 
-export const COLLECTIBLE_VERT = /* glsl */ `
+/* ── Atmospheric dust particles (igloo-style depth haze) ── */
+export const ATMOSPHERE_VERT = /* glsl */ `
 uniform float uTime;
-uniform float uHover;
-varying vec3 vNormal;
-varying float vFresnel;
+uniform float uPixelRatio;
+attribute float aSize;
+attribute float aPhase;
+attribute float aSpeed;
+varying float vAlpha;
 void main() {
   vec3 p = position;
-  p += normal * sin(uTime * 2.0 + position.y * 4.0) * 0.02 * uHover;
+  p.x += sin(uTime * 0.06 * aSpeed + aPhase) * 1.2;
+  p.z += cos(uTime * 0.05 * aSpeed + aPhase * 1.7) * 1.2;
+  p.y += sin(uTime * 0.04 * aSpeed + aPhase * 2.3) * 0.8;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  vNormal = normalMatrix * normal;
-  vec3 viewDir = normalize(-mv.xyz);
-  vFresnel = pow(1.0 - abs(dot(viewDir, vNormal)), 2.5);
+  float dist = -mv.z;
+  gl_PointSize = aSize * uPixelRatio * (90.0 / max(dist, 0.1));
+  float nearFade = smoothstep(2.0, 5.0, dist);
+  float farFade = 1.0 - smoothstep(14.0, 24.0, dist);
+  vAlpha = nearFade * farFade;
   gl_Position = projectionMatrix * mv;
 }
 `;
 
-export const COLLECTIBLE_FRAG = /* glsl */ `
+export const ATMOSPHERE_FRAG = /* glsl */ `
 uniform vec3 uColor;
-uniform float uHover;
-uniform float uCollected;
-varying vec3 vNormal;
-varying float vFresnel;
+varying float vAlpha;
 void main() {
-  float rim = vFresnel * (0.6 + uHover * 0.4);
-  vec3 col = uColor * (0.3 + rim * 1.2);
-  float alpha = mix(0.4, 0.85, rim) * (1.0 - uCollected * 0.7);
-  gl_FragColor = vec4(col, alpha);
+  vec2 uv = gl_PointCoord - 0.5;
+  float r = length(uv);
+  if (r > 0.5) discard;
+  float soft = 1.0 - smoothstep(0.05, 0.5, r);
+  gl_FragColor = vec4(uColor, soft * vAlpha * 0.35);
+}
+`;
+
+/* ── Fullscreen post overlay — film grain + vignette (no EffectComposer needed) ── */
+export const POSTFX_VERT = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}
+`;
+
+export const POSTFX_FRAG = /* glsl */ `
+uniform float uTime;
+uniform float uGrain;
+uniform float uVignette;
+varying vec2 vUv;
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+}
+void main() {
+  vec2 c = vUv - 0.5;
+  float vig = smoothstep(0.32, 0.92, length(c) * 1.3) * uVignette;
+  float g = hash(vUv * 1024.0 + vec2(fract(uTime * 7.31) * 100.0)) - 0.5;
+  float dark = max(-g, 0.0) * uGrain;
+  float alpha = clamp(vig + dark, 0.0, 0.85);
+  gl_FragColor = vec4(vec3(0.0), alpha);
 }
 `;
 

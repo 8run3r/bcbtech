@@ -55,8 +55,20 @@ const FooterCanvas = ({ inView }: { inView: boolean }) => {
     // Grid dots
     const gridSpacing = 50;
 
+    // Cap at 30fps, pause when footer leaves the viewport
+    const FRAME_MS = 1000 / 30;
+    let last = 0;
+    let onScreen = true;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const io = new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; });
+    io.observe(canvas);
+
     const draw = (now: number) => {
-      const dt = 1 / 60;
+      rafRef.current = requestAnimationFrame(draw);
+      if (!onScreen) return;
+      if (now - last < FRAME_MS) return;
+      last = now;
+      const dt = 1 / 30;
       timeRef.current += dt;
       const t = timeRef.current;
 
@@ -149,17 +161,24 @@ const FooterCanvas = ({ inView }: { inView: boolean }) => {
         ctx.closePath();
         ctx.stroke();
       }
-
-      rafRef.current = requestAnimationFrame(draw);
     };
 
     if (inView) {
-      rafRef.current = requestAnimationFrame(draw);
+      if (reducedMotion) {
+        // Single static frame — no animation loop
+        last = -FRAME_MS;
+        timeRef.current = 2;
+        draw(0);
+        cancelAnimationFrame(rafRef.current);
+      } else {
+        rafRef.current = requestAnimationFrame(draw);
+      }
     }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      io.disconnect();
     };
   }, [inView]);
 
@@ -179,9 +198,10 @@ const FooterCTA = () => {
 
   useEffect(() => {
     if (!inView) return;
-    TERMINAL_LINES.forEach((line, i) => {
-      setTimeout(() => setTerminalLines(prev => [...prev, line]), 300 * i + 500);
-    });
+    const ids = TERMINAL_LINES.map((line, i) =>
+      setTimeout(() => setTerminalLines(prev => [...prev, line]), 300 * i + 500)
+    );
+    return () => ids.forEach(clearTimeout);
   }, [inView]);
 
   return (

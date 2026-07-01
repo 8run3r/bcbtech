@@ -1,10 +1,11 @@
 import { memo, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { STATIONS } from "./stations";
 
-const COUNT = 100;
+const COUNT = 140;
 const SPREAD_XZ = 20;
-const SPREAD_Y = 76; // vertical spread matching station range (0 to -72)
+const SPREAD_Y = 134; // full vertical range of the world (0 to -126 + outro)
 
 const Voxels = memo(() => {
   const meshRef = useRef<THREE.InstancedMesh>(null!);
@@ -17,7 +18,7 @@ const Voxels = memo(() => {
     for (let i = 0; i < COUNT; i++) {
       positions.push([
         (Math.random() - 0.5) * SPREAD_XZ,
-        -Math.random() * SPREAD_Y, // descend from 0 to -60
+        -Math.random() * SPREAD_Y,
         (Math.random() - 0.5) * SPREAD_XZ,
       ]);
       speeds.push(0.2 + Math.random() * 0.4);
@@ -26,20 +27,23 @@ const Voxels = memo(() => {
     return { positions, speeds, phases };
   }, []);
 
+  // Each voxel tinted by its nearest station's zone colour (some stay dark)
   const colors = useMemo(() => {
     const arr = new Float32Array(COUNT * 3);
-    const green = new THREE.Color("#00ffaa");
-    const orange = new THREE.Color("#FF8C00");
     const dark = new THREE.Color("#222");
+    const zone = new THREE.Color();
     for (let i = 0; i < COUNT; i++) {
-      // Top half green, bottom half orange, some dark
-      const yNorm = -data.positions[i][1] / SPREAD_Y; // 0=top, 1=bottom
-      const c =
-        i % 4 === 0
-          ? dark
-          : yNorm < 0.5
-          ? green
-          : orange;
+      const y = data.positions[i][1];
+      let nearest = 0;
+      let best = Infinity;
+      for (let s = 0; s < STATIONS.length; s++) {
+        const d = Math.abs(STATIONS[s].pos[1] - y);
+        if (d < best) {
+          best = d;
+          nearest = s;
+        }
+      }
+      const c = i % 4 === 0 ? dark : zone.set(STATIONS[nearest].color);
       arr[i * 3] = c.r;
       arr[i * 3 + 1] = c.g;
       arr[i * 3 + 2] = c.b;
@@ -51,7 +55,6 @@ const Voxels = memo(() => {
     const t = clock.elapsedTime;
     for (let i = 0; i < COUNT; i++) {
       const [x, y, z] = data.positions[i];
-      // Gentle orbit + float
       const float = Math.sin(t * data.speeds[i] + data.phases[i]) * 0.2;
       const drift = Math.sin(t * 0.1 + data.phases[i]) * 0.3;
       dummy.position.set(x + drift, y + float, z);
@@ -71,7 +74,7 @@ const Voxels = memo(() => {
       <meshStandardMaterial
         vertexColors
         transparent
-        opacity={0.45}
+        opacity={0.5}
         roughness={0.8}
       />
     </instancedMesh>
