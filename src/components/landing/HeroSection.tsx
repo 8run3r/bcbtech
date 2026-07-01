@@ -71,9 +71,11 @@ const HeroCanvas = () => {
     ro.observe(canvas);
 
     const COLORS = ["0,255,170", "255,140,0", "255,61,113", "74,158,255"];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isSmall = window.innerWidth < 640;
 
-    // Data rain columns
-    const colW = 18;
+    // Data rain columns — sparser on small screens
+    const colW = isSmall ? 26 : 18;
     const cols = Math.ceil(W / colW) + 2;
     const drops = Array.from({ length: cols }, () => ({
       y: -Math.random() * H * 2,
@@ -85,7 +87,7 @@ const HeroCanvas = () => {
     }));
 
     // Floating orbs
-    const orbs = Array.from({ length: 5 }, () => ({
+    const orbs = Array.from({ length: isSmall ? 3 : 5 }, () => ({
       x: Math.random(), y: Math.random(),
       r: 60 + Math.random() * 120,
       colorIdx: Math.floor(Math.random() * COLORS.length),
@@ -94,10 +96,23 @@ const HeroCanvas = () => {
     }));
 
     let t = 0;
+    let running = true;
+    let tabVisible = !document.hidden;
+    let onScreen = true;
 
-    const draw = () => {
-      t += 0.016;
-      ctx.fillStyle = "rgba(0,0,0,0.15)";
+    // Cap at ~40fps — fixed timestep keeps visual speed identical
+    const FRAME_MS = 1000 / 40;
+    let last = 0;
+
+    const draw = (now: number) => {
+      if (!running) return;
+      rafRef.current = requestAnimationFrame(draw);
+      if (!tabVisible || !onScreen) return;
+      if (now - last < FRAME_MS) return;
+      last = now;
+
+      t += 0.025;
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
       ctx.fillRect(0, 0, W, H);
 
       // Grid dots
@@ -136,7 +151,7 @@ const HeroCanvas = () => {
       for (let i = 0; i < drops.length; i++) {
         const d = drops[i];
         const x = i * colW;
-        d.y += d.speed;
+        d.y += d.speed * 1.5;
         if (d.y > H + 200) { d.y = -Math.random() * 300; d.colorIdx = Math.floor(Math.random() * COLORS.length); }
 
         for (let j = 0; j < d.chars.length; j++) {
@@ -150,15 +165,33 @@ const HeroCanvas = () => {
           ctx.fillText(d.chars[j], x, charY);
         }
       }
-
-      rafRef.current = requestAnimationFrame(draw);
     };
 
-    // Clear first
+    // First paint
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, W, H);
+
+    if (reducedMotion) {
+      // Single static frame — no animation loop
+      last = -FRAME_MS;
+      draw(0);
+      running = false;
+      return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); };
+    }
+
+    const io = new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; });
+    io.observe(canvas);
+    const onVis = () => { tabVisible = !document.hidden; };
+    document.addEventListener("visibilitychange", onVis);
+
     rafRef.current = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); };
+    return () => {
+      running = false;
+      cancelAnimationFrame(rafRef.current);
+      ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, []);
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;

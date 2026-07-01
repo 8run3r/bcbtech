@@ -1,4 +1,4 @@
-import { useRef, useMemo, memo } from "react";
+import { useRef, useMemo, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { WORD_VERT, WORD_FRAG } from "./shaders";
@@ -56,6 +56,14 @@ const StationTitle = memo(({ text, color, stationPos }: StationTitleProps) => {
         blending: THREE.AdditiveBlending,
       }),
     [uniforms]
+  );
+
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      material.dispose();
+    },
+    [geometry, material]
   );
 
   useFrame((_, delta) => {

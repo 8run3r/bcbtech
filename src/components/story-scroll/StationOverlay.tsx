@@ -11,20 +11,38 @@ interface StationOverlayProps {
 const StationOverlay = ({ station, index, onNavigate }: StationOverlayProps) => (
   <motion.div
     key={index}
-    initial={{ opacity: 0, x: -24, filter: "blur(4px)" }}
+    initial={{ opacity: 0, x: -28, filter: "blur(6px)" }}
     animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-    exit={{ opacity: 0, x: 24, filter: "blur(4px)" }}
-    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    exit={{ opacity: 0, x: 20, filter: "blur(6px)" }}
+    transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
     className="absolute bottom-20 left-4 right-4 sm:right-auto sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-12 z-20 max-w-xs sm:max-w-sm"
   >
     <div
-      className="px-5 py-4 sm:px-6 sm:py-5"
+      className="relative px-5 py-4 sm:px-6 sm:py-5 overflow-hidden"
       style={{
         background: "rgba(0,0,0,0.8)",
         backdropFilter: "blur(16px)",
         border: `1px solid ${station.color}10`,
       }}
     >
+      {/* Corner accents */}
+      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l pointer-events-none" style={{ borderColor: `${station.color}45` }} />
+      <span className="absolute top-0 right-0 w-3 h-3 border-t border-r pointer-events-none" style={{ borderColor: `${station.color}45` }} />
+      <span className="absolute bottom-0 left-0 w-3 h-3 border-b border-l pointer-events-none" style={{ borderColor: `${station.color}45` }} />
+      <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r pointer-events-none" style={{ borderColor: `${station.color}45` }} />
+
+      {/* Scan line sweep on entrance */}
+      <motion.div
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={{ scaleX: 1, opacity: 0.2 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute bottom-0 left-0 right-0 pointer-events-none"
+        style={{
+          height: 1,
+          background: `linear-gradient(90deg, transparent, ${station.color}, transparent)`,
+          transformOrigin: "left",
+        }}
+      />
       {/* Subtitle with system code feel */}
       <div className="flex items-center gap-2 mb-1">
         <div
