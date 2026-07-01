@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, MapPin, Phone, Monitor, Zap, TrendingUp, Layers } from "lucide-react";
+import { Mail, MapPin, Phone, Monitor, Zap, Bot, Layers } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ const contactSchema = z.object({
   email: z.string().trim().email("Neplatný email").max(255),
   phone: z.string().trim().max(20).optional().or(z.literal("")),
   message: z.string().trim().min(1, "Správa je povinná").max(2000),
-  package_category: z.enum(["web", "automation", "marketing", "hybrid", ""]).optional(),
+  package_category: z.enum(["web", "agents", "automation", "hybrid", ""]).optional(),
   package_name: z.string().max(200).optional().or(z.literal("")),
 });
 
@@ -30,10 +30,10 @@ const automationPackageOptions = [
   "Enterprise – od 3 500 €",
 ];
 
-const marketingPackageOptions = [
-  "Starter – od 290 €",
-  "Growth – od 690 €",
-  "Authority – od 1 490 €",
+const agentPackageOptions = [
+  "Assistant – od 690 €",
+  "Agent Pro – od 1 290 €",
+  "Agent Fleet – od 2 900 €",
 ];
 
 const hybridPackageOptions = [
@@ -47,8 +47,8 @@ const MONO = "'JetBrains Mono', monospace";
 /* Accent per category — css var for UI, raw rgb for glows, hex for the canvas tint */
 const ACCENTS: Record<string, { css: string; raw: string; hex: string }> = {
   web:        { css: "var(--neon-primary)",   raw: "0,255,170",  hex: "#00ffaa" },
+  agents:     { css: "var(--neon-accent)",    raw: "255,61,113", hex: "#ff3d71" },
   automation: { css: "var(--neon-secondary)", raw: "255,140,0",  hex: "#ff8c00" },
-  marketing:  { css: "var(--neon-accent)",    raw: "255,61,113", hex: "#ff3d71" },
   hybrid:     { css: "var(--neon-cold)",      raw: "74,158,255", hex: "#4a9eff" },
 };
 const DEFAULT_ACCENT = { css: "var(--neon-primary)", raw: "0,255,170", hex: "#00ffaa" };
@@ -236,7 +236,7 @@ const CornerBrackets = ({ accentRaw }: { accentRaw: string }) => (
 const Kontakt = () => {
   const [form, setForm] = useState({
     name: "", email: "", phone: "", message: "",
-    package_category: "" as "" | "web" | "automation" | "marketing" | "hybrid",
+    package_category: "" as "" | "web" | "agents" | "automation" | "hybrid",
     package_name: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -249,10 +249,10 @@ const Kontakt = () => {
   const accentRaw = accentSet.raw;
   const packageOptions = form.package_category === "web"
     ? webPackageOptions
+    : form.package_category === "agents"
+    ? agentPackageOptions
     : form.package_category === "automation"
     ? automationPackageOptions
-    : form.package_category === "marketing"
-    ? marketingPackageOptions
     : form.package_category === "hybrid"
     ? hybridPackageOptions
     : [];
@@ -559,10 +559,10 @@ const Kontakt = () => {
                           <FieldLabel accent={accent}>Typ projektu</FieldLabel>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {[
-                              { id: "web",        label: "Web / E-shop",      icon: Monitor,    color: "var(--neon-primary)" },
-                              { id: "automation", label: "AI Automatizácia",   icon: Zap,        color: "var(--neon-secondary)" },
-                              { id: "marketing",  label: "AI Marketing",       icon: TrendingUp, color: "var(--neon-accent)" },
-                              { id: "hybrid",     label: "Hybrid Stack",       icon: Layers,     color: "var(--neon-cold)" },
+                              { id: "web",        label: "Web / E-shop",              icon: Monitor, color: "var(--neon-primary)" },
+                              { id: "agents",     label: "AI Agenti",                  icon: Bot,     color: "var(--neon-accent)" },
+                              { id: "automation", label: "Automatizácie & Fakturácia", icon: Zap,     color: "var(--neon-secondary)" },
+                              { id: "hybrid",     label: "Hybrid Stack",               icon: Layers,  color: "var(--neon-cold)" },
                             ].map(({ id, label, icon: Icon, color }) => {
                               const active = form.package_category === id;
                               return (

@@ -14,7 +14,7 @@ export const navCommands: CommandDef[] = [
   { name: "kontakt", category: "nav", desc: "Kontakt — formulár",                   run: route("/kontakt") },
   { name: "web",       category: "nav", desc: "Balíčky / web",        run: route("/balicky?tab=web") },
   { name: "auto",      category: "nav", desc: "Balíčky / automation", run: route("/balicky?tab=automation") },
-  { name: "agenti",    category: "nav", desc: "Balíčky / AI agenti",  aliases: ["agents"], run: route("/balicky?tab=automation") },
+  { name: "agenti",    category: "nav", desc: "Balíčky / AI agenti",  aliases: ["agents"], run: route("/balicky?tab=agents") },
   { name: "hybrid",    category: "nav", desc: "Balíčky / hybrid",     run: route("/balicky?tab=hybrid") },
   { name: "archive",   category: "nav", desc: "Archív",  hidden: true, run: route("/archive") },
   { name: "void",      category: "nav", desc: "Void",    hidden: true, run: route("/void") },

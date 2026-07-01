@@ -20,9 +20,9 @@ export const ROUTE_ART: Record<string, string[]> = {
   "/balicky": [
     "  ╔══════ BALÍČKY ══════╗",
     "  ║ Web      od  390 €  ║",
-    "  ║ Auto     od  590 €  ║",
-    "  ║ Agenti   na mieru   ║",
-    "  ║ Hybrid   od  890 €  ║",
+    "  ║ Agenti   od  690 €  ║",
+    "  ║ Auto     od  390 €  ║",
+    "  ║ Hybrid   od 1490 €  ║",
     "  ╚═════════════════════╝",
   ],
   "/logika": [

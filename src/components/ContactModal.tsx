@@ -1,11 +1,11 @@
 import { useState, type ElementType } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Monitor, Zap, TrendingUp, Layers, Send, Loader2, CheckCircle } from "lucide-react";
+import { Monitor, Zap, Bot, Layers, Send, Loader2, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AnimatedModal from "@/components/ui/animated-modal";
 
-type Category = "web" | "automation" | "marketing" | "hybrid";
+type Category = "web" | "agents" | "automation" | "hybrid";
 
 const CATEGORIES: { key: Category; label: string; sub: string; icon: ElementType; accent: string; accentRaw: string; packages: string[] }[] = [
   {
@@ -18,27 +18,27 @@ const CATEGORIES: { key: Category; label: string; sub: string; icon: ElementType
     packages: ["Starter – od 390 €", "Business – od 890 €", "Premium – od 2 200 €", "Na mieru"],
   },
   {
+    key: "agents",
+    label: "AI Agenti",
+    sub: "Chatboty, podpora, podklady",
+    icon: Bot,
+    accent: "var(--neon-accent)",
+    accentRaw: "255,61,113",
+    packages: ["Assistant – od 690 €", "Agent Pro – od 1 290 €", "Agent Fleet – od 2 900 €", "Na mieru"],
+  },
+  {
     key: "automation",
-    label: "AI Automatizácia",
-    sub: "Workflow, agenti, pipelines",
+    label: "Automatizácie & Fakturácia",
+    sub: "Workflow, faktúry, integrácie",
     icon: Zap,
     accent: "var(--neon-secondary)",
     accentRaw: "255,140,0",
     packages: ["Flow – od 390 €", "System – od 1 200 €", "Enterprise – od 3 500 €", "Na mieru"],
   },
   {
-    key: "marketing",
-    label: "AI Marketing",
-    sub: "Obsah, SEO, kampane",
-    icon: TrendingUp,
-    accent: "var(--neon-accent)",
-    accentRaw: "255,61,113",
-    packages: ["Pulse – od 290 €/mes.", "Amplify – od 590 €/mes.", "Dominate – od 1 490 €/mes."],
-  },
-  {
     key: "hybrid",
     label: "Hybrid",
-    sub: "Web + auto + marketing",
+    sub: "Web + agenti + automatizácie",
     icon: Layers,
     accent: "var(--neon-cold)",
     accentRaw: "74,158,255",

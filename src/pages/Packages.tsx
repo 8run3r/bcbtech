@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, type ElementType } from "react";
-import { Check, Monitor, Zap, TrendingUp, Layers } from "lucide-react";
+import { Check, Monitor, Zap, Bot, Layers } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { RippleButton } from "@/components/ui/ripple-button";
 import Navbar, { useNavAccent } from "@/components/landing/Navbar";
@@ -8,7 +8,7 @@ import Footer from "@/components/landing/Footer";
 import ReservationModal from "@/components/ReservationModal";
 import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
 
-type Tab = "web" | "automation" | "marketing" | "hybrid";
+type Tab = "web" | "agents" | "automation" | "hybrid";
 
 /* ── Package data ── */
 const webPackages = [
@@ -78,7 +78,7 @@ const automationPackages = [
       "1–3 automatizované workflow-y",
       "Prepojenie existujúcich nástrojov (CRM, email, Slack)",
       "Automatické notifikácie a reporty",
-      "Základné AI triedenie dát",
+      "Automatické faktúry a pripomienky platieb",
       "Dokumentácia a zaškolenie",
       "Dodanie do 3 dní",
     ],
@@ -91,8 +91,8 @@ const automationPackages = [
     features: [
       "Všetko z Flow",
       "5–10 prepojených workflow-ov",
-      "AI agent pre email / chat / support",
-      "Automatická fakturácia a lead scoring",
+      "Automatická fakturácia, párovanie platieb, upomienky",
+      "Exporty pre účtovníka (Superfaktúra, Money, Pohoda)",
       "Integrácia s CRM a účtovníctvom",
       "n8n / Make hosting a správa",
       "Dodanie do 7 dní",
@@ -128,47 +128,59 @@ const automationPackages = [
   },
 ];
 
-const marketingPackages = [
+const agentPackages = [
   {
-    name: "Pulse",
-    price: "od 290 € / mes.",
-    desc: "Pre firmy, ktoré chcú rásť na sociálnych sieťach s pomocou AI.",
+    name: "Assistant",
+    price: "od 690 €",
+    desc: "Prvý AI agent pre vašu firmu — odpovedá zákazníkom za vás.",
     features: [
-      "AI obsah pre 3 sociálne siete (FB, IG, LI)",
-      "Automatický publishing kalendár",
-      "AI SEO audit a optimalizácia stránky",
-      "Mesačný report výkonnosti",
-      "2× AI blogový príspevok / mesiac",
-      "Nastavenie do 3–5 dní",
+      "1 AI agent (chat na webe alebo email)",
+      "Naučený na vašich dátach (FAQ, dokumenty, cenník)",
+      "Odpovede 24/7 v slovenčine",
+      "Odovzdanie človeku pri zložitom dopyte",
+      "Mesačný report konverzácií",
+      "Nasadenie do 5 dní",
     ],
   },
   {
-    name: "Amplify",
-    price: "od 590 € / mes.",
-    desc: "Kompletná AI marketing mašinéria pre rastúce firmy.",
+    name: "Agent Pro",
+    price: "od 1 290 €",
+    desc: "Agent napojený na vaše systémy. Nielen odpovedá — koná.",
     popular: true,
     features: [
-      "Všetko z Pulse",
-      "AI email marketing kampane (5× / mes.)",
-      "Automatizácia lead nurturing workflow",
-      "Google Ads AI optimalizácia",
-      "A/B testovanie obsahu a CTA",
-      "Custom AI copywriter pre váš tone of voice",
-      "Týždenný analytics report",
+      "Všetko z Assistant",
+      "Napojenie na CRM, kalendár, sklad",
+      "Triedenie a priorizácia dopytov",
+      "Automatické podklady a sumáre pre tím",
+      "Vlastný tone of voice",
+      "Nasadenie do 7 dní",
     ],
   },
   {
-    name: "Dominate",
-    price: "od 1 490 € / mes.",
-    desc: "Full-stack AI marketing pre firmy, ktoré chcú dominovať trhu.",
+    name: "Agent Fleet",
+    price: "od 2 900 €",
+    desc: "Tím agentov pre podporu, obchod aj interné procesy.",
     features: [
-      "Všetko z Amplify",
-      "Vlastný AI brand agent",
-      "Multi-channel (Meta, Google, LinkedIn)",
-      "AI video scripty a content repurposing",
-      "CRO optimalizácia webu",
-      "Dedikovaný AI marketing strategist",
-      "Real-time dashboard a 24/7 monitoring",
+      "Všetko z Agent Pro",
+      "Viac agentov — každý na svoju úlohu",
+      "Agenti si odovzdávajú úlohy medzi sebou",
+      "Dashboard s výkonom agentov",
+      "SLA a prioritná podpora",
+      "Servisná zmluva na 12 mesiacov",
+    ],
+  },
+  {
+    name: "Na mieru",
+    price: "cena na dopyt",
+    desc: "Agent postavený presne na váš use-case a vaše dáta.",
+    custom: true,
+    features: [
+      "Analýza use-case zdarma",
+      "Prístup k firemným dátam (RAG)",
+      "Fine-tuning na vašu doménu",
+      "On-premise / private cloud možnosti",
+      "Integrácia s legacy systémami",
+      "Dedikovaný AI engineer",
     ],
   },
 ];
@@ -191,15 +203,15 @@ const hybridPackages = [
   {
     name: "Scale",
     price: "od 3 900 €",
-    desc: "Premium web + AI marketing + automatizácia. Kompletný online ekosystém.",
+    desc: "Premium web + AI agent + automatizácia. Kompletný digitálny ekosystém.",
     popular: true,
-    badge: "WEB + AUTO + MKT",
+    badge: "WEB + AGENT + AUTO",
     features: [
       "Všetko z Launch",
       "Premium web (e-shop alebo SaaS MVP)",
-      "AI Marketing Pulse (3 mesiace zadarmo)",
+      "AI agent pre podporu zákazníkov",
       "System automatizácia (10 workflow-ov)",
-      "AI lead scoring a email sequences",
+      "Fakturácia end-to-end (faktúra → platba → export)",
       "Custom reporting dashboard",
       "Prioritná podpora 6 mesiacov",
     ],
@@ -212,7 +224,7 @@ const hybridPackages = [
     features: [
       "Enterprise web + mobilná aplikácia",
       "Full AI automation stack",
-      "Dominate marketing suite",
+      "Fakturácia a doklady plne automatizované",
       "AI agenti pre každý department",
       "Integrácia s existujúcim IT stackom",
       "SLA 99.9% + 24/7 podpora",
@@ -223,10 +235,10 @@ const hybridPackages = [
 
 /* ── Tab config ── */
 const TABS: { key: Tab; label: string; shortLabel: string; icon: ElementType; accent: string; accentRaw: string; accentHex: string }[] = [
-  { key: "web",        label: "Webové balíčky",    shortLabel: "Web",      icon: Monitor,     accent: "var(--neon-primary)",   accentRaw: "0,255,170",  accentHex: "#00ffaa" },
-  { key: "automation", label: "AI Automatizácia",   shortLabel: "Auto",     icon: Zap,         accent: "var(--neon-secondary)", accentRaw: "255,140,0",  accentHex: "#ff8c00" },
-  { key: "marketing",  label: "AI Marketing",       shortLabel: "Mktg",     icon: TrendingUp,  accent: "var(--neon-accent)",    accentRaw: "255,61,113", accentHex: "#ff3d71" },
-  { key: "hybrid",     label: "Hybrid balíčky",     shortLabel: "Hybrid",   icon: Layers,      accent: "var(--neon-cold)",      accentRaw: "74,158,255", accentHex: "#4a9eff" },
+  { key: "web",        label: "Webové balíčky",             shortLabel: "Web",    icon: Monitor, accent: "var(--neon-primary)",   accentRaw: "0,255,170",  accentHex: "#00ffaa" },
+  { key: "agents",     label: "AI Agenti",                  shortLabel: "Agenti", icon: Bot,     accent: "var(--neon-accent)",    accentRaw: "255,61,113", accentHex: "#ff3d71" },
+  { key: "automation", label: "Automatizácie & Fakturácia", shortLabel: "Auto",   icon: Zap,     accent: "var(--neon-secondary)", accentRaw: "255,140,0",  accentHex: "#ff8c00" },
+  { key: "hybrid",     label: "Hybrid balíčky",             shortLabel: "Hybrid", icon: Layers,  accent: "var(--neon-cold)",      accentRaw: "74,158,255", accentHex: "#4a9eff" },
 ];
 
 /* ── PackageCard ── */
@@ -334,23 +346,23 @@ const AddonsSection = ({ tab }: { tab: Tab }) => {
       accent: "var(--neon-secondary)",
       items: [
         { label: "Správa workflow-ov", price: "od 79 € / mes.", desc: "Monitoring, opravy, optimalizácia" },
-        { label: "AI agent na mieru", price: "od 490 €", desc: "Custom AI asistent pre váš biznis" },
+        { label: "Fakturačný modul", price: "od 290 €", desc: "Faktúry, párovanie platieb, upomienky, exporty" },
         { label: "Integrácia nového nástroja", price: "od 150 €", desc: "Pridanie nového systému do pipeline" },
         { label: "Audit procesov", price: "od 200 €", desc: "Analýza a návrh automatizácie" },
         { label: "Zaškolenie tímu", price: "od 99 €", desc: "Workshop pre váš tím" },
         { label: "Prioritná podpora", price: "od 49 € / mes.", desc: "SLA, rýchla reakcia, hotline" },
       ],
     },
-    marketing: {
-      title: "Marketingové doplnky",
+    agents: {
+      title: "Doplnky pre agentov",
       accent: "var(--neon-accent)",
       items: [
-        { label: "Extra sociálna sieť", price: "+89 € / mes.", desc: "TikTok, Pinterest, X alebo iná platforma" },
-        { label: "AI video scripty", price: "od 49 € / video", desc: "Scripty pre YouTube, Reels, TikTok" },
-        { label: "Influencer outreach", price: "od 199 € / mes.", desc: "AI-asistované oslovovanie influencerov" },
-        { label: "PR kampane", price: "od 299 € / mes.", desc: "Tlačové správy a mediálny dosah" },
-        { label: "Landing page optimalizácia", price: "od 150 €", desc: "CRO audit a A/B implementácia" },
-        { label: "Mesačný strategy call", price: "od 79 €", desc: "60 min. strategická konzultácia" },
+        { label: "Ďalší kanál", price: "od 150 €", desc: "WhatsApp, Messenger, Instagram DM alebo email" },
+        { label: "Napojenie na systém", price: "od 150 €", desc: "CRM, kalendár, sklad, fakturačný systém" },
+        { label: "Znalostná báza", price: "od 190 €", desc: "Agent naučený z vašich dokumentov a dát" },
+        { label: "Správa a ladenie agenta", price: "od 59 € / mes.", desc: "Monitoring odpovedí, priebežné zlepšovanie" },
+        { label: "Analytika konverzácií", price: "od 90 €", desc: "Čo sa zákazníci pýtajú, kde agent končí" },
+        { label: "Zaškolenie tímu", price: "od 99 €", desc: "Ako s agentom pracovať a rozširovať ho" },
       ],
     },
     hybrid: {
@@ -358,8 +370,8 @@ const AddonsSection = ({ tab }: { tab: Tab }) => {
       accent: "var(--neon-cold)",
       items: [
         { label: "Mobilná aplikácia", price: "od 2 900 €", desc: "React Native iOS + Android" },
-        { label: "AI Marketing Pulse", price: "+290 € / mes.", desc: "Pridanie marketingového modulu" },
-        { label: "Vlastný AI agent", price: "od 490 €", desc: "Chatbot, support agent, interno" },
+        { label: "Fakturačný modul", price: "od 290 €", desc: "Faktúry, párovanie platieb, exporty pre účtovníka" },
+        { label: "Vlastný AI agent", price: "od 490 €", desc: "Chatbot, support agent, interné procesy" },
         { label: "Analytický dashboard", price: "od 390 €", desc: "Custom Supabase / Grafana dashboard" },
         { label: "DevOps & CI/CD setup", price: "od 290 €", desc: "Automatizovaný deployment pipeline" },
         { label: "Rozšírená SLA zmluva", price: "od 149 € / mes.", desc: "99.9% uptime, 4h response time" },
@@ -396,14 +408,19 @@ const AddonsSection = ({ tab }: { tab: Tab }) => {
 };
 
 /* ── Main ── */
-const VALID_TABS: Tab[] = ["web", "automation", "marketing", "hybrid"];
+const VALID_TABS: Tab[] = ["web", "agents", "automation", "hybrid"];
+/* Old public links may still point to ?tab=marketing */
+const LEGACY_TABS: Record<string, Tab> = { marketing: "agents" };
+
+const parseTab = (t: string | null): Tab => {
+  if (t && VALID_TABS.includes(t as Tab)) return t as Tab;
+  if (t && LEGACY_TABS[t]) return LEGACY_TABS[t];
+  return "web";
+};
 
 const Packages = () => {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<Tab>(() => {
-    const t = searchParams.get("tab");
-    return (VALID_TABS.includes(t as Tab) ? t : "web") as Tab;
-  });
+  const [activeTab, setActiveTab] = useState<Tab>(() => parseTab(searchParams.get("tab")));
   const [reservationOpen, setReservationOpen] = useState(false);
   const [selectedPkg, setSelectedPkg] = useState<{ category: Tab; name: string }>({ category: "web", name: "" });
   const { setAccent } = useNavAccent();
@@ -411,7 +428,7 @@ const Packages = () => {
   // Sync tab when URL param changes
   useEffect(() => {
     const t = searchParams.get("tab");
-    if (t && VALID_TABS.includes(t as Tab)) setActiveTab(t as Tab);
+    if (t) setActiveTab(parseTab(t));
   }, [searchParams]);
 
   // Sync navbar accent color with active tab
@@ -427,8 +444,8 @@ const Packages = () => {
   };
 
   const currentTab = TABS.find((t) => t.key === activeTab)!;
-  const packages = { web: webPackages, automation: automationPackages, marketing: marketingPackages, hybrid: hybridPackages }[activeTab];
-  const ctas = { web: "Začať projekt", automation: "Nezáväzná konzultácia", marketing: "Spustiť kampaň", hybrid: "Nakonfigurovať" };
+  const packages = { web: webPackages, agents: agentPackages, automation: automationPackages, hybrid: hybridPackages }[activeTab];
+  const ctas = { web: "Začať projekt", agents: "Nasadiť agenta", automation: "Nezáväzná konzultácia", hybrid: "Nakonfigurovať" };
 
   return (
     <main className="min-h-screen bg-background text-foreground relative">

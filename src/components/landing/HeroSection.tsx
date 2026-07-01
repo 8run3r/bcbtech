@@ -388,7 +388,7 @@ const HeroSection = () => {
                 maxWidth: 380,
                 margin: "0 auto",
               }}>
-                Weby, e-shopy a AI automatizácia<br />
+                Weby, AI agenti a automatizácie<br />
                 pre firmy, ktoré chcú výsledky.
               </p>
             </motion.div>

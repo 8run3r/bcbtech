@@ -29,11 +29,11 @@ const automationAddons = [
   { id: "audit",      label: "Audit procesov",             price: "od 200 €" },
 ];
 
-const marketingAddons = [
-  { id: "extra-soc",     label: "Extra sociálna sieť",  price: "+89 € / mes." },
-  { id: "video-scripty", label: "AI video scripty",      price: "od 49 € / video" },
-  { id: "pr-kampan",     label: "PR kampaň",             price: "od 299 € / mes." },
-  { id: "strategy-call", label: "Mesačný strategy call", price: "od 79 €" },
+const agentAddons = [
+  { id: "kanal",        label: "Ďalší kanál (WhatsApp, Messenger…)", price: "od 150 €" },
+  { id: "napojenie",    label: "Napojenie na systém (CRM, sklad…)",  price: "od 150 €" },
+  { id: "znalosti",     label: "Znalostná báza z dokumentov",        price: "od 190 €" },
+  { id: "sprava-agent", label: "Správa a ladenie agenta",            price: "od 59 € / mes." },
 ];
 
 const hybridAddons = [
@@ -45,22 +45,22 @@ const hybridAddons = [
 
 const CATEGORY_ACCENT: Record<string, string> = {
   web:        "var(--neon-primary)",
+  agents:     "var(--neon-accent)",
   automation: "var(--neon-secondary)",
-  marketing:  "var(--neon-accent)",
   hybrid:     "var(--neon-cold)",
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
   web:        "WEB_PACKAGE",
-  automation: "AI_AUTOMATION",
-  marketing:  "AI_MARKETING",
+  agents:     "AI_AGENTS",
+  automation: "AUTOMATION_INVOICING",
   hybrid:     "HYBRID_STACK",
 };
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  packageCategory: "web" | "automation" | "marketing" | "hybrid";
+  packageCategory: "web" | "agents" | "automation" | "hybrid";
   packageName: string;
 }
 
@@ -74,8 +74,8 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Props
 
   const accent = CATEGORY_ACCENT[packageCategory] ?? "var(--neon-primary)";
   const addons = packageCategory === "web" ? webAddons
+    : packageCategory === "agents" ? agentAddons
     : packageCategory === "automation" ? automationAddons
-    : packageCategory === "marketing" ? marketingAddons
     : hybridAddons;
 
   const toggleAddon = (id: string) =>

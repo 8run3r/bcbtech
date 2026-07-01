@@ -40,7 +40,7 @@ export const STATIONS: Station[] = [
     label: "「代理」",
     color: "#FF3D71",
     pos: [-2.5, -36, 1],
-    route: "/balicky?tab=automation",
+    route: "/balicky?tab=agents",
     cta: "Nasadiť agenta",
     modelHint: "Jadro a jeho agenti — pracujú, kým vy spíte",
   },
