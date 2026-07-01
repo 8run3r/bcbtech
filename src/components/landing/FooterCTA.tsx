@@ -446,7 +446,7 @@ const FooterCTA = () => {
               {[
                 { label: "Web aplikácie", to: "/balicky?tab=web", hoverColor: "var(--neon-primary)" },
                 { label: "AI automatizácia", to: "/balicky?tab=automation", hoverColor: "var(--neon-secondary)" },
-                { label: "AI Marketing", to: "/balicky?tab=marketing", hoverColor: "var(--neon-accent)" },
+                { label: "AI Agenti", to: "/balicky?tab=automation", hoverColor: "var(--neon-accent)" },
                 { label: "Hybrid riešenia", to: "/balicky?tab=hybrid", hoverColor: "var(--neon-cold)" },
               ].map((link) => (
                 <li key={link.label}>

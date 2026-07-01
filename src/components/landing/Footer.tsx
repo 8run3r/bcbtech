@@ -78,7 +78,7 @@ const FooterGrid = ({ inView }: { inView: boolean }) => {
 const SERVICES = [
   { label: "Web aplikácie", to: "/balicky?tab=web", color: "var(--neon-primary)", code: "WEB" },
   { label: "AI automatizácia", to: "/balicky?tab=automation", color: "var(--neon-secondary)", code: "AUTO" },
-  { label: "AI Marketing", to: "/balicky?tab=marketing", color: "var(--neon-accent)", code: "MKT" },
+  { label: "AI Agenti", to: "/balicky?tab=automation", color: "var(--neon-accent)", code: "AGT" },
   { label: "Hybrid riešenia", to: "/balicky?tab=hybrid", color: "var(--neon-cold)", code: "HYB" },
 ];
 

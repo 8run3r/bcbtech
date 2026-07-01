@@ -1,13 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, lazy, Suspense, useEffect, type ElementType } from "react";
+import { useState, useEffect, type ElementType } from "react";
 import { Check, Monitor, Zap, TrendingUp, Layers } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { RippleButton } from "@/components/ui/ripple-button";
 import Navbar, { useNavAccent } from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import ReservationModal from "@/components/ReservationModal";
-
-const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
+import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
 
 type Tab = "web" | "automation" | "marketing" | "hybrid";
 
@@ -223,11 +222,11 @@ const hybridPackages = [
 ];
 
 /* ── Tab config ── */
-const TABS: { key: Tab; label: string; shortLabel: string; icon: ElementType; accent: string; accentRaw: string }[] = [
-  { key: "web",        label: "Webové balíčky",    shortLabel: "Web",      icon: Monitor,     accent: "var(--neon-primary)",   accentRaw: "0,255,170" },
-  { key: "automation", label: "AI Automatizácia",   shortLabel: "Auto",     icon: Zap,         accent: "var(--neon-secondary)", accentRaw: "255,140,0" },
-  { key: "marketing",  label: "AI Marketing",       shortLabel: "Mktg",     icon: TrendingUp,  accent: "var(--neon-accent)",    accentRaw: "255,61,113" },
-  { key: "hybrid",     label: "Hybrid balíčky",     shortLabel: "Hybrid",   icon: Layers,      accent: "var(--neon-cold)",      accentRaw: "74,158,255" },
+const TABS: { key: Tab; label: string; shortLabel: string; icon: ElementType; accent: string; accentRaw: string; accentHex: string }[] = [
+  { key: "web",        label: "Webové balíčky",    shortLabel: "Web",      icon: Monitor,     accent: "var(--neon-primary)",   accentRaw: "0,255,170",  accentHex: "#00ffaa" },
+  { key: "automation", label: "AI Automatizácia",   shortLabel: "Auto",     icon: Zap,         accent: "var(--neon-secondary)", accentRaw: "255,140,0",  accentHex: "#ff8c00" },
+  { key: "marketing",  label: "AI Marketing",       shortLabel: "Mktg",     icon: TrendingUp,  accent: "var(--neon-accent)",    accentRaw: "255,61,113", accentHex: "#ff3d71" },
+  { key: "hybrid",     label: "Hybrid balíčky",     shortLabel: "Hybrid",   icon: Layers,      accent: "var(--neon-cold)",      accentRaw: "74,158,255", accentHex: "#4a9eff" },
 ];
 
 /* ── PackageCard ── */
@@ -433,22 +432,8 @@ const Packages = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <Suspense fallback={null}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="w-full h-full"
-            >
-              <ParticleField color={currentTab.accentRaw} particleOpacityScale={1.8} density={2000} particleSize={2} connectionDistance={120} connectionOpacity={0.18} />
-            </motion.div>
-          </AnimatePresence>
-        </Suspense>
-      </div>
+      {/* Neural net background — subtle, tinted by active tab (lerps on change) */}
+      <NeuralNetCanvas accent={currentTab.accentHex} density={0.6} opacity={0.5} cursorForce={0.5} />
 
       <div className="relative z-10">
         <Navbar />

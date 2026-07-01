@@ -7,13 +7,19 @@ import { useEffect, useRef } from "react";
  * Tinted by `accent` (lerps smoothly when it changes).
  * Capped at ~30fps, pauses on tab hide / off-screen, and renders a single
  * static frame under prefers-reduced-motion.
+ * Tunable via `density` (node count ×), `opacity` (layer alpha ×) and
+ * `cursorForce` (cursor pull/highlight ×) — all default to the /logika baseline.
  */
 
 interface NeuralNetCanvasProps {
   /** Hex accent color, e.g. "#00ffaa" — transitions smoothly when it changes */
   accent?: string;
-  /** Overall layer opacity */
+  /** Overall draw alpha multiplier applied to the whole layer (default 1) */
   opacity?: number;
+  /** Multiplier on node count (default 1 — /logika baseline) */
+  density?: number;
+  /** Cursor attraction / highlight strength multiplier (default 1, 0 = off) */
+  cursorForce?: number;
 }
 
 interface NetNode {
@@ -32,7 +38,12 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvasProps) => {
+const NeuralNetCanvas = ({
+  accent = "#00ffaa",
+  opacity = 1,
+  density = 1,
+  cursorForce = 1,
+}: NeuralNetCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const targetRgbRef = useRef<[number, number, number]>(hexToRgb(accent));
   const staticRedrawRef = useRef<(() => void) | null>(null);
@@ -50,7 +61,7 @@ const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvas
     if (!ctx) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const NODE_COUNT = window.innerWidth < 768 ? 35 : 70;
+    const NODE_COUNT = Math.max(8, Math.round((window.innerWidth < 768 ? 35 : 70) * density));
     const LINK_DIST = 120;
     const CURSOR_DIST = 160;
     const FRAME_MS = 1000 / 30;
@@ -103,7 +114,7 @@ const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvas
         const d2 = dx * dx + dy * dy;
         if (d2 < CURSOR_DIST * CURSOR_DIST) {
           const d = Math.sqrt(d2) || 1;
-          const pull = (1 - d / CURSOR_DIST) * 0.012;
+          const pull = (1 - d / CURSOR_DIST) * 0.012 * cursorForce;
           n.x += dx * pull;
           n.y += dy * pull;
         }
@@ -148,7 +159,7 @@ const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvas
         const d2 = dx * dx + dy * dy;
         if (d2 > CURSOR_DIST * CURSOR_DIST) continue;
         const t = 1 - Math.sqrt(d2) / CURSOR_DIST;
-        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${(t * 0.5).toFixed(3)})`;
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${Math.min(1, t * 0.5 * cursorForce).toFixed(3)})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(n.x, n.y);
@@ -161,8 +172,8 @@ const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvas
         const dx = n.x - mouse.x;
         const dy = n.y - mouse.y;
         const near = dx * dx + dy * dy < CURSOR_DIST * CURSOR_DIST;
-        ctx.fillStyle = `rgba(${cr},${cg},${cb},${near ? 0.9 : 0.45})`;
-        const s = near ? n.size + 1 : n.size;
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${near ? Math.min(1, 0.45 + 0.45 * cursorForce).toFixed(3) : 0.45})`;
+        const s = near ? n.size + cursorForce : n.size;
         ctx.fillRect(n.x - s / 2, n.y - s / 2, s, s);
       }
     };
@@ -259,7 +270,7 @@ const NeuralNetCanvas = ({ accent = "#00ffaa", opacity = 0.55 }: NeuralNetCanvas
       document.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [density, cursorForce]);
 
   return (
     <canvas

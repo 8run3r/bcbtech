@@ -31,14 +31,14 @@ interface ModelData {
 }
 
 const MODEL_CONFIGS: ModelData[] = [
-  { offset: [2.5, 0.8, 1.5],   color: "#00ffaa", variant: "webKnot",   scale: 1.1 },  // Web
-  { offset: [-3, 0.5, -2],     color: "#00e5ff", variant: "showcase",  scale: 1.2 },  // E-Commerce
-  { offset: [3, 0.6, -2],      color: "#FF3D71", variant: "crystal",   scale: 1.1 },  // Marketing
-  { offset: [-2.5, 0.8, 1.5],  color: "#a855f7", variant: "beacon",    scale: 1.2 },  // Full Stack
-  { offset: [2, 0.5, 1],       color: "#FF8C00", variant: "autoLoops", scale: 1.2 },  // Workflow
-  { offset: [-3, 0.6, -1.5],   color: "#ff4757", variant: "webKnot",   scale: 1.0 },  // AI
-  { offset: [2.5, 0.8, 1],     color: "#4A9EFF", variant: "crystal",   scale: 1.1 },  // Why
-  { offset: [2, 0.5, 1],       color: "#00ffaa", variant: "beacon",    scale: 1.2 },  // Connect
+  { offset: [2.5, 0.8, 1.5],   color: "#00ffaa", variant: "webFrames",    scale: 1.1 },  // Web
+  { offset: [-3, 0.5, -2],     color: "#00e5ff", variant: "commerce",     scale: 1.2 },  // E-Commerce
+  { offset: [3, 0.6, -2],      color: "#FF3D71", variant: "agentCore",    scale: 1.1 },  // AI Agenti
+  { offset: [-2.5, 0.8, 1.5],  color: "#a855f7", variant: "invoiceStack", scale: 1.2 },  // Fakturácia
+  { offset: [2, 0.5, 1],       color: "#FF8C00", variant: "pipeline",     scale: 1.2 },  // Workflow
+  { offset: [-3, 0.6, -1.5],   color: "#ff4757", variant: "dockLink",     scale: 1.1 },  // Integrácie
+  { offset: [2.5, 0.8, 1],     color: "#4A9EFF", variant: "crystal",      scale: 1.1 },  // Why
+  { offset: [2, 0.5, 1],       color: "#00ffaa", variant: "beacon",       scale: 1.2 },  // Connect
 ];
 
 /* ── 3D Scene ── */

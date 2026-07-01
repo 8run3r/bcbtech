@@ -4,7 +4,7 @@ import type { CommandDef, TerminalLine } from "../types";
 const CORPUS: { keywords: string; title: string; route: string; snippet: string }[] = [
   { keywords: "web stránka prezentácia website starter business shop", title: "Webové stránky", route: "/balicky?tab=web", snippet: "Starter 390 € · Business 890 € · Shop 1 690 €" },
   { keywords: "automation automatizácia workflow agent ai n8n zapier", title: "Automatizácia", route: "/balicky?tab=automation", snippet: "Workflow 590 € · Agent 1 290 € · Hybrid od 2 490 €" },
-  { keywords: "marketing seo ads ppc social media reklama", title: "Marketing", route: "/balicky?tab=marketing", snippet: "Audit 290 € · Mesačný retainer od 590 €" },
+  { keywords: "agent agenti ai chatbot asistent claude faktúra fakturácia doklady účtovníctvo", title: "AI Agenti & Fakturácia", route: "/balicky?tab=automation", snippet: "AI agent od 1 290 € · fakturačné automatizácie na mieru" },
   { keywords: "kamery cctv ip security surveillance hikvision dahua", title: "Kamery", route: "/balicky", snippet: "Set 4 ks od 1 290 € · IP/CCTV/AI" },
   { keywords: "kontakt email telefón obhliadka", title: "Kontakt", route: "/kontakt", snippet: "studio@coktech.tech · +421 911 640 660" },
   { keywords: "portfolio projekty case study referencie", title: "Portfólio", route: "/portfolio", snippet: "Live projekty + before/after" },
@@ -21,9 +21,7 @@ const PRICING_TABLE = [
   "  AUTOMATION",
   "    Workflow setup    od   590 €",
   "    AI agent          od 1 290 €",
-  "  MARKETING",
-  "    Audit             od   290 €",
-  "    Retainer / mesiac od   590 €",
+  "    Fakturácia        na mieru",
   "  HYBRID",
   "    Setup + retainer  od 1 990 €",
   "──────────────────────────────────────────────",
@@ -107,7 +105,7 @@ export const siteCommands: CommandDef[] = [
     name: "book",
     category: "site",
     desc: "Otvorí kontakt s predvolením",
-    usage: "[obhliadka|web|auto|marketing]",
+    usage: "[obhliadka|web|auto|agenti]",
     run: (ctx) => {
       const topic = ctx.args[0] || "obhliadka";
       ctx.navigate(`/kontakt?subject=${encodeURIComponent(topic)}`);

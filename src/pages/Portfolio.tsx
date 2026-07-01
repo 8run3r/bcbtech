@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import AtmosphereWrapper from "@/components/ui/atmosphere-wrapper";
-
-const ParticleField = lazy(() => import("@/components/landing/ParticleField"));
+import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
 
 interface PortfolioItem {
   id: string;
@@ -105,24 +104,15 @@ const Portfolio = () => {
 
   return (
     <AtmosphereWrapper>
-      <main className="min-h-screen" style={{ background: "#000", color: "var(--text-primary)" }}>
+      <main className="min-h-screen relative" style={{ background: "#000", color: "var(--text-primary)" }}>
+        {/* Neural net background — full page, moderate presence */}
+        <NeuralNetCanvas density={0.8} opacity={0.7} />
+
         <Navbar />
 
         {/* Hero */}
-        <section className="relative min-h-[50vh] flex items-center overflow-hidden pt-20">
-          <div className="absolute inset-0">
-            <Suspense fallback={null}>
-              <ParticleField
-                color="0,255,170"
-                particleOpacityScale={1.8}
-                density={2000}
-                particleSize={2}
-                connectionDistance={110}
-                connectionOpacity={0.1}
-              />
-            </Suspense>
-          </div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[140px]"
+        <section className="relative z-10 min-h-[50vh] flex items-center overflow-hidden pt-20">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none"
             style={{ background: "rgba(0,255,170,0.05)" }} />
 
           <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 w-full flex flex-col items-center text-center">
@@ -163,11 +153,10 @@ const Portfolio = () => {
               </p>
             </motion.div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
         </section>
 
         {/* All items grouped by type */}
-        <section className="py-12 sm:py-16 px-5 sm:px-6">
+        <section className="relative z-10 py-12 sm:py-16 px-5 sm:px-6">
           <div className="max-w-7xl mx-auto space-y-16">
             {sortedTypes.map((type) => {
               const meta = TYPE_META[type] || { label: type, color: "var(--neon-primary)", colorRaw: "0,255,170" };
@@ -377,7 +366,9 @@ const Portfolio = () => {
           </div>
         </section>
 
-        <Footer />
+        <div className="relative z-10">
+          <Footer />
+        </div>
       </main>
     </AtmosphereWrapper>
   );
