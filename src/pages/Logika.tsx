@@ -14,15 +14,15 @@ import TiltCard from "@/components/ui/tilt-card";
 const MONO = "'JetBrains Mono', monospace";
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-/* ── Section color themes ── */
+/* ── Section color themes — neutral black canvas, calm 3-hue accent flow ── */
 const SECTION_THEMES = [
-  { id: "hero",      color: "#00ffaa", raw: "0,255,170",   label: "DISCOVER", bg: "#000000" },
-  { id: "stats",     color: "#00ffaa", raw: "0,255,170",   label: "METRICS",  bg: "#000a06" },
-  { id: "arguments", color: "#4A9EFF", raw: "74,158,255",  label: "LOGIKA",   bg: "#000208" },
-  { id: "process",   color: "#FF8C00", raw: "255,140,0",   label: "PROCESS",  bg: "#040200" },
-  { id: "roi",       color: "#FF8C00", raw: "255,140,0",   label: "ROI",      bg: "#040200" },
-  { id: "compare",   color: "#FF3D71", raw: "255,61,113",  label: "VS",       bg: "#040002" },
-  { id: "cta",       color: "#00ffaa", raw: "0,255,170",   label: "CONNECT",  bg: "#000a06" },
+  { id: "hero",      color: "#00ffaa", raw: "0,255,170",  label: "DISCOVER" },
+  { id: "stats",     color: "#00ffaa", raw: "0,255,170",  label: "METRICS" },
+  { id: "arguments", color: "#4A9EFF", raw: "74,158,255", label: "LOGIKA" },
+  { id: "process",   color: "#FF8C00", raw: "255,140,0",  label: "PROCESS" },
+  { id: "roi",       color: "#FF8C00", raw: "255,140,0",  label: "ROI" },
+  { id: "compare",   color: "#4A9EFF", raw: "74,158,255", label: "VS" },
+  { id: "cta",       color: "#00ffaa", raw: "0,255,170",  label: "CONNECT" },
 ];
 
 /* ── Reduced motion hook ── */
@@ -778,22 +778,19 @@ const Logika = () => {
     return () => setAccent("var(--neon-primary)", "0,255,170");
   }, [activeSection, setAccent]);
 
-  const activeBg = SECTION_THEMES[activeSection].bg;
   const activeRaw = SECTION_THEMES[activeSection].raw;
   const activeColor = SECTION_THEMES[activeSection].color;
 
   return (
     <>
-      {/* Background layer — tinted by active section */}
+      {/* Background — pure black, colour comes only from the accent glow */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "#000" }} />
+      {/* Radial glow from center — whisper of the section accent */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none transition-all duration-[1500ms] ease-in-out"
-        style={{ background: activeBg }}
-      />
-      {/* Radial glow from center — subtle accent tint */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none transition-all duration-[1500ms] ease-in-out"
+        className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 50% 40%, rgba(${activeRaw},0.04) 0%, transparent 60%)`,
+          background: `radial-gradient(ellipse at 50% 40%, rgba(${activeRaw},0.025) 0%, transparent 55%)`,
+          transition: "background 1.2s ease-in-out",
         }}
       />
       {/* Neural network — living circuit tinted by active section */}

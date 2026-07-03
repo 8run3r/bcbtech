@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import RequireAdmin from "./components/RequireAdmin";
 import { AccentProvider } from "@/components/landing/Navbar";
+import PageLoader from "@/components/ui/page-loader";
 
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Packages = lazy(() => import("./pages/Packages"));
@@ -26,14 +27,6 @@ const NodeMap = lazy(() => import("./pages/NodeMap"));
 const Memory = lazy(() => import("./pages/Memory"));
 const Void = lazy(() => import("./pages/Void"));
 const Doom = lazy(() => import("./pages/Doom"));
-
-const PageLoader = () => (
-  <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
-    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "var(--neon-primary)", opacity: 0.4, letterSpacing: "0.2em" }}>
-      LOADING...
-    </span>
-  </div>
-);
 
 const queryClient = new QueryClient();
 
