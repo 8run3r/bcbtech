@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;700&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400&family=VT323&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -82,7 +82,7 @@
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'JetBrains Mono', 'Space Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: unset;
     overflow-x: hidden;
@@ -94,10 +94,10 @@
   }
 
   .font-display {
-    font-family: 'VT323', 'Space Mono', monospace;
+    font-family: 'VT323', monospace;
   }
   .font-mono, code {
-    font-family: 'JetBrains Mono', 'Space Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
   }
   .font-terminal {
     font-family: 'VT323', monospace;

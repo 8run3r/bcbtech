@@ -51,7 +51,7 @@ const LandingTerminal = () => {
         const fonts: Record<string, string> = {
           mono: "'JetBrains Mono', monospace",
           vt: "'VT323', monospace",
-          retro: "'Space Mono', monospace",
+          retro: "'VT323', monospace",
           syne: "'Syne', sans-serif",
         };
         if (fonts[fontOverride]) {

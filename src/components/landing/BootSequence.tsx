@@ -10,13 +10,35 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
   const [revealed, setRevealed] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
+  const completedRef = useRef(false);
 
-  // Skip if already seen this session
+  const finish = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    localStorage.setItem("ct-boot-seen", "yes");
+    setPhase("done");
+    setTimeout(onComplete, 350);
+  };
+
+  // Boot plays only on the very first visit
   useEffect(() => {
-    if (sessionStorage.getItem("ct-boot-seen") === "yes") {
+    if (localStorage.getItem("ct-boot-seen") === "yes") {
+      completedRef.current = true;
       onComplete();
     }
   }, [onComplete]);
+
+  // Click or any key skips the intro
+  useEffect(() => {
+    const skip = () => finish();
+    window.addEventListener("pointerdown", skip);
+    window.addEventListener("keydown", skip);
+    return () => {
+      window.removeEventListener("pointerdown", skip);
+      window.removeEventListener("keydown", skip);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Glitch canvas — multicolor digital noise burst
   useEffect(() => {
@@ -103,12 +125,8 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
         setTimeout(() => {
           setPhase("reveal");
           setRevealed(true);
-        }, 300);
-        setTimeout(() => {
-          setPhase("done");
-          sessionStorage.setItem("ct-boot-seen", "yes");
-          setTimeout(onComplete, 500);
-        }, 1500);
+        }, 250);
+        setTimeout(finish, 900);
         return;
       }
 
@@ -125,7 +143,7 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
     return () => clearInterval(interval);
   }, [onComplete]);
 
-  if (sessionStorage.getItem("ct-boot-seen") === "yes") return null;
+  if (localStorage.getItem("ct-boot-seen") === "yes") return null;
 
   return (
     <AnimatePresence>
@@ -172,8 +190,8 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
               style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontWeight: 900,
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 800,
                 fontSize: "clamp(2.4rem, 7vw, 4.5rem)",
                 color: "var(--text-primary)",
                 letterSpacing: "0.08em",
@@ -191,7 +209,7 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
                 {glitchText.slice(3, 7)}
               </span>
               <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 500,
                 fontSize: "clamp(1rem, 3vw, 1.8rem)",
                 color: revealed ? "var(--neon-primary)" : "var(--text-dim)",
@@ -208,7 +226,7 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
               animate={{ opacity: revealed ? 0.4 : 0, y: revealed ? 0 : 4 }}
               transition={{ duration: 0.5 }}
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 500,
                 fontSize: 11,
                 color: "var(--text-dim)",
@@ -264,10 +282,7 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
             animate={{ opacity: 0.15 }}
             transition={{ delay: 0.6 }}
             whileHover={{ opacity: 0.5 }}
-            onClick={() => {
-              sessionStorage.setItem("ct-boot-seen", "yes");
-              onComplete();
-            }}
+            onClick={finish}
             className="absolute bottom-8 left-1/2 -translate-x-1/2"
             style={{
               fontFamily: "'JetBrains Mono', monospace",

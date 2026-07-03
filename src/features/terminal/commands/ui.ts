@@ -12,7 +12,7 @@ const THEME_PRESETS: Record<string, { primary: string; raw: string }> = {
 const FONT_PRESETS: Record<string, string> = {
   mono:    "'JetBrains Mono', monospace",
   vt:      "'VT323', monospace",
-  retro:   "'Space Mono', monospace",
+  retro:   "'VT323', monospace",
   syne:    "'Syne', sans-serif",
 };
 
