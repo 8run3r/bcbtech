@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { STATIONS, ACTS } from "./stations";
@@ -37,7 +37,8 @@ const LATTICE_COUNT = 84;
 const Lattice = () => {
   const meshRef = useRef<THREE.InstancedMesh>(null!);
 
-  useEffect(() => {
+  // Layout effect — matrices must be set before the first rendered frame
+  useLayoutEffect(() => {
     const dummy = new THREE.Object3D();
     const { top, span } = ACT_Y[0];
     for (let i = 0; i < LATTICE_COUNT; i++) {

@@ -11,6 +11,7 @@ import { useNavAccent } from "@/components/landing/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContactModal from "@/components/ContactModal";
 import { STATIONS, ACTS, stationAct } from "./stations";
+import { sampleStation } from "./choreography";
 import ZonePortals from "./GridFloor";
 import ActEnvironments from "./ActEnvironments";
 import StationTitle from "./StationTitle";
@@ -796,7 +797,8 @@ const DesktopStoryScroll = () => {
   // scrolling no longer re-renders the whole tree every frame.
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     progressRef.current = v;
-    setCurrentStation(Math.round(v * (STATIONS.length - 1)));
+    // Must match the choreography timeline (floor(v*N) with dwell), not the old spline mapping
+    setCurrentStation(sampleStation(v).idx);
     setShowOutro(v > 0.965);
     setShowHint(v < 0.03);
     if (v > 0.01) setShowIntro(false);

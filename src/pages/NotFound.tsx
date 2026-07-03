@@ -206,7 +206,8 @@ const NotFound = () => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "Enter") {
         const cmd = input.trim().toLowerCase().replace(/^\//, "");
-        const target = ROUTES[cmd];
+        // Own-property check — "constructor" & co. must not resolve via the prototype chain
+        const target = Object.prototype.hasOwnProperty.call(ROUTES, cmd) ? ROUTES[cmd] : undefined;
         if (target !== undefined) {
           navigate(target);
         } else {

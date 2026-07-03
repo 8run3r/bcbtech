@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { STATIONS } from "./stations";
 import { ATMOSPHERE_VERT, ATMOSPHERE_FRAG } from "./shaders";
+import { sampleStation, smoother, DWELL } from "./choreography";
 
 const COUNT = 1600;
 const SPREAD_XZ = 32;
@@ -73,13 +74,11 @@ const Atmosphere = memo(({ progressRef }: AtmosphereProps) => {
   useFrame((_, delta) => {
     material.uniforms.uTime.value += delta;
 
-    const progress = THREE.MathUtils.clamp(progressRef.current, 0, 1);
-    const count = STATIONS.length;
-    const t = progress * (count - 1);
-    const idx = Math.min(Math.floor(t), count - 2);
-    const frac = t - idx;
-    const ease = frac * frac * (3 - 2 * frac);
-    targetColor.current.copy(STATION_COLORS[idx]).lerp(STATION_COLORS[idx + 1], ease);
+    // Blend across the transit portion only — matches the choreography timeline
+    const { idx, local } = sampleStation(progressRef.current);
+    const next = Math.min(idx + 1, STATIONS.length - 1);
+    const blend = local < DWELL ? 0 : smoother((local - DWELL) / (1 - DWELL));
+    targetColor.current.copy(STATION_COLORS[idx]).lerp(STATION_COLORS[next], blend);
     (material.uniforms.uColor.value as THREE.Color).lerp(targetColor.current, 0.04);
   });
 

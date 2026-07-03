@@ -11,6 +11,9 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const completedRef = useRef(false);
+  // Captured once — reading localStorage live in render would unmount the
+  // overlay the moment finish() writes the flag, skipping the exit fade
+  const [seen] = useState(() => localStorage.getItem("ct-boot-seen") === "yes");
 
   const finish = () => {
     if (completedRef.current) return;
@@ -22,11 +25,12 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
 
   // Boot plays only on the very first visit
   useEffect(() => {
-    if (localStorage.getItem("ct-boot-seen") === "yes") {
+    if (seen) {
       completedRef.current = true;
       onComplete();
     }
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Click or any key skips the intro
   useEffect(() => {
@@ -143,7 +147,7 @@ const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
     return () => clearInterval(interval);
   }, [onComplete]);
 
-  if (localStorage.getItem("ct-boot-seen") === "yes") return null;
+  if (seen) return null;
 
   return (
     <AnimatePresence>

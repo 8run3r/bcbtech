@@ -709,9 +709,13 @@ const DockLinkModel = ({ mat, wireMat }: SubProps) => {
 const CrystalModel = ({ mat, wireMat, lineMat }: SubProps) => {
   const shardsRef = useRef<THREE.Group>(null!);
   const coreRef = useRef<THREE.Group>(null!);
+  const ptsMatRef = useRef<THREE.PointsMaterial>(null!);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    if (ptsMatRef.current) {
+      ptsMatRef.current.opacity = 0.5 * (mat.uniforms.uReveal.value as number);
+    }
     if (shardsRef.current) {
       shardsRef.current.children.forEach((c, i) => {
         const dist = 0.8 + Math.sin(t * 0.6 + i * 1.5) * 0.2;
@@ -738,7 +742,7 @@ const CrystalModel = ({ mat, wireMat, lineMat }: SubProps) => {
         </mesh>
         <points>
           <octahedronGeometry args={[0.7, 1]} />
-          <pointsMaterial color={mat.uniforms.uColor.value as THREE.Color} size={0.04} transparent opacity={0.5} depthWrite={false} />
+          <pointsMaterial ref={ptsMatRef} color={mat.uniforms.uColor.value as THREE.Color} size={0.04} transparent opacity={0.5} depthWrite={false} />
         </points>
       </group>
       <group ref={shardsRef}>
