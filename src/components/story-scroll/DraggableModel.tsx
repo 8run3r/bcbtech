@@ -2,7 +2,7 @@ import { useRef, useState, useMemo, useCallback, useEffect, memo } from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { DRAGGABLE_VERT, DRAGGABLE_FRAG } from "./shaders";
-import { revealFactor } from "./choreography";
+import { revealFactor, stationEnergy } from "./choreography";
 
 /**
  * Model variants — unique geometry + motion per station concept:
@@ -157,24 +157,28 @@ const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, sho
 
     // Particle-assembly reveal driven by scroll proximity to this station
     let reveal = 1;
+    let energy = 0;
     if (progressRef && stationIndex !== undefined && !reducedMotion) {
       reveal = revealFactor(progressRef.current, stationIndex);
+      energy = stationEnergy(progressRef.current, stationIndex);
     }
     mat.uniforms.uReveal.value = reveal;
-    wireMat.opacity = 0.12 * reveal;
-    lineMat.opacity = 0.06 * reveal;
-    glowMat.opacity = 0.035 * reveal;
+    wireMat.opacity = 0.16 * reveal;
+    lineMat.opacity = 0.08 * reveal;
+    glowMat.opacity = (0.035 + energy * 0.03) * reveal;
 
     dragRotation.current.x += (targetDragRot.current.x - dragRotation.current.x) * 0.1;
     dragRotation.current.y += (targetDragRot.current.y - dragRotation.current.y) * 0.1;
 
     if (!isDragging.current) {
-      targetDragRot.current.y += delta * 0.2;
+      // Model "wakes up" while the camera dwells at it
+      targetDragRot.current.y += delta * (0.2 + energy * 0.5);
     }
 
     if (groupRef.current) {
       const f = FLOAT_PARAMS[variant];
-      groupRef.current.position.y = position[1] + Math.sin(t * f.speed) * f.amp;
+      groupRef.current.position.y =
+        position[1] + Math.sin(t * f.speed) * f.amp * (1 + energy * 0.5);
     }
 
     if (innerRef.current) {

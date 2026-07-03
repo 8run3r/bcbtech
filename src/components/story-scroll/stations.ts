@@ -24,15 +24,14 @@ export interface Act {
   roman: string;
   name: string;
   jp: string;
-  /** Camera choreography per act */
-  cam: { radius: number; height: number; sweep: number };
 }
 
+// Camera moves are per-station — see CAM_MOVES in choreography.ts
 export const ACTS: Act[] = [
-  { roman: "I",   name: "STAVBA",       jp: "「構築」", cam: { radius: 6.0, height: 2.9, sweep: 1.05 } },
-  { roman: "II",  name: "INTELIGENCIA", jp: "「知性」", cam: { radius: 5.2, height: 2.1, sweep: 1.2 } },
-  { roman: "III", name: "TOK",          jp: "「流れ」", cam: { radius: 6.4, height: 3.3, sweep: 0.95 } },
-  { roman: "IV",  name: "SPOJENIE",     jp: "「接続」", cam: { radius: 7.0, height: 2.5, sweep: 1.25 } },
+  { roman: "I",   name: "STAVBA",       jp: "「構築」" },
+  { roman: "II",  name: "INTELIGENCIA", jp: "「知性」" },
+  { roman: "III", name: "TOK",          jp: "「流れ」" },
+  { roman: "IV",  name: "SPOJENIE",     jp: "「接続」" },
 ];
 
 export const stationAct = (i: number) => Math.min(Math.floor(i / 2), ACTS.length - 1);

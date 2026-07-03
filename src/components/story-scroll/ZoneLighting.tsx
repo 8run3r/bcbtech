@@ -48,34 +48,34 @@ const ZoneLighting = ({ progressRef }: ZoneLightingProps) => {
       mainRef.current.position.set(x, y + 5, z + 4);
       mainRef.current.color.lerp(targetColor.current, 0.08);
       // Ramp: dim in transit, hot at the station, spike through portals
-      mainRef.current.intensity = 0.3 + dwell * 0.65 + flash * 1.4;
+      mainRef.current.intensity = 0.55 + dwell * 0.75 + flash * 1.4;
     }
     if (accentRef.current) {
       accentRef.current.position.set(x, y - 12, z - 3);
       accentRef.current.color.lerp(targetColor.current, 0.08);
-      accentRef.current.intensity = 0.25 + dwell * 0.2 + flash * 0.8;
+      accentRef.current.intensity = 0.4 + dwell * 0.3 + flash * 0.8;
     }
     if (rimRef.current) {
       // Cool white rim from behind-left — two-tone contrast against the zone colour
       rimRef.current.position.set(x - 6, y + 3.5, z - 6);
       rimRef.current.color.lerp(RIM_WHITE, 0.05);
-      rimRef.current.intensity = 0.18 + dwell * 0.32;
+      rimRef.current.intensity = 0.32 + dwell * 0.45;
     }
 
     // Fog inherits a whisper of the zone colour; portals briefly ignite it
     const fog = scene.fog as THREE.Fog | null;
     if (fog) {
-      fogTint.current.copy(targetColor.current).multiplyScalar(0.05 + flash * 0.25);
+      fogTint.current.copy(targetColor.current).multiplyScalar(0.09 + flash * 0.28);
       fog.color.lerp(fogTint.current, 0.08);
     }
   });
 
   return (
     <>
-      <ambientLight intensity={0.07} />
-      <pointLight ref={mainRef} position={[0, 5, 4]} intensity={0.55} color="#00ffaa" distance={35} />
-      <pointLight ref={accentRef} position={[0, -12, -3]} intensity={0.35} color="#00ffaa" distance={30} />
-      <pointLight ref={rimRef} position={[-5, 2, -5]} intensity={0.25} color="#dceaff" distance={28} />
+      <ambientLight intensity={0.18} />
+      <pointLight ref={mainRef} position={[0, 5, 4]} intensity={0.8} color="#00ffaa" distance={40} />
+      <pointLight ref={accentRef} position={[0, -12, -3]} intensity={0.5} color="#00ffaa" distance={34} />
+      <pointLight ref={rimRef} position={[-5, 2, -5]} intensity={0.4} color="#dceaff" distance={30} />
     </>
   );
 };

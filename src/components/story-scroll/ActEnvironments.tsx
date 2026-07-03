@@ -62,7 +62,7 @@ const Lattice = () => {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, LATTICE_COUNT]} frustumCulled={false}>
       <boxGeometry args={[0.14, 1.7, 0.14]} />
-      <meshStandardMaterial color="#00ffaa" transparent opacity={0.22} roughness={0.7} depthWrite={false} />
+      <meshStandardMaterial color="#00ffaa" transparent opacity={0.32} roughness={0.7} depthWrite={false} />
     </instancedMesh>
   );
 };
@@ -120,8 +120,8 @@ const Neural = () => {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
-    if (pointsMatRef.current) pointsMatRef.current.opacity = 0.4 + Math.sin(t * 0.7) * 0.15;
-    if (linesMatRef.current) linesMatRef.current.opacity = 0.07 + Math.sin(t * 0.7 + 1.2) * 0.035;
+    if (pointsMatRef.current) pointsMatRef.current.opacity = 0.55 + Math.sin(t * 0.7) * 0.18;
+    if (linesMatRef.current) linesMatRef.current.opacity = 0.11 + Math.sin(t * 0.7 + 1.2) * 0.05;
   });
 
   return (
@@ -195,7 +195,7 @@ const Streams = () => {
       <meshBasicMaterial
         color="#FF8C00"
         transparent
-        opacity={0.38}
+        opacity={0.55}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
@@ -234,7 +234,7 @@ const Monoliths = () => {
       {MONOLITHS.map((m, i) => (
         <mesh key={i} position={m.pos} scale={m.scale}>
           <octahedronGeometry args={[1, 0]} />
-          <meshBasicMaterial color="#4A9EFF" wireframe transparent opacity={0.13} depthWrite={false} />
+          <meshBasicMaterial color="#4A9EFF" wireframe transparent opacity={0.22} depthWrite={false} />
         </mesh>
       ))}
     </group>

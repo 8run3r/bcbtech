@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { STATIONS, ACTS, stationAct } from "./stations";
+import { STATIONS } from "./stations";
 
 /**
  * Choreography — single source of truth for the descent dramaturgy.
@@ -35,10 +35,36 @@ export function sampleStation(p: number) {
 /** Alternating orbit side per station — mirrors the old left/right rhythm. */
 const azBase = (i: number) => (i % 2 === 0 ? 0.72 : -0.72);
 
-/** Camera position on the orbit circle around a station. */
-function orbitPos(i: number, az: number, out: THREE.Vector3) {
+/**
+ * Per-station camera move — every station gets a different shot type.
+ * Radius/height interpolate across the dwell, so the motion is never
+ * the same twice: orbits, spirals, dolly-ins, crane-downs, reveals.
+ */
+interface CamMove {
+  sweep: number; // azimuth sweep in radians
+  azOff: number; // azimuth offset from the station's base side
+  r0: number; r1: number; // orbit radius start → end
+  h0: number; h1: number; // camera height start → end
+}
+
+const CAM_MOVES: CamMove[] = [
+  { sweep: 1.0,  azOff: 0,    r0: 6.2, r1: 5.6, h0: 2.8, h1: 2.6 }, // 01 Web — classic orbit, slight push-in
+  { sweep: 0.85, azOff: 0,    r0: 6.4, r1: 5.4, h0: 1.2, h1: 3.6 }, // 02 Shop — rising spiral from low angle
+  { sweep: 0.55, azOff: 0,    r0: 7.6, r1: 4.4, h0: 2.4, h1: 1.8 }, // 03 Agents — slow dolly-in, intimate
+  { sweep: 1.1,  azOff: 0,    r0: 5.6, r1: 5.8, h0: 4.8, h1: 2.1 }, // 04 Invoice — crane-down from top view
+  { sweep: 1.75, azOff: 0,    r0: 6.6, r1: 6.2, h0: 3.2, h1: 2.9 }, // 05 Flow — fast wide fly-around
+  { sweep: 0.5,  azOff: 0.55, r0: 5.4, r1: 5.4, h0: 1.9, h1: 2.8 }, // 06 Sync — lateral tracking shot, slight rise
+  { sweep: 0.9,  azOff: 0,    r0: 8.4, r1: 5.0, h0: 3.8, h1: 2.3 }, // 07 Why — long push-in from wide
+  { sweep: 1.35, azOff: 0,    r0: 5.0, r1: 7.8, h0: 1.4, h1: 3.8 }, // 08 Connect — rising pull-back reveal
+];
+
+/** Camera position on station i's move at eased dwell time e ∈ [0,1]. */
+function orbitPos(i: number, e: number, out: THREE.Vector3) {
   const s = STATIONS[i];
-  const { radius, height } = ACTS[stationAct(i)].cam;
+  const m = CAM_MOVES[i];
+  const az = azBase(i) + m.azOff + (e - 0.5) * m.sweep;
+  const radius = m.r0 + (m.r1 - m.r0) * e;
+  const height = m.h0 + (m.h1 - m.h0) * e;
   out.set(
     s.pos[0] + Math.sin(az) * radius,
     s.pos[1] + height,
@@ -77,15 +103,13 @@ export function camPose(
   outLook: THREE.Vector3
 ) {
   const { idx, local } = sampleStation(p);
-  const { sweep } = ACTS[stationAct(idx)].cam;
   const isLast = idx === N - 1;
 
   if (local < DWELL || isLast) {
-    // ── Orbit ──
+    // ── Dwell — per-station camera move ──
     const l = isLast ? local : local / DWELL;
-    const e = smoother(l);
-    const az = azBase(idx) + (reducedMotion ? 0 : (e - 0.5) * sweep);
-    orbitPos(idx, az, outPos);
+    const e = reducedMotion ? 0.5 : smoother(l);
+    orbitPos(idx, e, outPos);
     lookAnchor(idx, outLook);
     return;
   }
@@ -94,10 +118,9 @@ export function camPose(
   const l = (local - DWELL) / (1 - DWELL);
   const e = smoother(l);
   const next = idx + 1;
-  const nextSweep = ACTS[stationAct(next)].cam.sweep;
 
-  orbitPos(idx, azBase(idx) + (reducedMotion ? 0 : sweep * 0.5), _from);
-  orbitPos(next, azBase(next) - (reducedMotion ? 0 : nextSweep * 0.5), _to);
+  orbitPos(idx, reducedMotion ? 0.5 : 1, _from);
+  orbitPos(next, reducedMotion ? 0.5 : 0, _to);
 
   // Portal rings sit at the world axis at the Y midpoint between stations
   const midY = (STATIONS[idx].pos[1] + STATIONS[next].pos[1]) / 2;
@@ -145,6 +168,16 @@ export function revealFactor(p: number, stationIndex: number) {
   // approaching from above: assemble over the last 0.85 segment units
   if (d > 0) return 1 - THREE.MathUtils.smoothstep(d, 0.25, 0.85);
   return 1;
+}
+
+/**
+ * How "awake" a station's model is — 1 while the camera dwells at it,
+ * fading to 0 as the camera moves away. Drives idle-motion energy.
+ */
+export function stationEnergy(p: number, stationIndex: number) {
+  const t = THREE.MathUtils.clamp(p, 0, 1) * N;
+  const d = Math.abs(t - (stationIndex + DWELL * 0.5));
+  return Math.max(0, 1 - d / 0.7);
 }
 
 /**

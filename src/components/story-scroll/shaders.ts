@@ -57,7 +57,7 @@ void main() {
   float r = length(uv);
   if (r > 0.5) discard;
   float soft = 1.0 - smoothstep(0.05, 0.5, r);
-  gl_FragColor = vec4(uColor, soft * vAlpha * 0.35);
+  gl_FragColor = vec4(uColor, soft * vAlpha * 0.5);
 }
 `;
 
@@ -133,22 +133,22 @@ varying float vFresnel;
 varying vec3 vPosition;
 varying float vReveal;
 void main() {
-  // Base color — darkened interior
-  vec3 base = uColor * 0.15;
+  // Base color — lit interior
+  vec3 base = uColor * 0.3;
   // Rim/fresnel glow
-  float rim = vFresnel * (0.8 + uHover * 0.5);
+  float rim = vFresnel * (0.95 + uHover * 0.5);
   // Subtle scan line across surface
   float scan = smoothstep(0.48, 0.5, fract(vPosition.y * 3.0 + uTime * 0.2)) * 0.08;
   // Holographic shimmer
   float shimmer = sin(vPosition.x * 10.0 + vPosition.y * 8.0 + uTime * 2.0) * 0.03 * uHover;
 
-  vec3 col = base + uColor * (rim * 1.4 + scan + shimmer);
+  vec3 col = base + uColor * (rim * 1.5 + scan + shimmer);
   // Edge highlight
-  col += uColor * pow(rim, 4.0) * 0.6;
+  col += uColor * pow(rim, 4.0) * 0.7;
   // Assembly sparkle — fragments glow hotter while scattered
   col += uColor * (1.0 - vReveal) * 0.9;
 
-  float alpha = mix(0.35, 0.92, rim);
+  float alpha = mix(0.5, 0.95, rim);
   // Boost alpha on hover
   alpha = mix(alpha, min(alpha + 0.15, 1.0), uHover);
   // Fade fragments in as the model assembles

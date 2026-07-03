@@ -24,8 +24,8 @@ const PostFX = memo(({ reducedMotion = false, progressRef }: PostFXProps) => {
       fragmentShader: POSTFX_FRAG,
       uniforms: {
         uTime: { value: 0 },
-        uGrain: { value: 0.12 },
-        uVignette: { value: 0.55 },
+        uGrain: { value: 0.09 },
+        uVignette: { value: 0.38 },
         uSpeed: { value: 0 },
       },
       transparent: true,

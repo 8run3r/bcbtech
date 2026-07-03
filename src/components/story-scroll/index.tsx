@@ -51,7 +51,7 @@ const Scene3D = ({
   return (
     <>
       <ZoneLighting progressRef={progressRef} />
-      <fog attach="fog" args={["#000000", 4, 26]} />
+      <fog attach="fog" args={["#000000", 6, 34]} />
 
       <ZonePortals />
       <ActEnvironments progressRef={progressRef} />
