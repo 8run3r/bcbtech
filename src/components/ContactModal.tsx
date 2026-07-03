@@ -4,6 +4,7 @@ import { Monitor, Zap, Bot, Layers, Send, Loader2, CheckCircle } from "lucide-re
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AnimatedModal from "@/components/ui/animated-modal";
+import { track } from "@/lib/analytics";
 
 type Category = "web" | "agents" | "automation" | "hybrid";
 
@@ -100,6 +101,7 @@ const ContactModal = ({ open, onClose }: { open: boolean; onClose: () => void })
 
     setSending(false);
     if (error) { toast.error("Nepodarilo sa odoslať správu."); return; }
+    track("lead_contact_modal", { category });
     setSent(true);
     toast.success("Správa odoslaná! Ozveme sa do 24h.");
   };

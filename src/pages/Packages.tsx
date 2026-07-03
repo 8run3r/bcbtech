@@ -7,6 +7,7 @@ import Navbar, { useNavAccent } from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import ReservationModal from "@/components/ReservationModal";
 import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
+import { usePageMeta } from "@/hooks/use-page-meta";
 
 type Tab = "web" | "agents" | "automation" | "hybrid";
 
@@ -424,6 +425,11 @@ const Packages = () => {
   const [reservationOpen, setReservationOpen] = useState(false);
   const [selectedPkg, setSelectedPkg] = useState<{ category: Tab; name: string }>({ category: "web", name: "" });
   const { setAccent } = useNavAccent();
+
+  usePageMeta(
+    "Balíčky & Ceny — CokTech | Transparentné ceny od 390 €",
+    "Weby, AI agenti, automatizácie a hybrid balíčky s transparentnými cenami. Od 390 €, dodanie 5–14 dní."
+  );
 
   // Sync tab when URL param changes
   useEffect(() => {

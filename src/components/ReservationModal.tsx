@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useFormSecurity } from "@/hooks/use-form-security";
+import { track } from "@/lib/analytics";
 
 const reservationSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
@@ -121,6 +122,7 @@ const ReservationModal = ({ open, onClose, packageCategory, packageName }: Props
     });
     setSending(false);
     if (error) { toast.error("Nepodarilo sa odoslať rezerváciu."); return; }
+    track("lead_reservation", { category: packageCategory, package: packageName });
     startCooldown();
     setSent(true);
   };

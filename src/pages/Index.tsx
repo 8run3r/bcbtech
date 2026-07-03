@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense } from "react";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
+import FounderSection from "@/components/landing/FounderSection";
 import FooterCTA from "@/components/landing/FooterCTA";
 import BootSequence from "@/components/landing/BootSequence";
 import Scanlines from "@/components/ui/scanlines";
@@ -31,6 +32,7 @@ const Index = () => {
             <Suspense fallback={<PageLoader />}>
               <SubworldContainer />
             </Suspense>
+            <FounderSection />
             <FooterCTA />
           </main>
         </>

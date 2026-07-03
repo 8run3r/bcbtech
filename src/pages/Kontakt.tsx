@@ -8,6 +8,8 @@ import { useFormSecurity } from "@/hooks/use-form-security";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { track } from "@/lib/analytics";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Meno je povinné").max(100),
@@ -244,6 +246,11 @@ const Kontakt = () => {
   const [sent, setSent] = useState(false);
   const { honeypot, setHoneypot, cooldown, startCooldown, canSubmit } = useFormSecurity();
 
+  usePageMeta(
+    "Kontakt — CokTech | Odpovedáme do 24 hodín",
+    "Napíšte nám o webe, AI agentoch alebo automatizáciách. Prvá konzultácia zadarmo, odpoveď do 24 hodín."
+  );
+
   const accentSet = ACCENTS[form.package_category] ?? DEFAULT_ACCENT;
   const accent = accentSet.css;
   const accentRaw = accentSet.raw;
@@ -293,6 +300,7 @@ const Kontakt = () => {
       toast.error("Nepodarilo sa odoslať správu. Skúste to znova.");
       return;
     }
+    track("lead_contact_form", { category: result.data.package_category || "none" });
     setSent(true);
   };
 

@@ -6,6 +6,7 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import AtmosphereWrapper from "@/components/ui/atmosphere-wrapper";
 import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
+import { usePageMeta } from "@/hooks/use-page-meta";
 
 interface PortfolioItem {
   id: string;
@@ -99,6 +100,13 @@ const fallbackProjects: PortfolioItem[] = [
 
 const Portfolio = () => {
   const [items, setItems] = useState<PortfolioItem[]>(fallbackProjects);
+  // Fallback projects are concepts, not delivered work — label them honestly
+  const [isDemo, setIsDemo] = useState(true);
+
+  usePageMeta(
+    "Portfólio — CokTech | Weby, AI agenti & automatizácie",
+    "Weby, appky, AI agenti a automatizácie od CokTech. Pozrite si, čo staviame."
+  );
 
   useEffect(() => {
     supabase
@@ -106,7 +114,10 @@ const Portfolio = () => {
       .select("*")
       .order("sort_order")
       .then(({ data }) => {
-        if (data && data.length > 0) setItems(data as PortfolioItem[]);
+        if (data && data.length > 0) {
+          setItems(data as PortfolioItem[]);
+          setIsDemo(false);
+        }
       });
   }, []);
 
@@ -174,6 +185,18 @@ const Portfolio = () => {
               }}>
                 Weby, appky, AI agenti a automatizácie — všetko na jednom mieste.
               </p>
+              {isDemo && (
+                <p style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  color: "var(--neon-secondary)",
+                  opacity: 0.55,
+                  marginTop: 14,
+                  letterSpacing: "0.08em",
+                }}>
+                  [ UKÁŽKOVÉ KONCEPTY ] — presne takéto systémy staviame. Reálne case studies pridávame priebežne.
+                </p>
+              )}
             </motion.div>
           </div>
         </section>
@@ -251,6 +274,19 @@ const Portfolio = () => {
                                 {p.year && (
                                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-ghost)", letterSpacing: "0.08em" }}>
                                     {p.year}
+                                  </span>
+                                )}
+                                {isDemo && (
+                                  <span style={{
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: 7,
+                                    color: "var(--neon-secondary)",
+                                    opacity: 0.6,
+                                    letterSpacing: "0.12em",
+                                    border: "1px solid rgba(255,140,0,0.25)",
+                                    padding: "1px 5px",
+                                  }}>
+                                    KONCEPT
                                   </span>
                                 )}
                                 <span style={{

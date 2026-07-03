@@ -1,5 +1,6 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { useNavAccent } from "@/components/landing/Navbar";
 import FooterCTA from "@/components/landing/FooterCTA";
@@ -10,6 +11,7 @@ import MagneticButton from "@/components/ui/magnetic-button";
 import NeuralNetCanvas from "@/components/ui/neural-net-canvas";
 import LogicCircuit from "@/components/ui/logic-circuit";
 import TiltCard from "@/components/ui/tilt-card";
+import { usePageMeta } from "@/hooks/use-page-meta";
 
 const MONO = "'JetBrains Mono', monospace";
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -742,7 +744,13 @@ const ColorPalette = ({ activeIndex }: { activeIndex: number }) => (
 const Logika = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const heroInView = useInView(heroRef, { once: true });
+  const navigate = useNavigate();
   const { setAccent } = useNavAccent();
+
+  usePageMeta(
+    "Prečo CokTech — 3× rýchlejšie dodanie, 60 % nižšie náklady",
+    "Enterprise kvalita za startup cenu. Žiadny overhead, transparentný proces, dodanie 5–14 dní. Porovnajte si nás s tradičnou agentúrou."
+  );
   const [activeSection, setActiveSection] = useState(0);
   const [headlineOn, setHeadlineOn] = useState(false);
   const reduced = usePrefersReducedMotion();
@@ -987,7 +995,7 @@ const Logika = () => {
               Ukážeme vám na 30-minútovom calle, koľko by ste ušetrili s nami vs. tradičná agentúra.
             </p>
             <MagneticButton
-              onClick={() => { window.location.href = "mailto:studio@coktech.tech"; }}
+              onClick={() => navigate("/kontakt")}
               className="inline-block px-8 py-3.5 transition-colors duration-300"
               style={{
                 fontFamily: "'DM Sans', sans-serif",
