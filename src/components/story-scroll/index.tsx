@@ -1,7 +1,7 @@
 /**
  * StoryScroll3D — Full 8-bit game world story scroll.
- * Scroll-driven vertical descent through 8 stations with 3D models,
- * intro sequence, and outro. Inspired by igloo.inc + retro gaming.
+ * Scroll-driven descent through 4 acts × 2 stations with orbital camera
+ * choreography, act environments and portal dives. igloo.inc + retro gaming.
  */
 import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
@@ -10,36 +10,17 @@ import { useNavigate } from "react-router-dom";
 import { useNavAccent } from "@/components/landing/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContactModal from "@/components/ContactModal";
-import { STATIONS } from "./stations";
+import { STATIONS, ACTS, stationAct } from "./stations";
 import ZonePortals from "./GridFloor";
-import Voxels from "./Voxels";
+import ActEnvironments from "./ActEnvironments";
 import StationTitle from "./StationTitle";
 import ScrollCameraRig from "./ScrollCameraRig";
-import DraggableModel, { type ModelVariant } from "./DraggableModel";
+import DraggableModel from "./DraggableModel";
 import StationOverlay from "./StationOverlay";
 import ProgressBar from "./ProgressBar";
 import ZoneLighting from "./ZoneLighting";
 import Atmosphere from "./Atmosphere";
 import PostFX from "./PostFX";
-
-/* ── Model config per station (8 stations) ── */
-interface ModelData {
-  offset: [number, number, number];
-  color: string;
-  variant: ModelVariant;
-  scale: number;
-}
-
-const MODEL_CONFIGS: ModelData[] = [
-  { offset: [2.5, 0.8, 1.5],   color: "#00ffaa", variant: "webFrames",    scale: 1.1 },  // Web
-  { offset: [-3, 0.5, -2],     color: "#00e5ff", variant: "commerce",     scale: 1.2 },  // E-Commerce
-  { offset: [3, 0.6, -2],      color: "#FF3D71", variant: "agentCore",    scale: 1.1 },  // AI Agenti
-  { offset: [-2.5, 0.8, 1.5],  color: "#a855f7", variant: "invoiceStack", scale: 1.2 },  // Fakturácia
-  { offset: [2, 0.5, 1],       color: "#FF8C00", variant: "pipeline",     scale: 1.2 },  // Workflow
-  { offset: [-3, 0.6, -1.5],   color: "#ff4757", variant: "dockLink",     scale: 1.1 },  // Integrácie
-  { offset: [2.5, 0.8, 1],     color: "#4A9EFF", variant: "crystal",      scale: 1.1 },  // Why
-  { offset: [2, 0.5, 1],       color: "#00ffaa", variant: "beacon",       scale: 1.2 },  // Connect
-];
 
 /* ── 3D Scene ── */
 const Scene3D = ({
@@ -53,12 +34,14 @@ const Scene3D = ({
 }) => {
   const models = useMemo(
     () =>
-      MODEL_CONFIGS.map((m, i) => ({
-        ...m,
+      STATIONS.map((s) => ({
+        color: s.color,
+        variant: s.modelVariant,
+        scale: s.modelScale,
         position: [
-          STATIONS[i].pos[0] + m.offset[0],
-          STATIONS[i].pos[1] + m.offset[1],
-          STATIONS[i].pos[2] + m.offset[2],
+          s.pos[0] + s.modelOffset[0],
+          s.pos[1] + s.modelOffset[1],
+          s.pos[2] + s.modelOffset[2],
         ] as [number, number, number],
       })),
     []
@@ -70,7 +53,7 @@ const Scene3D = ({
       <fog attach="fog" args={["#000000", 4, 26]} />
 
       <ZonePortals />
-      <Voxels />
+      <ActEnvironments progressRef={progressRef} />
       <Atmosphere progressRef={progressRef} />
 
       {STATIONS.map((s, i) => (
@@ -84,12 +67,15 @@ const Scene3D = ({
           color={m.color}
           variant={m.variant}
           scale={m.scale}
+          stationIndex={i}
+          progressRef={progressRef}
+          reducedMotion={reducedMotion}
           onClick={() => onModelClick(i)}
         />
       ))}
 
       <ScrollCameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
-      <PostFX reducedMotion={reducedMotion} />
+      <PostFX reducedMotion={reducedMotion} progressRef={progressRef} />
     </>
   );
 };
@@ -170,7 +156,7 @@ const IntroOverlay = ({ visible, onSkip }: { visible: boolean; onSkip: () => voi
               letterSpacing: "0.35em",
               marginBottom: 20,
             }}>
-              STORY MODE // 8 LEVELS
+              STORY MODE // 4 AKTY · 8 LEVELOV
             </p>
 
             <h2 style={{
@@ -364,8 +350,11 @@ const ScrollHint = () => (
 /* ── Pixel HUD ── */
 const PixelHUD = ({ station, index }: { station: (typeof STATIONS)[0]; index: number }) => (
   <>
-    {/* Top left — zone label */}
+    {/* Top left — act + zone label */}
     <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 pointer-events-none">
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: station.color, opacity: 0.35, letterSpacing: "0.3em", display: "block", marginBottom: 3 }}>
+        ACT {ACTS[stationAct(index)].roman} · {ACTS[stationAct(index)].name}
+      </span>
       <span style={{ fontFamily: "'VT323', monospace", fontSize: 11, color: station.color, opacity: 0.5, letterSpacing: "0.2em", display: "block" }}>
         {station.label} {station.subtitle}
       </span>
@@ -656,7 +645,7 @@ const MobileStoryScroll = () => {
           letterSpacing: "0.35em",
           marginBottom: 12,
         }}>
-          STORY MODE // 8 LEVELS
+          STORY MODE // 4 AKTY · 8 LEVELOV
         </p>
         <h2 style={{
           fontFamily: "'VT323', monospace",
@@ -677,10 +666,33 @@ const MobileStoryScroll = () => {
         </p>
       </div>
 
-      {/* Station cards */}
+      {/* Station cards, grouped into acts */}
       <div className="pb-8">
         {STATIONS.map((station, i) => (
           <div key={i} data-station-idx={i}>
+            {i % 2 === 0 && (
+              <div className="mx-4 mt-10 mb-4 flex items-center gap-3">
+                <span style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 9,
+                  color: station.color,
+                  opacity: 0.55,
+                  letterSpacing: "0.3em",
+                  whiteSpace: "nowrap",
+                }}>
+                  ACT {ACTS[stationAct(i)].roman} · {ACTS[stationAct(i)].name}
+                </span>
+                <span style={{
+                  fontFamily: "'VT323', monospace",
+                  fontSize: 12,
+                  color: station.color,
+                  opacity: 0.3,
+                }}>
+                  {ACTS[stationAct(i)].jp}
+                </span>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${station.color}30, transparent)` }} />
+              </div>
+            )}
             <MobileStationCard
               station={station}
               index={i}
@@ -771,6 +783,8 @@ const DesktopStoryScroll = () => {
   const navigate = useNavigate();
   const { setAccent } = useNavAccent();
   const reducedMotion = useReducedMotion() ?? false;
+  // Pause the WebGL frameloop entirely once the world is scrolled past
+  const worldInView = useInView(containerRef);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -822,7 +836,7 @@ const DesktopStoryScroll = () => {
   }, [currentStation]);
 
   return (
-    <div ref={containerRef} id="coktech-world" style={{ height: "1200vh" }}>
+    <div ref={containerRef} id="coktech-world" style={{ height: "1500vh" }}>
       <div
         className="sticky top-0 overflow-hidden"
         style={{
@@ -851,6 +865,7 @@ const DesktopStoryScroll = () => {
         <Canvas
           camera={{ position: [4.6, 3.1, 5.6], fov: 50 }}
           dpr={[1, 1.5]}
+          frameloop={worldInView ? "always" : "never"}
           gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
           style={{ position: "absolute", inset: 0 }}
           eventSource={typeof document !== "undefined" ? document.body : undefined}

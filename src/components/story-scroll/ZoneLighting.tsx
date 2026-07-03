@@ -2,17 +2,21 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { STATIONS } from "./stations";
+import { sampleStation, dwellFactor, actBoundaryFlash, smoother, DWELL } from "./choreography";
 
 interface ZoneLightingProps {
   progressRef: React.MutableRefObject<number>;
 }
 
 const STATION_COLORS = STATIONS.map((s) => new THREE.Color(s.color));
+const RIM_WHITE = new THREE.Color("#dceaff");
 
 /**
- * ZoneLighting — three point lights tracking the active station,
- * blending colour between zones. Also tints the scene fog so the
- * atmosphere inherits the zone colour (igloo-style depth haze).
+ * ZoneLighting — dramaturgy through light.
+ * Key light ramps up while the camera dwells at a station and dims during
+ * transit; a cool white rim light carves the model silhouette from the
+ * opposite side; diving through an act-boundary portal fires a flash.
+ * Fog colour inherits a whisper of the active zone.
  */
 const ZoneLighting = ({ progressRef }: ZoneLightingProps) => {
   const mainRef = useRef<THREE.PointLight>(null!);
@@ -22,39 +26,47 @@ const ZoneLighting = ({ progressRef }: ZoneLightingProps) => {
   const fogTint = useRef(new THREE.Color("#000000"));
 
   useFrame(({ scene }) => {
-    const progress = THREE.MathUtils.clamp(progressRef.current, 0, 1);
-    const count = STATIONS.length;
-    const t = progress * (count - 1);
-    const idx = Math.min(Math.floor(t), count - 2);
-    const frac = t - idx;
-    const ease = frac * frac * (3 - 2 * frac);
+    const p = progressRef.current;
+    const { idx, local } = sampleStation(p);
+    const next = Math.min(idx + 1, STATIONS.length - 1);
 
+    // Blend station position/colour across the transit portion only,
+    // so light sits firmly on the station while the camera dwells.
+    const blend = local < DWELL ? 0 : smoother((local - DWELL) / (1 - DWELL));
     const from = STATIONS[idx];
-    const to = STATIONS[Math.min(idx + 1, count - 1)];
-    const x = from.pos[0] + (to.pos[0] - from.pos[0]) * ease;
-    const y = from.pos[1] + (to.pos[1] - from.pos[1]) * ease;
-    const z = from.pos[2] + (to.pos[2] - from.pos[2]) * ease;
+    const to = STATIONS[next];
+    const x = from.pos[0] + (to.pos[0] - from.pos[0]) * blend;
+    const y = from.pos[1] + (to.pos[1] - from.pos[1]) * blend;
+    const z = from.pos[2] + (to.pos[2] - from.pos[2]) * blend;
 
-    targetColor.current.copy(STATION_COLORS[idx]).lerp(STATION_COLORS[idx + 1], ease);
+    targetColor.current.copy(STATION_COLORS[idx]).lerp(STATION_COLORS[next], blend);
+
+    const dwell = dwellFactor(p);
+    const flash = actBoundaryFlash(p);
 
     if (mainRef.current) {
       mainRef.current.position.set(x, y + 5, z + 4);
-      mainRef.current.color.lerp(targetColor.current, 0.05);
+      mainRef.current.color.lerp(targetColor.current, 0.08);
+      // Ramp: dim in transit, hot at the station, spike through portals
+      mainRef.current.intensity = 0.3 + dwell * 0.65 + flash * 1.4;
     }
     if (accentRef.current) {
       accentRef.current.position.set(x, y - 12, z - 3);
-      accentRef.current.color.lerp(targetColor.current, 0.05);
+      accentRef.current.color.lerp(targetColor.current, 0.08);
+      accentRef.current.intensity = 0.25 + dwell * 0.2 + flash * 0.8;
     }
     if (rimRef.current) {
-      rimRef.current.position.set(x - 5, y + 2, z - 5);
-      rimRef.current.color.lerp(targetColor.current, 0.04);
+      // Cool white rim from behind-left — two-tone contrast against the zone colour
+      rimRef.current.position.set(x - 6, y + 3.5, z - 6);
+      rimRef.current.color.lerp(RIM_WHITE, 0.05);
+      rimRef.current.intensity = 0.18 + dwell * 0.32;
     }
 
-    // Fog inherits a whisper of the zone colour
+    // Fog inherits a whisper of the zone colour; portals briefly ignite it
     const fog = scene.fog as THREE.Fog | null;
     if (fog) {
-      fogTint.current.copy(targetColor.current).multiplyScalar(0.05);
-      fog.color.lerp(fogTint.current, 0.05);
+      fogTint.current.copy(targetColor.current).multiplyScalar(0.05 + flash * 0.25);
+      fog.color.lerp(fogTint.current, 0.08);
     }
   });
 
@@ -63,7 +75,7 @@ const ZoneLighting = ({ progressRef }: ZoneLightingProps) => {
       <ambientLight intensity={0.07} />
       <pointLight ref={mainRef} position={[0, 5, 4]} intensity={0.55} color="#00ffaa" distance={35} />
       <pointLight ref={accentRef} position={[0, -12, -3]} intensity={0.35} color="#00ffaa" distance={30} />
-      <pointLight ref={rimRef} position={[-5, 2, -5]} intensity={0.25} color="#00ffaa" distance={25} />
+      <pointLight ref={rimRef} position={[-5, 2, -5]} intensity={0.25} color="#dceaff" distance={28} />
     </>
   );
 };

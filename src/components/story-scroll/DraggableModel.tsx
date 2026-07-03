@@ -2,6 +2,7 @@ import { useRef, useState, useMemo, useCallback, useEffect, memo } from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { DRAGGABLE_VERT, DRAGGABLE_FRAG } from "./shaders";
+import { revealFactor } from "./choreography";
 
 /**
  * Model variants — unique geometry + motion per station concept:
@@ -31,7 +32,18 @@ interface DraggableModelProps {
   scale?: number;
   onClick?: () => void;
   showGlow?: boolean;
+  /** Station index + scroll progress — drives the particle-assembly reveal */
+  stationIndex?: number;
+  progressRef?: React.MutableRefObject<number>;
+  reducedMotion?: boolean;
 }
+
+/** easeOutBack — assembled models land with a tiny overshoot */
+const easeOutBack = (x: number) => {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+};
 
 /* Per-variant hover float — so the world doesn't bob in unison */
 const FLOAT_PARAMS: Record<ModelVariant, { speed: number; amp: number }> = {
@@ -62,7 +74,7 @@ const useGlowBasicMat = (mat: THREE.ShaderMaterial, opacity: number) => {
   return m;
 };
 
-const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, showGlow = true }: DraggableModelProps) => {
+const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, showGlow = true, stationIndex, progressRef, reducedMotion = false }: DraggableModelProps) => {
   const groupRef = useRef<THREE.Group>(null!);
   const innerRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
@@ -82,6 +94,7 @@ const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, sho
           uTime: { value: 0 },
           uColor: { value: new THREE.Color(color) },
           uHover: { value: 0 },
+          uReveal: { value: 1 },
         },
         transparent: true,
         side: THREE.DoubleSide,
@@ -142,6 +155,16 @@ const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, sho
     mat.uniforms.uHover.value +=
       ((hovered || isDragging.current ? 1 : 0) - mat.uniforms.uHover.value) * 0.08;
 
+    // Particle-assembly reveal driven by scroll proximity to this station
+    let reveal = 1;
+    if (progressRef && stationIndex !== undefined && !reducedMotion) {
+      reveal = revealFactor(progressRef.current, stationIndex);
+    }
+    mat.uniforms.uReveal.value = reveal;
+    wireMat.opacity = 0.12 * reveal;
+    lineMat.opacity = 0.06 * reveal;
+    glowMat.opacity = 0.035 * reveal;
+
     dragRotation.current.x += (targetDragRot.current.x - dragRotation.current.x) * 0.1;
     dragRotation.current.y += (targetDragRot.current.y - dragRotation.current.y) * 0.1;
 
@@ -157,6 +180,9 @@ const DraggableModel = memo(({ position, color, variant, scale = 1, onClick, sho
     if (innerRef.current) {
       innerRef.current.rotation.x = dragRotation.current.x;
       innerRef.current.rotation.y = dragRotation.current.y;
+      // Land with a tiny overshoot as the model assembles
+      const s = scale * (0.55 + 0.45 * easeOutBack(reveal));
+      innerRef.current.scale.setScalar(s);
     }
   });
 
@@ -295,6 +321,7 @@ const WebFramesModel = ({ mat, wireMat }: SubProps) => {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    const reveal = mat.uniforms.uReveal.value as number;
     if (swayRef.current) {
       swayRef.current.rotation.y = Math.sin(t * 0.3) * 0.22;
       swayRef.current.rotation.x = Math.cos(t * 0.22) * 0.06;
@@ -317,7 +344,7 @@ const WebFramesModel = ({ mat, wireMat }: SubProps) => {
       });
     }
     // block cursor blink
-    cursorMat.opacity = Math.floor(t * 2.4) % 2 === 0 ? 0.9 : 0.08;
+    cursorMat.opacity = (Math.floor(t * 2.4) % 2 === 0 ? 0.9 : 0.08) * reveal;
   });
 
   const barWidths = [0.62, 0.44, 0.53];
@@ -432,6 +459,7 @@ const AgentCoreModel = ({ mat, wireMat }: SubProps) => {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    pulseMat.opacity = 0.85 * (mat.uniforms.uReveal.value as number);
     if (coreRef.current) {
       // "thinking" — two overlapping pulse frequencies
       const think = 1 + Math.sin(t * 2.2) * 0.05 + Math.sin(t * 5.7) * 0.02;
@@ -577,6 +605,7 @@ const PipelineModel = ({ mat, wireMat }: SubProps) => {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    flowMat.opacity = 0.85 * (mat.uniforms.uReveal.value as number);
     if (spinRef.current) {
       spinRef.current.rotation.y = t * 0.12;
       spinRef.current.rotation.x = Math.sin(t * 0.2) * 0.25;
@@ -643,7 +672,7 @@ const DockLinkModel = ({ mat, wireMat }: SubProps) => {
     if (sparkRef.current) {
       const docked = 1 - Math.min((sep - 0.16) / 0.12, 1);
       sparkRef.current.scale.setScalar(0.25 + docked * (1 + Math.sin(t * 8) * 0.25));
-      sparkMat.opacity = docked * 0.8;
+      sparkMat.opacity = docked * 0.8 * (mat.uniforms.uReveal.value as number);
     }
   });
 
@@ -751,6 +780,7 @@ const BeaconModel = ({ mat, wireMat, lineMat }: SubProps) => {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    const reveal = mat.uniforms.uReveal.value as number;
     if (ringsRef.current) {
       ringsRef.current.children.forEach((ring, i) => {
         const cycle = (t * 0.6 + i * 0.4) % 2;
@@ -758,7 +788,7 @@ const BeaconModel = ({ mat, wireMat, lineMat }: SubProps) => {
         const ringScale = 0.3 + cycle * 0.6;
         ring.position.y = yPos;
         ring.scale.setScalar(ringScale);
-        ringMats[i].opacity = Math.max(0, 1 - cycle / 1.8) * 0.15;
+        ringMats[i].opacity = Math.max(0, 1 - cycle / 1.8) * 0.15 * reveal;
       });
     }
     if (tipRef.current) {

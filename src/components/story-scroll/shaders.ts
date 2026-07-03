@@ -74,15 +74,17 @@ export const POSTFX_FRAG = /* glsl */ `
 uniform float uTime;
 uniform float uGrain;
 uniform float uVignette;
+uniform float uSpeed;
 varying vec2 vUv;
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
 void main() {
   vec2 c = vUv - 0.5;
-  float vig = smoothstep(0.32, 0.92, length(c) * 1.3) * uVignette;
+  // Vignette tightens and grain intensifies with camera speed (transit whoosh)
+  float vig = smoothstep(0.32, 0.92, length(c) * (1.3 + uSpeed * 0.35)) * (uVignette + uSpeed * 0.2);
   float g = hash(vUv * 1024.0 + vec2(fract(uTime * 7.31) * 100.0)) - 0.5;
-  float dark = max(-g, 0.0) * uGrain;
+  float dark = max(-g, 0.0) * uGrain * (1.0 + uSpeed * 2.0);
   float alpha = clamp(vig + dark, 0.0, 0.85);
   gl_FragColor = vec4(vec3(0.0), alpha);
 }
@@ -92,20 +94,31 @@ void main() {
 export const DRAGGABLE_VERT = /* glsl */ `
 uniform float uTime;
 uniform float uHover;
+uniform float uReveal;
 varying vec3 vNormal;
 varying vec3 vViewDir;
 varying float vFresnel;
 varying vec3 vPosition;
+varying float vReveal;
+float hash3(vec3 p) {
+  return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453123);
+}
 void main() {
   vec3 p = position;
   // Subtle vertex displacement on hover
   float wave = sin(uTime * 1.5 + p.x * 3.0 + p.y * 2.0 + p.z * 4.0) * 0.015;
   p += normal * wave * uHover;
+  // Particle assembly — vertices scatter outward until the station reveals
+  float h = hash3(position);
+  float scatter = 1.0 - uReveal;
+  vec3 dir = normalize(normal + vec3(h - 0.5, fract(h * 7.31) - 0.5, fract(h * 3.17) - 0.5) * 1.4);
+  p += dir * scatter * (0.5 + h * 2.4);
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   vNormal = normalize(normalMatrix * normal);
   vViewDir = normalize(-mv.xyz);
   vFresnel = pow(1.0 - abs(dot(vViewDir, vNormal)), 3.0);
   vPosition = p;
+  vReveal = uReveal;
   gl_Position = projectionMatrix * mv;
 }
 `;
@@ -118,6 +131,7 @@ varying vec3 vNormal;
 varying vec3 vViewDir;
 varying float vFresnel;
 varying vec3 vPosition;
+varying float vReveal;
 void main() {
   // Base color — darkened interior
   vec3 base = uColor * 0.15;
@@ -131,10 +145,14 @@ void main() {
   vec3 col = base + uColor * (rim * 1.4 + scan + shimmer);
   // Edge highlight
   col += uColor * pow(rim, 4.0) * 0.6;
+  // Assembly sparkle — fragments glow hotter while scattered
+  col += uColor * (1.0 - vReveal) * 0.9;
 
   float alpha = mix(0.35, 0.92, rim);
   // Boost alpha on hover
   alpha = mix(alpha, min(alpha + 0.15, 1.0), uHover);
+  // Fade fragments in as the model assembles
+  alpha *= 0.08 + 0.92 * pow(vReveal, 1.4);
 
   gl_FragColor = vec4(col, alpha);
 }

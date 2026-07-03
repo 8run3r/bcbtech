@@ -1,3 +1,5 @@
+import type { ModelVariant } from "./DraggableModel";
+
 export interface Station {
   title: string;
   subtitle: string;
@@ -8,7 +10,32 @@ export interface Station {
   route: string;
   cta: string;
   modelHint: string;
+  /** Model placement relative to station centre + look-at anchor */
+  modelOffset: [number, number, number];
+  modelVariant: ModelVariant;
+  modelScale: number;
 }
+
+/**
+ * Acts — the descent is structured as 4 acts of 2 stations each.
+ * Every act has its own environment, camera behaviour and material mood.
+ */
+export interface Act {
+  roman: string;
+  name: string;
+  jp: string;
+  /** Camera choreography per act */
+  cam: { radius: number; height: number; sweep: number };
+}
+
+export const ACTS: Act[] = [
+  { roman: "I",   name: "STAVBA",       jp: "「構築」", cam: { radius: 6.0, height: 2.9, sweep: 1.05 } },
+  { roman: "II",  name: "INTELIGENCIA", jp: "「知性」", cam: { radius: 5.2, height: 2.1, sweep: 1.2 } },
+  { roman: "III", name: "TOK",          jp: "「流れ」", cam: { radius: 6.4, height: 3.3, sweep: 0.95 } },
+  { roman: "IV",  name: "SPOJENIE",     jp: "「接続」", cam: { radius: 7.0, height: 2.5, sweep: 1.25 } },
+];
+
+export const stationAct = (i: number) => Math.min(Math.floor(i / 2), ACTS.length - 1);
 
 export const STATIONS: Station[] = [
   {
@@ -21,6 +48,9 @@ export const STATIONS: Station[] = [
     route: "/balicky?tab=web",
     cta: "Webové balíčky",
     modelHint: "Tri obrazovky — jeden web, každé zariadenie",
+    modelOffset: [1.4, 0.5, 0.8],
+    modelVariant: "webFrames",
+    modelScale: 1.1,
   },
   {
     title: "E-Commerce",
@@ -32,6 +62,9 @@ export const STATIONS: Station[] = [
     route: "/balicky?tab=web",
     cta: "Online obchod",
     modelHint: "Produkt v skeneri — každá objednávka zaznamenaná",
+    modelOffset: [-1.6, 0.4, -1.0],
+    modelVariant: "commerce",
+    modelScale: 1.2,
   },
   {
     title: "AI Agenti",
@@ -43,6 +76,9 @@ export const STATIONS: Station[] = [
     route: "/balicky?tab=agents",
     cta: "Nasadiť agenta",
     modelHint: "Jadro a jeho agenti — pracujú, kým vy spíte",
+    modelOffset: [1.6, 0.4, -1.0],
+    modelVariant: "agentCore",
+    modelScale: 1.1,
   },
   {
     title: "Fakturácia & Doklady",
@@ -54,6 +90,9 @@ export const STATIONS: Station[] = [
     route: "/balicky?tab=automation",
     cta: "Zautomatizovať",
     modelHint: "Doklady, ktoré sa pečiatkujú samé",
+    modelOffset: [-1.4, 0.5, 0.8],
+    modelVariant: "invoiceStack",
+    modelScale: 1.2,
   },
   {
     title: "Workflow Automatizácie",
@@ -65,6 +104,9 @@ export const STATIONS: Station[] = [
     route: "/balicky?tab=automation",
     cta: "Automatizovať",
     modelHint: "Pipeline — dáta tečú non-stop",
+    modelOffset: [1.2, 0.3, 0.6],
+    modelVariant: "pipeline",
+    modelScale: 1.2,
   },
   {
     title: "Systémové Integrácie",
@@ -76,6 +118,9 @@ export const STATIONS: Station[] = [
     route: "/kontakt",
     cta: "Prepojiť systémy",
     modelHint: "Dva systémy — jedno pevné spojenie",
+    modelOffset: [-1.6, 0.4, -0.8],
+    modelVariant: "dockLink",
+    modelScale: 1.1,
   },
   {
     title: "Prečo CokTech",
@@ -87,6 +132,9 @@ export const STATIONS: Station[] = [
     route: "/logika",
     cta: "Naša logika",
     modelHint: "Kryštál — transparentný prístup k vášmu projektu",
+    modelOffset: [1.4, 0.5, 0.6],
+    modelVariant: "crystal",
+    modelScale: 1.1,
   },
   {
     title: "Spojme sa",
@@ -98,5 +146,8 @@ export const STATIONS: Station[] = [
     route: "/kontakt",
     cta: "Napíšte nám",
     modelHint: "Pulzujúci maják — signál čakajúci na vaše spojenie",
+    modelOffset: [1.1, 0.3, 0.6],
+    modelVariant: "beacon",
+    modelScale: 1.2,
   },
 ];
