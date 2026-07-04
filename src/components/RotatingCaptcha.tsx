@@ -206,19 +206,24 @@ const RotatingCaptcha = ({ onPass }: Props) => {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragging.current) return;
     const angle = getAngleFromEvent(e.clientX, e.clientY);
-    const delta = angle - startAngle.current;
-    setRotation(normalize(startRotation.current + delta));
+    // Shortest-path delta — raw atan2 difference jumps by 360° at the ±180° boundary
+    let delta = angle - startAngle.current;
+    delta = ((delta + 540) % 360) - 180;
+    startAngle.current = angle;
+    // Keep rotation continuous (no normalize) — clamping to 0–360 makes the
+    // CSS transition spin the long way round whenever the value crosses zero
+    setRotation(r => r + delta);
   }, [getAngleFromEvent]);
 
   const onPointerUp = useCallback(() => {
     dragging.current = false;
   }, []);
 
-  // Arrow key rotation
+  // Arrow key rotation — continuous values, no normalize (see onPointerMove)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") setRotation(r => normalize(r - 15));
-      if (e.key === "ArrowRight") setRotation(r => normalize(r + 15));
+      if (e.key === "ArrowLeft") setRotation(r => r - 15);
+      if (e.key === "ArrowRight") setRotation(r => r + 15);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -423,7 +428,7 @@ const RotatingCaptcha = ({ onPass }: Props) => {
             {/* Arrow buttons */}
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 16 }}>
               <button
-                onClick={() => setRotation(r => normalize(r - 15))}
+                onClick={() => setRotation(r => r - 15)}
                 style={{
                   width: 36, height: 36, borderRadius: "50%",
                   background: "linear-gradient(180deg, #f2f2f2, #e0e0e0)",
@@ -437,7 +442,7 @@ const RotatingCaptcha = ({ onPass }: Props) => {
                 ↺
               </button>
               <button
-                onClick={() => setRotation(r => normalize(r + 15))}
+                onClick={() => setRotation(r => r + 15)}
                 style={{
                   width: 36, height: 36, borderRadius: "50%",
                   background: "linear-gradient(180deg, #f2f2f2, #e0e0e0)",

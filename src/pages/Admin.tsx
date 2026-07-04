@@ -16,8 +16,10 @@ import RotatingCaptcha, { fetchIP, isKnownIP, addKnownIP } from "@/components/Ro
 
 const LOCKOUT_KEY = "admin_login_attempts";
 const LOCKOUT_TIME_KEY = "admin_lockout_until";
-const MAX_ATTEMPTS = 3;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+// Client-side friction only — the real brute-force protection is Supabase's
+// server-side rate limiting. Keep this gentle so the owner's typos don't hurt.
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 2 * 60 * 1000;
 
 const ENV_MISSING =
   !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
