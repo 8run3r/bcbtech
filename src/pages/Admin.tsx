@@ -19,6 +19,9 @@ const LOCKOUT_TIME_KEY = "admin_lockout_until";
 const MAX_ATTEMPTS = 3;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
+const ENV_MISSING =
+  !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
 const Admin = () => {
   const { user, isAdmin, loading, signIn, signOut } = useAuth();
   const [email, setEmail] = useState("");
@@ -215,10 +218,38 @@ const Admin = () => {
 
           {/* Form */}
           <div style={{ padding: "20px 24px" }}>
+            {ENV_MISSING && (
+              <div style={{
+                marginBottom: 14, padding: "10px 12px", fontSize: "11px", lineHeight: 1.6,
+                background: "#fff8e0", border: "1px solid #d0b000", color: "#5a4a00",
+              }}>
+                <strong>Chýba Supabase konfigurácia.</strong><br />
+                Lokálne: skopíruj <code>.env.example</code> → <code>.env</code>, doplň
+                hodnoty zo Supabase dashboardu (Settings → API) a reštartuj dev server.
+              </div>
+            )}
             {user && !isAdmin ? (
-              <div style={{ textAlign: "center", padding: "12px 0" }}>
-                <p style={{ marginBottom: 14, fontSize: "13px", color: W98.black }}>Nemáte admin prístup.</p>
-                <Win98Button onClick={signOut}>Odhlásiť sa</Win98Button>
+              <div style={{ padding: "4px 0" }}>
+                <p style={{ marginBottom: 10, fontSize: "13px", color: W98.black }}>
+                  Prihlásenie prebehlo, ale účet <strong>{user.email}</strong> nemá admin rolu.
+                </p>
+                <p style={{ marginBottom: 6, fontSize: "11px", color: W98.grayText }}>
+                  Spusti v Supabase → SQL Editor:
+                </p>
+                <pre style={{
+                  fontSize: "10px", lineHeight: 1.5, padding: "8px 10px", marginBottom: 12,
+                  background: "#f4f4f4", border: "1px solid #c0c0c0",
+                  whiteSpace: "pre-wrap", wordBreak: "break-all", userSelect: "all",
+                }}>
+{`insert into public.user_roles (user_id, role)
+values ('${user.id}', 'admin');`}
+                </pre>
+                <p style={{ marginBottom: 12, fontSize: "11px", color: W98.grayText }}>
+                  Potom sa odhlás a prihlás znova.
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Win98Button onClick={signOut}>Odhlásiť sa</Win98Button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleLogin}>

@@ -1,12 +1,13 @@
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
- * Route guard — redirects unauthenticated / non-admin users to 404.
- * Renders nothing while auth state is loading to prevent flash.
+ * Route guard — shows a spinner while auth state loads, then defers to the
+ * Admin component, which renders login / "no access" / the panel itself.
+ * (A silent redirect for logged-in non-admins made a missing user_roles
+ * row look like the admin was broken — never fail silently here.)
  */
 const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -15,12 +16,6 @@ const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-
-  // Not logged in → show login page (Admin component handles this)
-  if (!user) return <>{children}</>;
-
-  // Logged in but not admin → redirect to 404 (don't reveal admin exists)
-  if (!isAdmin) return <Navigate to="/" replace />;
 
   return <>{children}</>;
 };
