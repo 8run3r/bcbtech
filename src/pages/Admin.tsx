@@ -93,6 +93,11 @@ const Admin = () => {
     setLoginLoading(false);
 
     if (error) {
+      // Network failure ≠ wrong password — don't mislead, don't count towards lockout
+      if (/fetch|network|load failed/i.test(error.message)) {
+        toast.error("Backend nedostupný — Supabase projekt je pravdepodobne zapauzovaný. Skontroluj supabase.com dashboard.");
+        return;
+      }
       setShake(true);
       setTimeout(() => setShake(false), 500);
       const attempts = Number(localStorage.getItem(LOCKOUT_KEY) || 0) + 1;
